@@ -4,7 +4,9 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui opengl
+
+CONFIG += warn_on
 
 TARGET = cg
 TEMPLATE = app
@@ -16,3 +18,9 @@ SOURCES += src/main.cpp\
 HEADERS  += src/mainwindow.h
 
 FORMS    += src/mainwindow.ui
+
+DESTDIR = bin
+MOC_DIR = moc
+OBJECTS_DIR = obj
+UI_DIR = ui
+

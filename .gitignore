@@ -1,0 +1,5 @@
+bin
+moc
+obj
+ui
+Makefile
