@@ -1,7 +1,0 @@
-git-Infors:
-// Neuste Version vom Server holen:
-git pull
-
-// Änderungen hochladen:
-git commit
-git push
