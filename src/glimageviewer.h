@@ -1,6 +1,8 @@
 #ifndef GLIMAGEVIEWER_H
 #define GLIMAGEVIEWER_H
 
+#include <QGLShader>
+#include <QGLShaderProgram>
 #include <QGLWidget>
 #include <QImage>
 #include <QWidget>
@@ -24,6 +26,8 @@ protected:
 private:
     bool textureLoaded;
     GLuint textureId;
+
+    QGLShaderProgram shaderProgram;
 };
 
 #endif // GLIMAGEVIEWER_H
