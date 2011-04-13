@@ -13,9 +13,11 @@ TEMPLATE = app
 
 
 SOURCES += src/main.cpp\
-        src/mainwindow.cpp
+        src/mainwindow.cpp \
+    src/glimageviewer.cpp
 
-HEADERS  += src/mainwindow.h
+HEADERS  += src/mainwindow.h \
+    src/glimageviewer.h
 
 FORMS    += src/mainwindow.ui
 

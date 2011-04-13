@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QGLWidget" name="glDisplay" native="true"/>
+     <widget class="GLImageViewer" name="glDisplay" native="true"/>
     </item>
    </layout>
   </widget>
@@ -43,9 +43,9 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>QGLWidget</class>
+   <class>GLImageViewer</class>
    <extends>QWidget</extends>
-   <header location="global">QGLWidget</header>
+   <header>src/glimageviewer.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
