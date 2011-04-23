@@ -1,6 +1,8 @@
 #include <QtCore/QString>
 #include <QtTest/QtTest>
 
+namespace asl
+{
 class AnnotatedShaderLoaderTest : public QObject
 {
     Q_OBJECT
@@ -13,6 +15,9 @@ private Q_SLOTS:
     void cleanupTestCase();
     void testCase1();
 };
+}
+
+using namespace asl;
 
 AnnotatedShaderLoaderTest::AnnotatedShaderLoaderTest()
 {

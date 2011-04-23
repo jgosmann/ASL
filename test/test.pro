@@ -4,8 +4,25 @@
 #
 #-------------------------------------------------
 
+include(../src/src.pro)
+SOURCES -= main.cpp
+for(file, HEADERS) {
+    correctPath = ../src/$${file}
+    HEADERS -= $$file
+    HEADERS += $$correctPath
+}
+for(file, SOURCES) {
+    correctPath = ../src/$${file}
+    SOURCES -= $$file
+    SOURCES += $$correctPath
+}
+for(file, FORMS) {
+    correctPath = ../src/$${file}
+    FORMS -= $$file
+    FORMS += $$correctPath
+}
+
 QT       += testlib
-QT       -= gui
 
 TARGET = cg_test
 
@@ -20,5 +37,6 @@ MOC_DIR = ../moc
 OBJECTS_DIR = ../obj
 UI_DIR = ../ui
 
-SOURCES += tst_annotatedshaderloadertest.cpp
+include(asl/asl.pri)
+
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
