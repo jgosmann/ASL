@@ -11,6 +11,7 @@ TARGET = cg
 TEMPLATE = app
 
 include(src/asl/asl.pri)
+include(src/render/render.pri)
 
 SOURCES += src/main.cpp\
         src/mainwindow.cpp
@@ -23,3 +24,6 @@ DESTDIR = bin
 MOC_DIR = moc
 OBJECTS_DIR = obj
 UI_DIR = ui
+
+OTHER_FILES += \
+    src/render/render.pri
