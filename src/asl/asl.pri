@@ -1,7 +1,7 @@
-HEADERS += src/asl/shaderparameterinfo.h \
-    src/asl/glvariant.h \
-    src/asl/gltypeinfo.h \
-    src/asl/annotatedglshaderprogram.h
+HEADERS += asl/shaderparameterinfo.h \
+    asl/glvariant.h \
+    asl/gltypeinfo.h \
+    asl/annotatedglshaderprogram.h
 
 SOURCES += \
-    src/asl/annotatedglshaderprogram.cpp
+    asl/annotatedglshaderprogram.cpp

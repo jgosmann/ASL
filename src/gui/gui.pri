@@ -1,5 +1,5 @@
-SOURCES += src/gui/mainwindow.cpp
+SOURCES += gui/mainwindow.cpp
 
-HEADERS  += src/gui/mainwindow.h
+HEADERS  += gui/mainwindow.h
 
-FORMS    += src/gui/mainwindow.ui
+FORMS    += gui/mainwindow.ui
