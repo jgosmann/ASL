@@ -1,1 +1,1 @@
-SOURCES += asl/tst_annotatedshaderloadertest.cpp
+SOURCES += asl/tst_annotatedshadercompilertest.cpp
