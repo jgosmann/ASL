@@ -5,9 +5,15 @@
 
 #include "shaderparameterinfo.h"
 
+namespace asl
+{
 class AnnotatedGLShaderProgram : public QGLShaderProgram
 {
     Q_OBJECT
+
+    Q_PROPERTY(QString name READ name)
+    Q_PROPERTY(QString description READ description)
+
 public:
     explicit AnnotatedGLShaderProgram(QObject *parent = 0);
 
@@ -33,5 +39,6 @@ private:
     const asl::ShaderParameterInfo m_parameterInfo;
 
 };
+}
 
 #endif // ANNOTATEDGLSHADER_H
