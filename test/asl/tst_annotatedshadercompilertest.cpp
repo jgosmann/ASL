@@ -44,6 +44,7 @@ void AnnotatedShaderLoaderTest::cleanupTestCase()
 
 void AnnotatedShaderLoaderTest::compilesAndLinksTrivialShader()
 {
+    // TODO: use QScopedPointer
     const QString trivialShader("void main() { }");
     AnnotatedGLShaderProgram *compiled =
             shaderCompiler.compile(QGLShader::Fragment, trivialShader);
@@ -56,6 +57,7 @@ void AnnotatedShaderLoaderTest::compilesAndLinksTrivialShader()
 
 void AnnotatedShaderLoaderTest::throwsExceptionWhenCompilingInvalidShader()
 {
+    // TODO: use QScopedPointer
     const QString invalidShader("invalid main() { }");
     try {
         AnnotatedGLShaderProgram *compiled =
