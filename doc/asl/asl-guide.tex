@@ -1,0 +1,136 @@
+\documentclass[11pt,a4paper]{scrreprt}
+
+%%%%%% Packages %%%%%
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{ae,aecompl}
+%\usepackage{scrpage2}
+%\usepackage{amssymb}
+%\usepackage{amsmath}
+%\usepackage[flushmargin,ragged]{footmisc}
+% \usepackage{graphicx}
+%\usepackage{ifthen}
+% \usepackage{lastpage}
+%\usepackage{ngerman}
+\usepackage{enumerate}
+% \usepackage{hhline}
+\usepackage{listings}
+%\usepackage{xr-hyper}
+\usepackage{hyperref}
+%\usepackage{units}
+% \usepackage{xcolor}
+
+%%%%% Eigene Format-Kommandos %%%%%
+
+%%%%% Externe Dokumente %%%%%
+
+%%%%% Silbentrennung %%%%%
+
+%%%%% Weiteres %%%%%
+
+\title{Guide to the Annotated Shader Language}
+\author{Jan Gosmann \and Denis John \and Markus Kastrop \and Andreas Mrugalla}
+\hypersetup{
+  pdftitle={Guide to the Annotated Shader Language},
+  pdfauthor={Jan Gosmann, Denis John, Markus Kastrop, Andreas Mrugalla},
+  pdfkeywords={OpenGL, Shader, ASL}
+}
+
+\begin{document}
+\lstdefinelanguage[opengl]{Shader}[ANSI]{C}{morekeywords={in,sampler2D,uniform,varying,vec3}}
+\lstdefinelanguage[ASL]{Shader}[opengl]{Shader}{morekeywords={Name,Description,Default,Range,Control},moredelim=*[s][\itshape]{/**}{*/},moredelim=[is][\itshape]{|}{|}}
+\lstset{basicstyle=\fontfamily{pcr}\selectfont\footnotesize,keywordstyle=\bfseries,language=[ASL]Shader}
+\maketitle
+\tableofcontents
+
+\chapter{Introduction}
+In the summer term of 2011 at the Bielefeld University we, the authors of this 
+guide, developed an image manipulation program which implemented its algorithms 
+in shaders running on the GPU. This project was part of the Computer Graphics 
+module.
+
+We aimed to make this image manipulation program flexible and extensible.  
+Therefore we decided to save the source code of the shaders in their own files 
+which will be loaded and compiled and runtime. This makes it easy to add new 
+algorithms: just write a shader and store it in the right directory.
+
+However, it would be nice if one could control the various parameters of the 
+algorithms, but a normal shader program does not provide the information what 
+the purpose and valid range of a parameter is. This is the point were the 
+Annotated Shader Language comes into play.
+
+The Annotated Shader Language, or short ASL, allows it to add information like 
+description and parameter range of a parameter to the program. Because all ASL 
+elements are written in comments the shader program can still be compiled 
+without using an ASL shader compiler.
+
+Because developed ASL only as part of a rather small project there is still room 
+for many enhancements. For example, at the moment it is only possible to 
+annotate uniforms and whole files, but no per vertex parameters. We had no need 
+for this function as we only used fragment shaders which do not have per vertex 
+parameters.
+
+
+\chapter{A First Look}
+This chapter shows a simple example of an ASL annotated shader program to get 
+a first impression what the language looks like:
+
+\begin{lstlisting}
+uniform sampler2D tex;
+
+/**
+ * Name: |Threshold|
+ * Description: |This gives the threshold for coloring bright pixels. All pixels
+ *     that have a color vector with a length greater than this value will be
+ *     colored.|
+ * Default: |1.33|
+ * Range: |0, 1.44|
+ */
+uniform float threshold;
+
+/**
+ * Name: |Highlight Color|
+ * Description: |Color used for highlighting the bright pixels.|
+ * Default: |(0, 0, 0)|
+ * Range: |percent|
+ * Control: |color, vector|
+ */
+uniform vec3 color;
+
+/**
+ * Name: |High-Key|
+ * Description: |Highlights bright areas.|
+ */
+void main() {
+    gl_FragColor = gl_Color
+        * texture2D(tex, gl_TexCoord[0].xy);
+    if (length(gl_FragColor.rgb) > threshold) {
+        gl_FragColor.rgb = color;
+    }
+}
+\end{lstlisting}
+
+This shader colors all bright pixels by computing the vector length of the 
+color's RGB vector. As you can see the uniforms \lstinline$threshold$ and 
+\lstinline$color$ are annotated with additional information such as the name, 
+a description, default value and allowed parameter range. This allows to the 
+program using this shader to provide corresponding user interface elements.
+
+The uniform \lstinline$tex$ is expected to be passed to all shaders by the 
+program using the shader and is not considered as a parameter the user can 
+directly change per shader. Therefore it has no annotation.
+
+Not only the uniforms, but also the \lstinline$main()$ function is annotated 
+with some general information about the shader.
+
+\chapter{Annotation Comments}
+
+\section{General Shader Annotation}
+
+\section{Uniform Annotation}
+
+\chapter{Additional Features}
+
+\section{MAIN Macro}
+
+\end{document}

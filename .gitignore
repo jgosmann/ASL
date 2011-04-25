@@ -4,3 +4,8 @@ obj
 ui
 Makefile
 doc/api
+*.aux
+*.log
+*.out
+*.pdf
+*.toc
