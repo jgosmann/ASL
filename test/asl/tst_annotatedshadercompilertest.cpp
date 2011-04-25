@@ -3,6 +3,7 @@
 #include <QtTest/QtTest>
 
 #include "../src/asl/annotatedshadercompiler.h"
+#include "../src/asl/compilationexception.h"
 
 namespace asl
 {
@@ -17,6 +18,7 @@ private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
     void compilesAndLinksTrivialShader();
+    void throwsExceptionWhenCompilingInvalidShader();
 
 private:
     QGLPixelBuffer pixelBufferForGLContext;
@@ -52,6 +54,22 @@ void AnnotatedShaderLoaderTest::compilesAndLinksTrivialShader()
         delete compiled;
 }
 
+void AnnotatedShaderLoaderTest::throwsExceptionWhenCompilingInvalidShader()
+{
+    const QString invalidShader("invalid main() { }");
+    try {
+        AnnotatedGLShaderProgram *compiled =
+                shaderCompiler.compile(QGLShader::Fragment, invalidShader);
+        delete compiled;
+    } catch (CompilationException &e) {
+        QVERIFY(e.stage() == CompilationException::COMPILATION);
+        QVERIFY(strlen(e.what()) > 0);
+        return;
+    }
+    QFAIL("CompilationException expected when compiling shader with invalid "
+            "syntax");
+}
+
 QTEST_MAIN(AnnotatedShaderLoaderTest);
 
-#include "tst_annotatedshaderloadertest.moc"
+#include "tst_annotatedshadercompilertest.moc"

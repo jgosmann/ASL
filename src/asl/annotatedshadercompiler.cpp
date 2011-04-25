@@ -1,5 +1,9 @@
 #include "annotatedshadercompiler.h"
 
+#include <QScopedPointer>
+
+#include "compilationexception.h"
+
 using namespace asl;
 
 AnnotatedShaderCompiler::AnnotatedShaderCompiler(QObject *parent) :
@@ -11,12 +15,18 @@ AnnotatedGLShaderProgram *
 AnnotatedShaderCompiler::compile(QGLShader::ShaderType type,
                                  const QString &source)
 {
-    // TODO: Better error handling
-    AnnotatedGLShaderProgram *shaderPrgm = new AnnotatedGLShaderProgram();
-    shaderPrgm->addShaderFromSourceCode(type, source);
-    if (!shaderPrgm->log().isEmpty())
-        return shaderPrgm;
+    QScopedPointer<AnnotatedGLShaderProgram> shaderPrgm(
+            new AnnotatedGLShaderProgram());
+    bool success = shaderPrgm->addShaderFromSourceCode(type, source);
+
+    if (!success || !shaderPrgm->log().isEmpty()) {
+        throw CompilationException(CompilationException::COMPILATION,
+                shaderPrgm->log());
+    }
 
     shaderPrgm->link();
-    return shaderPrgm;
+    // TODO: check for errors
+
+    return shaderPrgm.take();
 }
+
