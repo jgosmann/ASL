@@ -19,6 +19,9 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+private slots:
+    void on_checkBox_ApplyShaders_stateChanged(int );
 };
 }
 
