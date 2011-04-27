@@ -21,6 +21,7 @@
 % \usepackage{xcolor}
 
 %%%%% Eigene Format-Kommandos %%%%%
+\newcommand{\key}[1]{\subsection{Key: #1}}
 
 %%%%% Externe Dokumente %%%%%
 
@@ -38,7 +39,7 @@
 
 \begin{document}
 \lstdefinelanguage[opengl]{Shader}[ANSI]{C}{morekeywords={in,sampler2D,uniform,varying,vec3}}
-\lstdefinelanguage[ASL]{Shader}[opengl]{Shader}{morekeywords={Name,Description,Default,Range,Control},moredelim=*[s][\itshape]{/**}{*/},moredelim=[is][\itshape]{|}{|}}
+\lstdefinelanguage[ASL]{Shader}[opengl]{Shader}{morekeywords={Name,Description,Default,Include,Range,Control},moredelim=*[s][\itshape]{/**}{*/},moredelim=[is][\itshape]{|}{|}}
 \lstset{basicstyle=\fontfamily{pcr}\selectfont\footnotesize,keywordstyle=\bfseries,language=[ASL]Shader}
 \maketitle
 \tableofcontents
@@ -91,7 +92,7 @@ uniform float threshold;
 /**
  * Name: |Highlight Color|
  * Description: |Color used for highlighting the bright pixels.|
- * Default: |(0, 0, 0)|
+ * Default: |vec3(0, 0, 0)|
  * Range: |percent|
  * Control: |color, vector|
  */
@@ -109,7 +110,6 @@ void main() {
     }
 }
 \end{lstlisting}
-
 This shader colors all bright pixels by computing the vector length of the 
 color's RGB vector. As you can see the uniforms \lstinline$threshold$ and 
 \lstinline$color$ are annotated with additional information such as the name, 
@@ -124,13 +124,192 @@ Not only the uniforms, but also the \lstinline$main()$ function is annotated
 with some general information about the shader.
 
 \chapter{Annotation Comments}
+Annotations are added to the shader program with special comments starting with 
+two asterisks:
+\begin{lstlisting}
+/** <annotation comment> */
+\end{lstlisting}
+The comment has to occur before the element it is annotating.
+
+Annotation comments can span multiple lines:
+\begin{lstlisting}
+/**
+ * <line 1>
+ * <line 2>
+ */
+\end{lstlisting}
+All whitespace and asterisks before and after the line will be discarded. This 
+allows also boxlike annotation comments:
+\begin{lstlisting}
+/**************************
+ * <annotation comment>   *
+ * <another line>         *
+ *************************/
+\end{lstlisting}
+
+Within an annotation comment you define the individual annotations by 
+a key-value pattern. The key is the first word in the line followed by a colon 
+and than the value attributed to that key:
+\begin{lstlisting}
+/**
+ * key: value
+ */
+\end{lstlisting}
+The keys are case-sensitive.
+
+Sometimes it is useful to split the value into multiple lines, e.g. when writing 
+long descriptions. To do this you only have to indent the lines after the first.  
+All lines with a higher indentation than the key will be treated as 
+a continuation of the value.
+\begin{lstlisting}
+/**
+ * key: with a value
+ *     that spans more
+ *     than one line.
+ * another-key: value
+ */
+\end{lstlisting}
+Tabs will be considered as 8 spaces in this context. However, you should not mix 
+tabulators and spaces.
 
 \section{General Shader Annotation}
+To annotate the shader program itself write an annotation comment for the 
+\lstinline$main()$ function. The allowed keys for annotations are described in 
+the following subsections.
+
+\key{Name}
+Gives the name of the shader program. Should be short. This annotation is 
+required in each ASL shader program.
+
+\key{Description}
+A description of the shader program.
+
+\key{Include}
+TODO
+
+\subsection{Example}
+\begin{lstlisting}
+/**
+ * Name: Example Shader
+ * Description: This is just an example with a shader doing nothing.
+ * Include: some-other-shader.fs
+ *          and-another-shader.fs
+ */
+void main() {
+    /* your code here */
+}
+\end{lstlisting}
 
 \section{Uniform Annotation}
+To annotate a uniform parameter of a shader program write an annotation comment 
+before it.
+
+The data type of the parameter should be taken from the parameter declaration by 
+the ASL compiler. Our current implementation does not support samplers, but only 
+scalars, vectors and matrices as data types for annotated parameters.
+
+The allowed keys for annotations are described in the following subsections.
+
+\key{Name}
+Gives the name of the parameter. Should be short. This annotation exists because 
+the variable names in programs are often not that clear without context. This 
+annotations allows you to add a more clear name for the user interface. You also 
+do not have to worry about characters not valid in variable names.
+
+This annotation is required for each annotated parameter.
+
+\key{Description}
+A description what the annotated parameter does. Programs using ASL may present 
+this description as tool tip or any other way that seem suitable to them.
+
+\key{Default}
+Gives the default value for the parameter. Specifying the value works the same 
+as specifying a value in the standard shading language. The default value has to 
+be of the exact same type as the parameter. The only exception are float 
+parameters where specifying the default value as integer is also permissible.
+
+\key{Range}
+This gives the valid parameter range. The basic syntax is the minimum and 
+maximum value separated by commas:
+\begin{lstlisting}
+Range: 0, 1
+\end{lstlisting}
+The allows the parameter to be between 0 and 1 whereby the bounds are included.
+
+You can also specify the valid range for vectors and matrices. If you use the 
+scalar form from above the range is applied to each element of the vector or 
+matrix. To specify individual ranges for each element write one vector 
+(respectively matrix) with the minimum values and one with the maximum values 
+like this:
+\begin{lstlisting}
+Range: vec3(0, 0, -5), vec3(10, 10, 5)
+\end{lstlisting}
+
+If you want to use the smallest or highest possible value you do not have to 
+type the numeric value. It is better to use the words \lstinline$min$ and 
+\lstinline$max$:
+\begin{lstlisting}
+Range: min, max
+\end{lstlisting}
+This would be the equivalent to not specifying \lstinline$Range$ at all.
+
+Instead of specifying the ranges manually there are some predefined ranges:
+\begin{itemize}
+    \item \verb$percent$ is the same as \lstinline$0, 1$
+    \item \verb$byte$ is the same as \lstinline$0, 255$
+    \item \verb$unsigned$ is the same as \lstinline$0, max$
+    \item \verb$positive$ is the same as \lstinline$1, max$
+\end{itemize}
+
+Moreover, you can give a list of valid values within curly braces:
+\begin{lstlisting}
+Range: { 1, 2, 3, 5, 8, 13 }
+\end{lstlisting}
+
+\key{Control}
+A vector may either represent a position or a color. In each case another 
+control would be suitable in the user interface. With the \lstinline$Control$ 
+key you can give the program using this shader a hint which control to use.
+
+The value of \lstinline$Control$ key is a comma separated list. The program 
+using the shader should use the first control it provides in the list. If the 
+program provides none of the controls in the list it should fall back to its 
+default control for the data type.
+
+Each program may define it own controls it provides. However, there are some 
+standard names for controls you should use; even though a program is not 
+required to provide these.
+\begin{itemize}
+    \item \verb$default$ stands for the program's default control for the data 
+        type of the parameter.
+    \item \verb$color$ request the program to use a color picker as control.  
+        Makes sense only for vectors.
+    \item \verb$slider$ requests to use a slider as control. (In case of 
+        a non-scalar this may be interpreted as per element.)
+    \item \verb$spinbox$ requests to use a spin box as control. (In case of 
+        a non-scalar this may be interpreted as per element.)
+\end{itemize}
+
+\subsection{Example}
+\begin{lstlisting}
+/**
+ * Name: Highlight Color
+ * Description: The color used to highlight the affected areas.
+ * Default: vec3(1, 0, 0)
+ * Range: percent
+ * Control: color, default
+ */
+uniform vec3 highlightColor;
+\end{lstlisting}
+This is a possible annotation for a color value using three components (RGB).  
+Each component is limited to the range from 0 to 1 and the program should use 
+a color picker to control this parameter.
 
 \chapter{Additional Features}
 
 \section{MAIN Macro}
+
+\appendix
+\chapter{Limitations and Possible Future Enhancements}
 
 \end{document}
