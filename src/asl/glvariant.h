@@ -1,7 +1,7 @@
 #ifndef GLVARIANT_H
 #define GLVARIANT_H
 
-#include <gl.h>
+#include <GL/gl.h>
 
 namespace asl
 {
