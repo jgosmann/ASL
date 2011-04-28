@@ -86,9 +86,9 @@ uniform sampler2D tex;
 
 /**
  * Name: |Threshold|
- * Description: |This gives the threshold for coloring bright pixels. All pixels
- *     that have a color vector with a length greater than this value will be
- *     colored.|
+ * Description: |This gives the threshold for coloring bright pixels. All
+ *     pixels that have a color vector with a length greater than this value
+ *     will be colored.|
  * Default: |1.33|
  * Range: |0, 1.44|
  */
@@ -317,10 +317,75 @@ Each component is limited to the range from 0 to 1 and the program should use
 a color picker to control this parameter.
 
 \chapter{Additional Features}
+Besides annotating elements in the shader program for usage in the user 
+interface there are some additional features which are documented in this 
+chapter.
 
-\section{MAIN Macro}
+\section{ASL\_MAIN Macro}
+ASL provides the \lstinline$ASL_MAIN$ macro. This will be set only for the 
+top-level file being compiled and not for files being compiled because they 
+occurred within an \lstinline$Depends$ key.
+
+This allows you to write ASL shaders which can operate either as standalone ASL 
+shader or provide functionality to other ASL shaders.
+
+Here is an example:
+\begin{lstlisting}
+/**
+ * ShaderName: Convoluter
+ * ShaderDescription: Convolutes the a texture with a given matrix.
+ */
+
+#ifdef ASL_MAIN
+
+/**
+ * Name: Convolution Matrix
+ */
+uniform mat3 convolutionMatrix;
+
+void main() {
+    convolute(convolutionMatrix);
+}
+
+#endif
+
+uniform sampler2D texture;
+
+void convolute(mat3 convMat) {
+    /* Convolution code here. */
+}
+\end{lstlisting}
+
+\section{Standard Uniforms}
+Not all uniform parameters of a shader should be directly user controlled and 
+therefore passed by the program to the shader without providing a control in the 
+user interface. In ASL you just do not add an annotation comment for those 
+parameters which prevents the program from generating controls for it in the 
+user interface.
+
+However, the parameter has still to be set to the correct value and therefore 
+the program and the shader have to use the same name for the parameter. To be 
+able to use the same shader with different programs as long as the shader makes 
+sense in the program's context all programs and shaders should use the naming 
+conventions in this chapter.
+
+\subsection{Fragment Shaders}
+\begin{itemize}
+    \item \lstinline$uniform sampler2D texture$: The texture used by the shader.
+    \item \lstinline$uniform int textureWidth$: The width of the texture.
+    \item \lstinline$uniform int textureHeight$: The height of the texture.
+\end{itemize}
 
 \appendix
 \chapter{Limitations and Possible Future Enhancements}
+Because ASL was developed as part of a rather small project it is far from 
+complete and leaves much room for improvements. We focused on fragment shaders 
+as these were the only shaders we used in the project. Therefore we did not 
+considered any special needs which might arise when using ASL with vertex or 
+geometry shaders. For example we do not provide any support for annotating 
+``varying'' respective ``in'' parameters.
+
+Moreover we had no use for parameters of the type sampler. Because of that our 
+compiler is not able to make use of annotated parameters of that type.
 
 \end{document}
