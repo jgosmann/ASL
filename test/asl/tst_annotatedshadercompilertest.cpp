@@ -1,3 +1,4 @@
+#include <QtCore/QScopedPointer>
 #include <QtCore/QString>
 #include <QtOpenGL/QGLPixelBuffer>
 #include <QtTest/QtTest>
@@ -17,16 +18,22 @@ public:
 private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
+
     void compilesAndLinksTrivialShader();
+    void shaderNameDefaultsToFilename();
     void throwsExceptionWhenCompilingInvalidShader();
 
 private:
+    static const QString trivialShader;
+
     QGLPixelBuffer pixelBufferForGLContext;
     asl::AnnotatedShaderCompiler shaderCompiler;
 };
 }
 
 using namespace asl;
+
+const QString AnnotatedShaderLoaderTest::trivialShader("void main() { }");
 
 AnnotatedShaderLoaderTest::AnnotatedShaderLoaderTest()
     : pixelBufferForGLContext(1, 1)
@@ -44,25 +51,29 @@ void AnnotatedShaderLoaderTest::cleanupTestCase()
 
 void AnnotatedShaderLoaderTest::compilesAndLinksTrivialShader()
 {
-    // TODO: use QScopedPointer
-    const QString trivialShader("void main() { }");
-    AnnotatedGLShaderProgram *compiled =
-            shaderCompiler.compile(QGLShader::Fragment, trivialShader);
-    QVERIFY(compiled != NULL);
+    QScopedPointer<AnnotatedGLShaderProgram> compiled(
+            shaderCompiler.compile(QGLShader::Fragment, trivialShader));
+    QVERIFY(!compiled.isNull());
     QVERIFY2(compiled->log().isEmpty(), compiled->log().toAscii());
     QVERIFY(compiled->isLinked());
-    if (compiled)
-        delete compiled;
+}
+
+void AnnotatedShaderLoaderTest::shaderNameDefaultsToFilename()
+{
+    const QString filename("filename.fs");
+    const QString path("path/to/" + filename);
+    QScopedPointer<AnnotatedGLShaderProgram> compiled(
+            shaderCompiler.compile(QGLShader::Fragment, trivialShader,
+                path));
+    QCOMPARE(compiled->name(), filename);
 }
 
 void AnnotatedShaderLoaderTest::throwsExceptionWhenCompilingInvalidShader()
 {
-    // TODO: use QScopedPointer
     const QString invalidShader("invalid main() { }");
     try {
-        AnnotatedGLShaderProgram *compiled =
-                shaderCompiler.compile(QGLShader::Fragment, invalidShader);
-        delete compiled;
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment, invalidShader));
     } catch (CompilationException &e) {
         QVERIFY(e.stage() == CompilationException::COMPILATION);
         QVERIFY(strlen(e.what()) > 0);

@@ -15,8 +15,12 @@ class AnnotatedShaderCompiler : public QObject
 public:
     explicit AnnotatedShaderCompiler(QObject *parent = 0);
 
-    asl::AnnotatedGLShaderProgram * compile(QGLShader::ShaderType type,
-                                            const QString &source);
+    /**
+     * Use always `/' as an universal directory separator for the
+     * \a pathOfSource argument.
+     */
+    asl::AnnotatedGLShaderProgram * compile(QGLShader::ShaderType type, const
+            QString &source, const QString &pathOfSource = "");
 
 signals:
 

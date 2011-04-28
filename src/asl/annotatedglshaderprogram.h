@@ -15,7 +15,8 @@ class AnnotatedGLShaderProgram : public QGLShaderProgram
     Q_PROPERTY(QString description READ description)
 
 public:
-    explicit AnnotatedGLShaderProgram(QObject *parent = 0);
+    explicit AnnotatedGLShaderProgram(const QString &name,
+            const QString &description);
 
     inline const QString & name() const {
         return m_name;

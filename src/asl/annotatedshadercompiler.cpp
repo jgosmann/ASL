@@ -1,5 +1,6 @@
 #include "annotatedshadercompiler.h"
 
+#include <QFileInfo>
 #include <QScopedPointer>
 
 #include "compilationexception.h"
@@ -13,10 +14,12 @@ AnnotatedShaderCompiler::AnnotatedShaderCompiler(QObject *parent) :
 
 AnnotatedGLShaderProgram *
 AnnotatedShaderCompiler::compile(QGLShader::ShaderType type,
-                                 const QString &source)
+                                 const QString &source,
+                                 const QString &pathOfSource)
 {
     QScopedPointer<AnnotatedGLShaderProgram> shaderPrgm(
-            new AnnotatedGLShaderProgram());
+            new AnnotatedGLShaderProgram(
+                QFileInfo(pathOfSource).fileName(), ""));
     bool success = shaderPrgm->addShaderFromSourceCode(type, source);
 
     if (!success || !shaderPrgm->log().isEmpty()) {
