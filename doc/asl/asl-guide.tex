@@ -39,7 +39,7 @@
 
 \begin{document}
 \lstdefinelanguage[opengl]{Shader}[ANSI]{C}{morekeywords={in,sampler2D,uniform,varying,vec3}}
-\lstdefinelanguage[ASL]{Shader}[opengl]{Shader}{morekeywords={Name,Description,Default,Include,Range,Control},moredelim=*[s][\itshape]{/**}{*/},moredelim=[is][\itshape]{|}{|}}
+\lstdefinelanguage[ASL]{Shader}[opengl]{Shader}{morekeywords={Name,Control,Description,Default,Depends,Range,ShaderName,ShaderDescription},moredelim=*[s][\itshape]{/**}{*/},moredelim=[is][\itshape]{|}{|}}
 \lstset{basicstyle=\fontfamily{pcr}\selectfont\footnotesize,keywordstyle=\bfseries,language=[ASL]Shader}
 \maketitle
 \tableofcontents
@@ -77,6 +77,11 @@ This chapter shows a simple example of an ASL annotated shader program to get
 a first impression what the language looks like:
 
 \begin{lstlisting}
+/**
+ * ShaderName: |High-Key|
+ * ShaderDescription: |Highlights bright areas.|
+ */
+
 uniform sampler2D tex;
 
 /**
@@ -98,10 +103,6 @@ uniform float threshold;
  */
 uniform vec3 color;
 
-/**
- * Name: |High-Key|
- * Description: |Highlights bright areas.|
- */
 void main() {
     gl_FragColor = gl_Color
         * texture2D(tex, gl_TexCoord[0].xy);
@@ -173,31 +174,41 @@ Tabs will be considered as 8 spaces in this context. However, you should not mix
 tabulators and spaces.
 
 \section{General Shader Annotation}
-To annotate the shader program itself write an annotation comment for the 
-\lstinline$main()$ function. The allowed keys for annotations are described in 
-the following subsections.
+There are some annotations which are not used as annotation for a single element 
+like a parameter, but for the whole shader program. These have to occur in the 
+very first annotation comment and this comment does not need to be before any 
+special element of the shader program.
 
-\key{Name}
+\key{ShaderName}
 Gives the name of the shader program. Should be short. This annotation is 
 required in each ASL shader program.
 
-\key{Description}
+\key{ShaderDescription}
 A description of the shader program.
 
-\key{Include}
-TODO
+\key{Depends}
+It might be useful to use the same function in different shaders. This can be 
+done with the \lstinline$Depends$ key. You may view it as an include function 
+even though it does not really include files, but compiles the files 
+individually and links them together.
+
+The \lstinline$Depends$ key takes a list of paths to other shader programs. Each 
+path may not use more than one line and you have to specify each path in its own 
+line. Be sure to indent the lines correctly.
+
+The paths are relative to the file in which you use the \lstinline$Depends$ key. 
+The files ``included'' this way can specify their own dependencies. In the 
+dependency list may even be duplicates which will only be linked once to the 
+complete program.
 
 \subsection{Example}
 \begin{lstlisting}
 /**
- * Name: Example Shader
- * Description: This is just an example with a shader doing nothing.
- * Include: some-other-shader.fs
+ * ShaderName: Example Shader
+ * ShaderDescription: This is just an example with a shader doing nothing.
+ * Depends: some-other-shader.fs
  *          and-another-shader.fs
  */
-void main() {
-    /* your code here */
-}
 \end{lstlisting}
 
 \section{Uniform Annotation}
