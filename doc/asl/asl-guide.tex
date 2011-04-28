@@ -180,9 +180,8 @@ very first annotation comment and this comment does not need to be before any
 special element of the shader program.
 
 \key{ShaderName}
-Gives the name of the shader program. Should be short. This annotation is 
-required in each ASL shader program.
-
+Gives the name of the shader program. Should be short. If this annotation is 
+missing it defaults to the filename of the shader program.
 \key{ShaderDescription}
 A description of the shader program.
 
@@ -194,7 +193,8 @@ individually and links them together.
 
 The \lstinline$Depends$ key takes a list of paths to other shader programs. Each 
 path may not use more than one line and you have to specify each path in its own 
-line. Be sure to indent the lines correctly.
+line. Be sure to indent the lines correctly. Use always a slash `/' as directory 
+separator.
 
 The paths are relative to the file in which you use the \lstinline$Depends$ key. 
 The files ``included'' this way can specify their own dependencies. In the 
