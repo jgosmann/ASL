@@ -22,7 +22,7 @@ for(file, FORMS) {
     FORMS += $$correctPath
 }
 
-QT       += testlib
+LIBS += -lcppunit
 
 TARGET = cg_test
 
@@ -38,5 +38,6 @@ OBJECTS_DIR = ../obj
 UI_DIR = ../ui
 
 include(asl/asl.pri)
+SOURCES += testmain.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"

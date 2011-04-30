@@ -9,3 +9,5 @@ SOURCES += \
     asl/annotatedglshaderprogram.cpp \
     asl/annotatedshadercompiler.cpp \
     asl/compilationexception.cpp
+
+LEXSOURCES +=
