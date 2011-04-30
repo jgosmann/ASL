@@ -16,6 +16,16 @@ for(file, SOURCES) {
     SOURCES -= $$file
     SOURCES += $$correctPath
 }
+for(file, LEXSOURCES) {
+    correctPath = ../src/$${file}
+    LEXSOURCES -= $$file
+    LEXSOURCES += $$correctPath
+}
+for(file, YACCSOURCES) {
+    correctPath = ../src/$${file}
+    YACCSOURCES -= $$file
+    YACCSOURCES += $$correctPath
+}
 for(file, FORMS) {
     correctPath = ../src/$${file}
     FORMS -= $$file
@@ -38,6 +48,7 @@ OBJECTS_DIR = ../obj
 UI_DIR = ../ui
 
 include(asl/asl.pri)
+HEADERS += common.h
 SOURCES += testmain.cpp
 
-DEFINES += SRCDIR=\\\"$$PWD/\\\"
+DEFINES += TEST

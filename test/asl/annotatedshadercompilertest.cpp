@@ -1,6 +1,3 @@
-#include <cppunit/TestFixture.h>
-#include <cppunit/Message.h>
-#include <cppunit/extensions/HelperMacros.h>
 
 #include <QtCore/QScopedPointer>
 #include <QtCore/QString>
@@ -9,7 +6,7 @@
 #include "../src/asl/annotatedshadercompiler.h"
 #include "../src/asl/compilationexception.h"
 
-using namespace CppUnit;
+#include "common.h"
 
 namespace asl
 {
@@ -74,8 +71,9 @@ private:
 };
 }
 
-CPPUNIT_TEST_SUITE_REGISTRATION( asl::AnnotatedShaderCompilerTest );
+CPPUNIT_TEST_SUITE_REGISTRATION(asl::AnnotatedShaderCompilerTest);
 
 using namespace asl;
 
 const QString AnnotatedShaderCompilerTest::trivialShader("void main() { }");
+

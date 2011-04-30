@@ -10,3 +10,6 @@ doc/api
 *.pdf
 *.toc
 *.user
+*_lex.cpp
+*_yacc.h
+*_yacc.cpp

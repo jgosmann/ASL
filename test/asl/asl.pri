@@ -1,1 +1,2 @@
-SOURCES += asl/annotatedshadercompilertest.cpp
+SOURCES += asl/annotatedshadercompilertest.cpp \
+    asl/aslpreprocessortest.cpp

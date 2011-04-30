@@ -10,6 +10,7 @@ namespace asl
     {
     public:
         enum Stage {
+            PREPROCESSING,
             COMPILATION,
             LINKING
         };

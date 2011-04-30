@@ -3,11 +3,16 @@ HEADERS += asl/shaderparameterinfo.h \
     asl/gltypeinfo.h \
     asl/annotatedglshaderprogram.h \
     asl/annotatedshadercompiler.h \
-    asl/compilationexception.h
+    asl/compilationexception.h \
+    asl/aslpreprocessor.h
 
 SOURCES += \
     asl/annotatedglshaderprogram.cpp \
     asl/annotatedshadercompiler.cpp \
-    asl/compilationexception.cpp
+    asl/compilationexception.cpp \
+    asl/aslpreprocessor.cpp
 
-LEXSOURCES +=
+LEXSOURCES += asl/aslpreprocessor.l
+
+YACCSOURCES += asl/aslpreprocessor.y
+
