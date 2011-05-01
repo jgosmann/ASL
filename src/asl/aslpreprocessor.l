@@ -38,6 +38,11 @@ directivePrefix ^[ \t]*#
     return DEFINE;
 }
 
+<INITIAL>{directivePrefix}undef {
+    BEGIN PP_LINE;
+    return UNDEF;
+}
+
 <INITIAL>{directivePrefix}ifdef {
     BEGIN PP_LINE;
     return IFDEF;
@@ -46,6 +51,10 @@ directivePrefix ^[ \t]*#
 <INITIAL>{directivePrefix}ifndef {
     BEGIN PP_LINE;
     return IFNDEF;
+}
+
+<INITIAL>{directivePrefix}else {
+    return ELSE;
 }
 
 <INITIAL>{directivePrefix}endif {

@@ -14,6 +14,8 @@
     QTextStream m_outStream;
     QHash<QString, QString> macroTable;
     bool m_stripCode = false;
+    unsigned int ifNestingLevel = 0;
+    unsigned int nestingLevelToStrip;
 
     void setInput(const QString &sourcecode);
 
@@ -31,7 +33,7 @@
 }
 
 %token <string> CHARACTERS
-%token DEFINE IFDEF IFNDEF ENDIF
+%token DEFINE UNDEF IFDEF IFNDEF ELSE ENDIF
 %token <string> IDENTIFIER
 
 %%
@@ -52,6 +54,7 @@ part:
 
 pp:
   define
+    | undef
     | ifclause
     ;
 
@@ -60,18 +63,29 @@ define:
             macroTable.insert(QString($2), QString());
         }
 
+undef:
+     UNDEF IDENTIFIER {
+            macroTable.remove(QString($2));
+        }
+
 ifclause:
-        ifstart program endif;
+        ifstart program endif
+        | ifstart program else program endif
+        ;
 
 ifstart:
+       ifStartKeyWord { ++ifNestingLevel; }
+
+ifStartKeyWord:
        ifdef
         | ifndef
         ;
 
 ifdef:
      IFDEF IDENTIFIER {
-            if (!isDefined($2)) {
+            if (!m_stripCode && !isDefined($2)) {
                 m_stripCode = true;
+                nestingLevelToStrip = ifNestingLevel;
             }
         }
 
@@ -79,12 +93,23 @@ ifndef:
       IFNDEF IDENTIFIER {
             if (isDefined($2)) {
                 m_stripCode = true;
+                nestingLevelToStrip = ifNestingLevel;
+            }
+        }
+
+else:
+    ELSE {
+            if (ifNestingLevel - 1 <= nestingLevelToStrip) {
+                m_stripCode = !m_stripCode;
             }
         }
 
 endif:
      ENDIF {
-            m_stripCode = false;
+            --ifNestingLevel;
+            if (ifNestingLevel <= nestingLevelToStrip) {
+                m_stripCode = false;
+            }
         }
 
 %%
@@ -102,9 +127,15 @@ void aslpreprocessorerror(char *msg)
         QString::number(aslpreprocessorlineno) + ": " + QString(msg));
 }
 
+void aslPreprocessorReset() {
+    m_stripCode = false;
+    ifNestingLevel = 0;
+    macroTable.clear();
+}
+
 QString aslPreprocessorParse(const QString &sourcecode)
 {
-    m_stripCode = false;
+    aslPreprocessorReset();
 
     QString out;
     m_outStream.setString(&out, QIODevice::WriteOnly);
@@ -114,10 +145,5 @@ QString aslPreprocessorParse(const QString &sourcecode)
 
     m_outStream.flush();
     return out;
-}
-
-void aslPreprocessorReset() {
-    m_stripCode = false;
-    macroTable.clear();
 }
 
