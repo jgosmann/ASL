@@ -26,10 +26,11 @@ public:
         const QString input(
                 "#define INCLUDE\n"
                 "#ifndef INCLUDE\n"
-                "    /* should be included */\n"
-                "#endif\n");
+                "    /* should not be included */\n"
+                "#endif\n"
+                "/* should be included */\n");
 
-        const QString expected = "\n";
+        const QString expected = "/* should be included */\n";
         testProcessing(input, expected);
     }
 
@@ -37,9 +38,9 @@ public:
     {
         const QString header("#ifndef UNDEFINED_MACRO\n");
         const QString partToInclude("/* should be included */\n");
-        const QString footer("#endif\n");
+        const QString footer("#endif\n/* should be included */\n");
 
-        const QString expected = partToInclude + "\n";
+        const QString expected = partToInclude + "/* should be included */\n";
         const QString input = header + partToInclude + footer;
         testProcessing(input, expected);
     }
@@ -93,8 +94,9 @@ public:
         const QString input(
                 "#ifdef UNDEFINED_MACRO\n"
                 "/* should be excluded */\n"
-                "#endif\n");
-        const QString output("\n");
+                "#endif\n"
+                "/* should be included */\n");
+        const QString output("/* should be included */\n");
         testProcessing(input, output);
     }
 
@@ -106,7 +108,7 @@ public:
                 "#ifdef SHOULD_BE_UNDEFINED\n"
                 "/* should be excluded */\n"
                 "#endif\n");
-        testProcessing(checkInput, "\n");
+        testProcessing(checkInput, "");
     }
 
     void keepsUnknownDirectives()
@@ -125,7 +127,7 @@ public:
                 "    #endif\n"
                 "    /* exclude 3 */\n"
                 "#endif\n");
-        testProcessing(input, "\n");
+        testProcessing(input, "");
     }
 
     void handlesNestingInIncludedParts()
@@ -139,8 +141,8 @@ public:
                 "    /* include 2 */\n"
                 "#endif\n");
         const QString expectedOutput(
-                "    /* include 1 */\n\n"
-                "    /* include 2 */\n\n");
+                "    /* include 1 */\n"
+                "    /* include 2 */\n");
         testProcessing(input, expectedOutput);
     }
 
@@ -152,7 +154,7 @@ public:
                 "#else\n"
                 "    /* include */\n"
                 "#endif\n");
-        const QString expectedOutput("\n    /* include */\n\n");
+        const QString expectedOutput("    /* include */\n");
         testProcessing(input, expectedOutput);
     }
 
@@ -164,7 +166,7 @@ public:
                 "#else\n"
                 "    /* exclude */\n"
                 "#endif\n");
-        const QString expectedOutput("    /* include */\n\n");
+        const QString expectedOutput("    /* include */\n");
         testProcessing(input, expectedOutput);
     }
 
@@ -195,11 +197,11 @@ public:
             "    /* include 5 */\n"
             "#endif\n");
         const QString expectedOutput(
-            "\n    /* include 1 */\n\n"
-            "        /* include 2 */\n\n"
+            "    /* include 1 */\n"
+            "        /* include 2 */\n"
             "    /* include 3 */\n"
-            "        /* include 4 */\n\n"
-            "    /* include 5 */\n\n");
+            "        /* include 4 */\n"
+            "    /* include 5 */\n");
         testProcessing(input, expectedOutput);
     }
 
@@ -217,7 +219,7 @@ public:
                 "#ifdef SHOULD_BE_UNDEFINED\n"
                 "    /* should be excluded */\n"
                 "#endif\n");
-        testProcessing(input, "\n");
+        testProcessing(input, "");
     }
 
     void includesIfPartIfConditionMet()
@@ -226,7 +228,7 @@ public:
                 "#if 1\n"
                 "/* include */\n"
                 "#endif\n");
-        const QString expectedOutput("/* include */\n\n");
+        const QString expectedOutput("/* include */\n");
         testProcessing(input, expectedOutput);
     }
 
@@ -238,7 +240,7 @@ public:
                 "#else\n"
                 "/* include */\n"
                 "#endif\n");
-        const QString expectedOutput("\n/* include */\n\n");
+        const QString expectedOutput("/* include */\n");
         testProcessing(input, expectedOutput);
     }
 
@@ -254,7 +256,7 @@ public:
                 "#else\n"
                 "/* exclude 3 */\n"
                 "#endif\n");
-        const QString expectedOutput("/* include */\n\n");
+        const QString expectedOutput("/* include */\n");
         testProcessing(input, expectedOutput);
     }
 
@@ -274,7 +276,7 @@ public:
                 "#else\n"
                 "/* exclude 5 */\n"
                 "#endif\n");
-        const QString expectedOutput("/* include */\n\n");
+        const QString expectedOutput("/* include */\n");
         testProcessing(input, expectedOutput);
     }
 
@@ -290,7 +292,7 @@ public:
                 "#else\n"
                 "/* include */\n"
                 "#endif\n");
-        const QString expectedOutput("\n/* include */\n\n");
+        const QString expectedOutput("/* include */\n");
         testProcessing(input, expectedOutput);
     }
 
@@ -317,8 +319,8 @@ public:
                 "#endif\n");
         const QString expectedOutput(
                 "    /* include 1 */\n"
-                "        /* include 2 */\n\n"
-                "    /* include 3 */\n\n");
+                "        /* include 2 */\n"
+                "    /* include 3 */\n");
         testProcessing(input, expectedOutput);
     }
 
@@ -380,6 +382,89 @@ public:
         CPPUNIT_ASSERT(!expressionResultsInZero("!0"));
     }
 
+    void testBitwiseBinaryNonShiftOperators()
+    {
+        CPPUNIT_ASSERT(expressionResultsIn("0xff0 & 0xf00", 0xf00));
+        CPPUNIT_ASSERT(expressionResultsIn("0xff0 ^ 0xf00", 0x0f0));
+        CPPUNIT_ASSERT(expressionResultsIn("0xff0 | 0xf00", 0xff0));
+    }
+    
+    void testBitwiseBinaryShiftOperators()
+    {
+        CPPUNIT_ASSERT(expressionResultsIn("0xf0f << 4", 0xf0f0));
+        CPPUNIT_ASSERT(expressionResultsIn("0xf0f >> 4", 0x00f0));
+    }
+
+    void testAdditiveOperators()
+    {
+        CPPUNIT_ASSERT(expressionResultsIn("2 + 3", 5));
+        CPPUNIT_ASSERT(expressionResultsIn("2 - 3", -1));
+    }
+
+    void testMultiplicativeOperators()
+    {
+        CPPUNIT_ASSERT(expressionResultsIn("2 * 3", 6));
+        CPPUNIT_ASSERT(expressionResultsIn("4 / 2", 2));
+        CPPUNIT_ASSERT(expressionResultsIn("3 / 2", 1));
+        CPPUNIT_ASSERT(expressionResultsIn("7 % 2", 1));
+    }
+
+    void testUnaryIntegerOperators()
+    {
+        CPPUNIT_ASSERT(expressionResultsIn("+ 2", 2));
+        CPPUNIT_ASSERT(expressionResultsIn("- 2", -2));
+    }
+
+    void testBitwiseNegation()
+    {
+        CPPUNIT_ASSERT(expressionResultsIn("~ 0xf0", 0xffffffffffffff0f));
+    }
+
+    void testDefinedOperator()
+    {
+        const QString input(
+                "#define DEFINED_MACRO\n"
+                "#if defined DEFINED_MACRO\n"
+                "    /* include */\n"
+                "#endif\n"
+                "#if defined UNDEFINED_MACRO\n"
+                "    /* exclude */\n"
+                "#endif\n");
+        const QString expectedOutput("    /* include */\n");
+        testProcessing(input, expectedOutput);
+    }
+
+    void testParenthesisTakePrecedence()
+    {
+        CPPUNIT_ASSERT(expressionResultsIn("(2+3)*3", 15));
+    }
+
+    void understandsDecimalNumbers()
+    {
+        CPPUNIT_ASSERT(expressionResultsIn("123456789", 123456789));
+    }
+
+    void understandsOctalNumbers()
+    {
+        CPPUNIT_ASSERT(expressionResultsIn("017", 017));
+    }
+
+    void understandsHexadecimalNumbers()
+    {
+        CPPUNIT_ASSERT(expressionResultsIn("0x1f", 0x1f));
+    }
+
+    void simpleDefinedMacroGetsReplacedInIf()
+    {
+        const QString input(
+                "#define REPLACE 42\n"
+                "#if REPLACE == 42\n"
+                "    /* include */\n"
+                "#endif\n");
+        const QString expectedOutput("    /* include */\n");
+        testProcessing(input, expectedOutput);
+    }
+
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
     CPPUNIT_TEST(doesNotChangeShaderWithoutPreprocessorDirectives);
     CPPUNIT_TEST(excludesIfNDefPartIfMacroIsDefined);
@@ -413,6 +498,18 @@ public:
     CPPUNIT_TEST(testLowerOrEqualOperator);
     CPPUNIT_TEST(testGreaterOrEqualOperator);
     CPPUNIT_TEST(testLogicalNegationOperator);
+    CPPUNIT_TEST(testBitwiseBinaryNonShiftOperators);
+    CPPUNIT_TEST(testBitwiseBinaryShiftOperators);
+    CPPUNIT_TEST(testAdditiveOperators);
+    CPPUNIT_TEST(testMultiplicativeOperators);
+    CPPUNIT_TEST(testUnaryIntegerOperators);
+    CPPUNIT_TEST(testBitwiseNegation);
+    CPPUNIT_TEST(testDefinedOperator);
+    CPPUNIT_TEST(testParenthesisTakePrecedence);
+    CPPUNIT_TEST(understandsDecimalNumbers);
+    CPPUNIT_TEST(understandsOctalNumbers);
+    CPPUNIT_TEST(understandsHexadecimalNumbers);
+    CPPUNIT_TEST(simpleDefinedMacroGetsReplacedInIf);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -422,12 +519,18 @@ private:
                 preprocessor.process(input).toStdString());
     }
 
-    bool expressionResultsInZero(const QString &expression) {
+    bool expressionResultsInZero(const QString &expression)
+    {
+        return expressionResultsIn(expression, 0);
+    }
+
+    bool expressionResultsIn(const QString &expression, long int value)
+    {
         const QString input(
-                "#if (" + expression + ") == 0\n"
+                "#if (" + expression + ") == " + QString::number(value) + "\n"
                 "    /* is zero */\n"
                 "#endif\n");
-        return preprocessor.process(input) == "    /* is zero */\n\n";
+        return preprocessor.process(input) == "    /* is zero */\n";
     }
 
 
