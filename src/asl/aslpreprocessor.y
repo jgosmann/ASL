@@ -14,7 +14,8 @@
 
     QTextStream outStream;
 
-    void setInput(const QString &sourcecode);
+    void pushInput(const QString &sourcecode);
+    void reset();
 
     extern int aslpreprocessorlineno;
 
@@ -24,41 +25,24 @@
     int yylex(void);
 
     /* Macro replacment stuff. */
-    typedef enum { CONST_NODE, IDENTIFIER_NODE, OPERATOR_NODE } nodeType;
+    typedef struct macroPart_t {
+        bool isParameter;
+        QString text;
+    } macroPart;
 
-    typedef struct {
-        long int value;
-    } constNode;
+    typedef struct macro_t {
+        QHash<QString, int> parameterPositions;
+        QList<macroPart> parts;
+    } macro;
 
-    typedef struct {
-        const char *identifier;
-    } identifierNode;
-
-    typedef struct {
-        int op;
-        unsigned int operandCount;
-        struct node_t *operands[2];
-    } operatorNode;
-
-    typedef struct node_t {
-        nodeType type;
-        union {
-            constNode asConst;
-            identifierNode asIdentifier;
-            operatorNode asOperator;
-        };
-    } node;
-
-    QHash<QString, node *> macroTable;
-
-    long int evalMacro(const char *macroName);
+    QHash<QString, macro> macroTable;
 %}
 
 %union {
     long int integer;
     const char *string;
-    struct node_t *macro;
     QStringList *parsed;
+    QList<struct macroPart_t> *macroParts;
 }
 
 %token <string> CHARACTERS
@@ -68,7 +52,7 @@
 
 %type <integer> expr
 %type <integer> ifstart if ifdef ifndef elif
-%type <macro> macrodef
+%type <macroParts> macrodef
 %type <parsed> part stmt pp
 %type <parsed> ifclause elseclause
 
@@ -103,7 +87,6 @@ pp:
 
 expr:
     INTEGER { $$ = $1; }
-    | IDENTIFIER { $$ = evalMacro($1); delete[] $1; }
     | '+' expr %prec UPLUS { $$ = +$2; }
     | '-' expr %prec UMINUS { $$ = -$2; }
     | '~' expr { $$ = ~$2; }
@@ -131,23 +114,29 @@ expr:
     ;
 
 define:
-    DEFINE IDENTIFIER ENDPP {
-            node *n = new node;
-            n->type = CONST_NODE;
-            macroTable.insert(QString($2), n);
+    DEFINE IDENTIFIER macrodef ENDPP {
+            macro m;
+            m.parts = *$3;
+            macroTable.insert(QString($2), m);
             delete[] $2;
+            delete $3;
         }
-    | DEFINE IDENTIFIER macrodef ENDPP {
-            macroTable.insert(QString($2), $3);
-            delete[] $2;
-        }
+    ;
 
 macrodef:
-    expr {
-            $$ = new node;
-            $$->type = CONST_NODE;
-            $$->asConst.value = $1;
+    macrodef CHARACTERS {
+            $$ = $1;
+            if ($$->isEmpty() || $$->back().isParameter) {
+                macroPart part;
+                part.isParameter = false;
+                part.text = $2;
+                $$->append(part);
+            } else {
+                $$->back().text += $2;
+            }
+            delete $2;
         }
+    | { $$ = new QList<struct macroPart_t>(); };
 
 undef: UNDEF IDENTIFIER ENDPP { macroTable.remove(QString($2)); delete[] $2; };
 
@@ -196,58 +185,16 @@ bool isDefined(const char *macroName)
     return macroTable.contains(QString(macroName));
 }
 
-long int evalMacroNode(node *macroNode)
-{
-    switch (macroNode->type) {
-        case CONST_NODE:
-            return macroNode->asConst.value;
-    }
-
-    throw CompilationException(CompilationException::PREPROCESSING,
-        QString::number(aslpreprocessorlineno) + ": "
-        + "Macro could not be evaluated. Probably the preprocessor "
-        + "implementation is incomplete.");
-}
-
-long int evalMacro(const char *macroName)
-{
-    const QString nameAsQString(macroName);
-    if (!macroTable.contains(nameAsQString)) {
-        throw new CompilationException(CompilationException::PREPROCESSING,
-            QString::number(aslpreprocessorlineno) + ": "
-            + "Undefined macro " + nameAsQString + ".");
-    }
-
-    return evalMacroNode(macroTable.value(nameAsQString));
-}
-
 void aslpreprocessorerror(char *msg)
 {
     throw CompilationException(CompilationException::PREPROCESSING,
         QString::number(aslpreprocessorlineno) + ": " + QString(msg));
 }
 
-void deleteMacroNode(node *n)
-{
-    if (n->type == OPERATOR_NODE) {
-        for (unsigned int i = 0; i < n->asOperator.operandCount; ++i) {
-            deleteMacroNode(n->asOperator.operands[i]);
-        }
-    }
-    delete n;
-}
-
-void deleteMacroNodes()
-{
-    foreach (node *n, macroTable) {
-        delete n;
-    }
-}
-
 void aslPreprocessorReset()
 {
-    deleteMacroNodes();
     macroTable.clear();
+    reset();
 }
 
 QString aslPreprocessorParse(const QString &sourcecode)
@@ -257,7 +204,7 @@ QString aslPreprocessorParse(const QString &sourcecode)
     QString out;
     outStream.setString(&out, QIODevice::WriteOnly);
 
-    setInput(sourcecode);
+    pushInput(sourcecode);
     yyparse();
 
     outStream.flush();
