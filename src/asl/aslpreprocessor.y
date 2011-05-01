@@ -29,12 +29,16 @@
 %}
 
 %union {
+    long int integer;
     const char *string;
 }
 
 %token <string> CHARACTERS
-%token DEFINE UNDEF IFDEF IFNDEF ELSE ENDIF
+%token DEFINE UNDEF IF IFDEF IFNDEF ELSE ENDIF
 %token <string> IDENTIFIER
+%token <integer> INTEGER
+
+%type <integer> expr
 
 %%
 
@@ -58,6 +62,9 @@ pp:
     | ifclause
     ;
 
+expr:
+    INTEGER { $$ = $1; }
+
 define:
       DEFINE IDENTIFIER {
             macroTable.insert(QString($2), QString());
@@ -77,9 +84,18 @@ ifstart:
        ifStartKeyWord { ++ifNestingLevel; }
 
 ifStartKeyWord:
-       ifdef
-        | ifndef
-        ;
+              if
+              | ifdef
+              | ifndef
+              ;
+
+if:
+  IF expr {
+        if (!m_stripCode && $2 == 0) {
+            m_stripCode = true;
+            nestingLevelToStrip = ifNestingLevel;
+        }
+    }
 
 ifdef:
      IFDEF IDENTIFIER {

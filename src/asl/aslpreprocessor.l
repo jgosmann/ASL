@@ -43,6 +43,11 @@ directivePrefix ^[ \t]*#
     return UNDEF;
 }
 
+<INITIAL>{directivePrefix}if {
+    BEGIN PP_LINE;
+    return IF;
+}
+
 <INITIAL>{directivePrefix}ifdef {
     BEGIN PP_LINE;
     return IFDEF;
@@ -64,6 +69,11 @@ directivePrefix ^[ \t]*#
 <PP_LINE>[_a-zA-Z][_a-zA-Z0-9]* {
     aslpreprocessorlval.string = yytext;
     return IDENTIFIER;
+}
+
+<PP_LINE>[-+]?[0-9]+ {
+    aslpreprocessorlval.integer = strtol(yytext, NULL, 0);
+    return INTEGER;
 }
 
 <PP_LINE>\n {

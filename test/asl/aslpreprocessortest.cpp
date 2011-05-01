@@ -220,6 +220,28 @@ public:
         testProcessing(input, "\n");
     }
 
+    void includesIfPartIfConditionMet()
+    {
+        const QString input(
+                "#if 1\n"
+                "/* include */\n"
+                "#endif\n");
+        const QString expectedOutput("/* include */\n\n");
+        testProcessing(input, expectedOutput);
+    }
+
+    void includesElsePartIfConditionIsNotMet()
+    {
+        const QString input(
+                "#if 0\n"
+                "/* exclude */\n"
+                "#else\n"
+                "/* include */\n"
+                "#endif\n");
+        const QString expectedOutput("\n/* include */\n\n");
+        testProcessing(input, expectedOutput);
+    }
+
 
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
     CPPUNIT_TEST(doesNotChangeShaderWithoutPreprocessorDirectives);
@@ -239,6 +261,8 @@ public:
     CPPUNIT_TEST(handlesNestedElseClauses);
     CPPUNIT_TEST(undefiningUndefinedMacroHasNoEffect);
     CPPUNIT_TEST(undefiningDefinedMacroUndefinesMacro);
+    CPPUNIT_TEST(includesIfPartIfConditionMet);
+    CPPUNIT_TEST(includesElsePartIfConditionIsNotMet);
     CPPUNIT_TEST_SUITE_END();
 
 private:
