@@ -322,6 +322,64 @@ public:
         testProcessing(input, expectedOutput);
     }
 
+    void testEqualityOperator()
+    {
+        CPPUNIT_ASSERT(!expressionResultsInZero("1 == 1"));
+        CPPUNIT_ASSERT(expressionResultsInZero("1 == 0"));
+    }
+
+    void testUnequalityOperator()
+    {
+        CPPUNIT_ASSERT(expressionResultsInZero("1 != 1"));
+        CPPUNIT_ASSERT(!expressionResultsInZero("1 != 0"));
+    }
+
+    void testLogicalAndOperator()
+    {
+        CPPUNIT_ASSERT(!expressionResultsInZero("1 && 2"));
+        CPPUNIT_ASSERT(expressionResultsInZero("0 && 1"));
+    }
+
+    void testLogicalOrOperator()
+    {
+        CPPUNIT_ASSERT(!expressionResultsInZero("2 || 1"));
+        CPPUNIT_ASSERT(expressionResultsInZero("0 || 0"));
+    }
+
+    void testLowerOperator()
+    {
+        CPPUNIT_ASSERT(!expressionResultsInZero("2 < 3"));
+        CPPUNIT_ASSERT(expressionResultsInZero("3 < 3"));
+        CPPUNIT_ASSERT(expressionResultsInZero("4 < 3"));
+    }
+
+    void testGreaterOperator()
+    {
+        CPPUNIT_ASSERT(expressionResultsInZero("2 > 3"));
+        CPPUNIT_ASSERT(expressionResultsInZero("3 > 3"));
+        CPPUNIT_ASSERT(!expressionResultsInZero("4 > 3"));
+    }
+
+    void testLowerOrEqualOperator()
+    {
+        CPPUNIT_ASSERT(!expressionResultsInZero("2 <= 3"));
+        CPPUNIT_ASSERT(!expressionResultsInZero("3 <= 3"));
+        CPPUNIT_ASSERT(expressionResultsInZero("4 <= 3"));
+    }
+
+    void testGreaterOrEqualOperator()
+    {
+        CPPUNIT_ASSERT(expressionResultsInZero("2 >= 3"));
+        CPPUNIT_ASSERT(!expressionResultsInZero("3 >= 3"));
+        CPPUNIT_ASSERT(!expressionResultsInZero("4 >= 3"));
+    }
+
+    void testLogicalNegationOperator()
+    {
+        CPPUNIT_ASSERT(expressionResultsInZero("!1"));
+        CPPUNIT_ASSERT(!expressionResultsInZero("!0"));
+    }
+
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
     CPPUNIT_TEST(doesNotChangeShaderWithoutPreprocessorDirectives);
     CPPUNIT_TEST(excludesIfNDefPartIfMacroIsDefined);
@@ -346,6 +404,15 @@ public:
     CPPUNIT_TEST(ignoresElifPartsAndElsePartsAfterFirstMetCondition);
     CPPUNIT_TEST(includesElsePartIfNoIfOrElifConditionIsMet);
     CPPUNIT_TEST(handlesNestedElifs);
+    CPPUNIT_TEST(testEqualityOperator);
+    CPPUNIT_TEST(testUnequalityOperator);
+    CPPUNIT_TEST(testLogicalAndOperator);
+    CPPUNIT_TEST(testLogicalOrOperator);
+    CPPUNIT_TEST(testLowerOperator);
+    CPPUNIT_TEST(testGreaterOperator);
+    CPPUNIT_TEST(testLowerOrEqualOperator);
+    CPPUNIT_TEST(testGreaterOrEqualOperator);
+    CPPUNIT_TEST(testLogicalNegationOperator);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -354,6 +421,15 @@ private:
         CPPUNIT_ASSERT_EQUAL(expectedOutput.toStdString(),
                 preprocessor.process(input).toStdString());
     }
+
+    bool expressionResultsInZero(const QString &expression) {
+        const QString input(
+                "#if (" + expression + ") == 0\n"
+                "    /* is zero */\n"
+                "#endif\n");
+        return preprocessor.process(input) == "    /* is zero */\n\n";
+    }
+
 
     asl::ASLPreprocessor preprocessor;
 };

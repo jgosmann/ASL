@@ -5,8 +5,9 @@ directivePrefix ^[ \t]*#
 %x PP_LINE
 
 %{
-    #include "aslpreprocessor_yacc.h"
     #include <QString>
+    #include <QStringList>
+    #include "aslpreprocessor_yacc.h"
 
     YY_BUFFER_STATE bufferState;
 %}
@@ -80,6 +81,14 @@ directivePrefix ^[ \t]*#
     aslpreprocessorlval.integer = strtol(yytext, NULL, 0);
     return INTEGER;
 }
+
+<PP_LINE>[()<>!] { return *yytext; }
+<PP_LINE>"==" { return EQ; }
+<PP_LINE>"!=" { return NE; }
+<PP_LINE>"||" { return OR; }
+<PP_LINE>"&&" { return AND; }
+<PP_LINE>"<=" { return LE; }
+<PP_LINE>">="  { return GE; }
 
 <PP_LINE>\n {
     BEGIN INITIAL;

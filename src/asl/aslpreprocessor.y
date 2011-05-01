@@ -45,6 +45,11 @@
 %type <parsed> part stmt pp
 %type <parsed> ifclause elseclause
 
+%left AND OR
+%left EQ NE
+%left '<' '>' LE GE
+%nonassoc '!'
+
 %%
 
 program: part { m_outStream << $1->join(""); delete $1; }
@@ -67,6 +72,17 @@ pp:
 
 expr:
     INTEGER { $$ = $1; }
+    | '!' expr { $$ = !$2; }
+    | expr EQ expr { $$ = $1 == $3; }
+    | expr NE expr { $$ = $1 != $3; }
+    | expr AND expr { $$ = $1 && $3; }
+    | expr OR expr { $$ = $1 || $3; }
+    | expr '<' expr { $$ = $1 < $3; }
+    | expr '>' expr { $$ = $1 > $3; }
+    | expr LE expr { $$ = $1 <= $3; }
+    | expr GE expr { $$ = $1 >= $3; }
+    | '(' expr ')' { $$ = $2; }
+    ;
 
 define: DEFINE IDENTIFIER { macroTable.insert(QString($2), QString()); };
 
