@@ -3,6 +3,7 @@
     #include <QHash>
     #include <QIODevice>
     #include <QString>
+    #include <QStringList>
     #include <QTextStream>
 
     #ifdef TEST
@@ -31,6 +32,7 @@
 %union {
     long int integer;
     const char *string;
+    QStringList *parsed;
 }
 
 %token <string> CHARACTERS
@@ -39,115 +41,72 @@
 %token <integer> INTEGER
 
 %type <integer> expr
+%type <integer> ifstart if ifdef ifndef elif
+%type <parsed> part stmt pp
+%type <parsed> ifclause elseclause
 
 %%
 
-program:
-       program part
-        |
-        ;
+program: part { m_outStream << $1->join(""); delete $1; }
 
 part:
-    pp
-    | CHARACTERS {
-            if (!m_stripCode) {
-                m_outStream << $1;
-            }
-        }
+    part stmt { $$ = $1; $$->append(*$2); delete $2; }
+    | { $$ = new QStringList(); }
+    ;
+
+stmt:
+    pp { $$ = $1; }
+    | CHARACTERS { $$ = new QStringList(QString($1)); }
     ;
 
 pp:
-  define
-    | undef
-    | ifclause
+    define { $$ = new QStringList(); }
+    | undef { $$ = new QStringList(); }
+    | ifclause { $$ = $1; }
     ;
 
 expr:
     INTEGER { $$ = $1; }
 
-define:
-      DEFINE IDENTIFIER {
-            macroTable.insert(QString($2), QString());
-        }
+define: DEFINE IDENTIFIER { macroTable.insert(QString($2), QString()); };
 
-undef:
-     UNDEF IDENTIFIER {
-            macroTable.remove(QString($2));
-        }
+undef: UNDEF IDENTIFIER { macroTable.remove(QString($2)); };
 
-ifclause:
-        ifstart program elseclause endif
-        ;
+ifclause: ifstart part elseclause ENDIF {
+        if ($1 != 0) {
+            $$ = $2;
+            delete $3;
+        } else {
+            $$ = $3;
+            delete $2;
+        } };
 
 ifstart:
-       ifStartKeyWord { ++ifNestingLevel; }
-
-ifStartKeyWord:
-              if
-              | ifdef
-              | ifndef
-              ;
+      if
+      | ifdef
+      | ifndef
+      ;
 
 elseclause:
-          closeIfBranch
-            | else program closeIfBranch
-            | elif program elseclause closeIfBranch
-            ;
+    ELSE part { $$ = $2; }
+    | elif part elseclause {
+        if ($1 != 0) {
+            $$ = $2;
+            delete $3;
+        } else {
+            $$ = $3;
+            delete $2;
+        } }
+    | { $$ = new QStringList(); }
+    ;
 
-if:
-  IF expr {
-        if (!m_stripCode && $2 == 0) {
-            m_stripCode = true;
-            nestingLevelToStrip = ifNestingLevel;
-        }
-    }
+if: IF expr { $$ = $2; };
 
-ifdef:
-     IFDEF IDENTIFIER {
-            if (!m_stripCode && !isDefined($2)) {
-                m_stripCode = true;
-                nestingLevelToStrip = ifNestingLevel;
-            }
-        }
+ifdef: IFDEF IDENTIFIER { $$ = isDefined($2); };
 
-ifndef:
-      IFNDEF IDENTIFIER {
-            if (isDefined($2)) {
-                m_stripCode = true;
-                nestingLevelToStrip = ifNestingLevel;
-            }
-        }
+ifndef: IFNDEF IDENTIFIER { $$ = !isDefined($2); };
 
-elif:
-    ELIF expr {
-m_outStream << ">> " << ifNestingLevel << " " << nestingLevelToStrip << " " << m_stripCode << " <<\n";
-            if (ifNestingLevel - 1 <= nestingLevelToStrip) {
-                m_stripCode = !m_stripCode;
-            }
-            ++ifNestingLevel;
-            if (!m_stripCode && $2 == 0) {
-                m_stripCode = true;
-                nestingLevelToStrip = ifNestingLevel;
-            }
-m_outStream << "]] " << ifNestingLevel << " " << nestingLevelToStrip << " " << m_stripCode << " <<\n";
-        }
-
-else:
-    ELSE {
-            if (ifNestingLevel - 1 <= nestingLevelToStrip) {
-                m_stripCode = !m_stripCode;
-            }
-        }
-
-endif:
-     ENDIF;
-
-closeIfBranch: {
-            --ifNestingLevel;
-            if (ifNestingLevel <= nestingLevelToStrip) {
-                m_stripCode = false;
-            }
-        }
+elif: ELIF expr { $$ = $2; };
 
 %%
 
