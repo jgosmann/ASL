@@ -34,7 +34,7 @@
 }
 
 %token <string> CHARACTERS
-%token DEFINE UNDEF IF IFDEF IFNDEF ELSE ENDIF
+%token DEFINE UNDEF IF ELIF IFDEF IFNDEF ELSE ENDIF
 %token <string> IDENTIFIER
 %token <integer> INTEGER
 
@@ -76,8 +76,7 @@ undef:
         }
 
 ifclause:
-        ifstart program endif
-        | ifstart program else program endif
+        ifstart program elseclause endif
         ;
 
 ifstart:
@@ -88,6 +87,12 @@ ifStartKeyWord:
               | ifdef
               | ifndef
               ;
+
+elseclause:
+          closeIfBranch
+            | else program closeIfBranch
+            | elif program elseclause closeIfBranch
+            ;
 
 if:
   IF expr {
@@ -113,6 +118,20 @@ ifndef:
             }
         }
 
+elif:
+    ELIF expr {
+m_outStream << ">> " << ifNestingLevel << " " << nestingLevelToStrip << " " << m_stripCode << " <<\n";
+            if (ifNestingLevel - 1 <= nestingLevelToStrip) {
+                m_stripCode = !m_stripCode;
+            }
+            ++ifNestingLevel;
+            if (!m_stripCode && $2 == 0) {
+                m_stripCode = true;
+                nestingLevelToStrip = ifNestingLevel;
+            }
+m_outStream << "]] " << ifNestingLevel << " " << nestingLevelToStrip << " " << m_stripCode << " <<\n";
+        }
+
 else:
     ELSE {
             if (ifNestingLevel - 1 <= nestingLevelToStrip) {
@@ -121,7 +140,9 @@ else:
         }
 
 endif:
-     ENDIF {
+     ENDIF;
+
+closeIfBranch: {
             --ifNestingLevel;
             if (ifNestingLevel <= nestingLevelToStrip) {
                 m_stripCode = false;

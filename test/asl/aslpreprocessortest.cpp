@@ -242,6 +242,85 @@ public:
         testProcessing(input, expectedOutput);
     }
 
+    void ignoresElifPartsAndElsePartIfIfConditionIsMet()
+    {
+        const QString input(
+                "#if 1\n"
+                "/* include */\n"
+                "#elif 1\n"
+                "/* exclude 1 */\n"
+                "#elif 1\n"
+                "/* exclude 2 */\n"
+                "#else\n"
+                "/* exclude 3 */\n"
+                "#endif\n");
+        const QString expectedOutput("/* include */\n\n");
+        testProcessing(input, expectedOutput);
+    }
+
+    void ignoresElifPartsAndElsePartsAfterFirstMetCondition()
+    {
+        const QString input(
+                "#if 0\n"
+                "/* exclude 1 */\n"
+                "#elif 0\n"
+                "/* exclude 2 */\n"
+                "#elif 1\n"
+                "/* include */\n"
+                "#elif 1\n"
+                "/* exclude 3 */\n"
+                "#elif 1\n"
+                "/* exclude 4 */\n"
+                "#else\n"
+                "/* exclude 5 */\n"
+                "#endif\n");
+        const QString expectedOutput("/* include */\n\n");
+        testProcessing(input, expectedOutput);
+    }
+
+    void includesElsePartIfNoIfOrElifConditionIsMet()
+    {
+        const QString input(
+                "#if 0\n"
+                "/* exclude 1 */\n"
+                "#elif 0\n"
+                "/* exclude 2 */\n"
+                "#elif 0\n"
+                "/* exclude 3 */\n"
+                "#else\n"
+                "/* include */\n"
+                "#endif\n");
+        const QString expectedOutput("\n/* include */\n\n");
+        testProcessing(input, expectedOutput);
+    }
+
+    void handlesNestedElifs()
+    {
+        const QString input(
+                "#if 0\n"
+                "    /* exclude 1 */\n"
+                "    #if 0\n"
+                "        /* exclude 2 */\n"
+                "    #elif 1\n"
+                "        /* exlcude 3 */\n"
+                "    #endif\n"
+                "#elif 1\n"
+                "    /* include 1 */\n"
+                "    #if 0\n"
+                "        /* exclude 4 */\n"
+                "    #elif 1\n"
+                "        /* include 2 */\n"
+                "    #elif 1\n"
+                "        /* exclude 5 */\n"
+                "    #endif\n"
+                "    /* include 3 */\n"
+                "#endif\n");
+        const QString expectedOutput(
+                "    /* include 1 */\n"
+                "        /* include 2 */\n\n"
+                "    /* include 3 */\n\n");
+        testProcessing(input, expectedOutput);
+    }
 
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
     CPPUNIT_TEST(doesNotChangeShaderWithoutPreprocessorDirectives);
@@ -263,6 +342,10 @@ public:
     CPPUNIT_TEST(undefiningDefinedMacroUndefinesMacro);
     CPPUNIT_TEST(includesIfPartIfConditionMet);
     CPPUNIT_TEST(includesElsePartIfConditionIsNotMet);
+    CPPUNIT_TEST(ignoresElifPartsAndElsePartIfIfConditionIsMet);
+    CPPUNIT_TEST(ignoresElifPartsAndElsePartsAfterFirstMetCondition);
+    CPPUNIT_TEST(includesElsePartIfNoIfOrElifConditionIsMet);
+    CPPUNIT_TEST(handlesNestedElifs);
     CPPUNIT_TEST_SUITE_END();
 
 private:

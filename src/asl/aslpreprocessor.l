@@ -48,6 +48,11 @@ directivePrefix ^[ \t]*#
     return IF;
 }
 
+<INITIAL>{directivePrefix}elif {
+    BEGIN PP_LINE;
+    return ELIF;
+}
+
 <INITIAL>{directivePrefix}ifdef {
     BEGIN PP_LINE;
     return IFDEF;
