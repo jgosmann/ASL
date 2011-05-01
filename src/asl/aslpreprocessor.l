@@ -193,7 +193,6 @@ char *copyStrAndNullTerminate(const char *str, unsigned int len)
 
 void expandMacro(const QString &macroName)
 {
-    printf(">>>%s<<<", macroName.toAscii().constData());
     if (!macroTable.contains(macroName)) {
         // TODO: error handling
         return;
@@ -204,10 +203,5 @@ void expandMacro(const QString &macroName)
         expansion.append(part.text);
     }
     pushInput(expansion.join(""));
-    printf("]]]%s<<<", expansion.join("").toAscii().constData());
-    /*printf("#%d;", yylex());*/
-    /*printf("#%d;", yylex());*/
-    /*printf("#%d;", yylex());*/
-    /*printf("#%d;", yylex());*/
 }
 
