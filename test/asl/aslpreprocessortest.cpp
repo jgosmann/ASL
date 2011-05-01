@@ -504,7 +504,7 @@ public:
     CPPUNIT_TEST(testMultiplicativeOperators);
     CPPUNIT_TEST(testUnaryIntegerOperators);
     CPPUNIT_TEST(testBitwiseNegation);
-    //CPPUNIT_TEST(testDefinedOperator);
+    CPPUNIT_TEST(testDefinedOperator);
     CPPUNIT_TEST(testParenthesisTakePrecedence);
     CPPUNIT_TEST(understandsDecimalNumbers);
     CPPUNIT_TEST(understandsOctalNumbers);
