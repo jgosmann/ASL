@@ -31,17 +31,20 @@
     } macroPart;
 
     typedef struct macro_t {
-        QHash<QString, int> parameterPositions;
+        QStringList *argumentList;
         QList<macroPart> parts;
     } macro;
 
     QHash<QString, macro> macroTable;
+
+    void expandMacro(const QString &macroName);
 %}
 
 %union {
     long int integer;
     const char *string;
     QStringList *parsed;
+    QStringList *argumentList;
     QList<struct macroPart_t> *macroParts;
 }
 
@@ -52,6 +55,7 @@
 
 %type <integer> expr
 %type <integer> ifstart if ifdef ifndef elif
+%type <argumentList> optargs arglist
 %type <macroParts> macrodef
 %type <parsed> part stmt pp
 %type <parsed> ifclause elseclause
@@ -114,13 +118,29 @@ expr:
     ;
 
 define:
-    DEFINE IDENTIFIER macrodef ENDPP {
+    DEFINE IDENTIFIER optargs macrodef ENDPP {
             macro m;
-            m.parts = *$3;
+            m.argumentList = $3;
+            m.parts = *$4;
             macroTable.insert(QString($2), m);
             delete[] $2;
-            delete $3;
+            delete $4;
         }
+    ;
+
+optargs:
+    '(' arglist ')' { $$ = $2; }
+    | { $$ = NULL; }
+    ;
+
+arglist:
+    { $$ = new QStringList(); }
+    | arglist ',' IDENTIFIER {
+            $$ = $1;
+            $$->append($3);
+            delete[] $3;
+        }
+    | IDENTIFIER { $$ = new QStringList(QString($1)); delete $1; }
     ;
 
 macrodef:
@@ -193,6 +213,11 @@ void aslpreprocessorerror(char *msg)
 
 void aslPreprocessorReset()
 {
+    foreach (macro m, macroTable) {
+        if (m.argumentList) {
+            delete m.argumentList;
+        }
+    }
     macroTable.clear();
     reset();
 }

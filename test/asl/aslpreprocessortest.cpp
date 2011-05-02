@@ -454,11 +454,22 @@ public:
         CPPUNIT_ASSERT(expressionResultsIn("0x1f", 0x1f));
     }
 
-    void simpleDefinedMacroGetsReplacedInIf()
+    void macroWithoutArgumentsGetsExpanded()
     {
         const QString input(
                 "#define REPLACE 42\n"
                 "#if REPLACE == 42\n"
+                "    /* include */\n"
+                "#endif\n");
+        const QString expectedOutput("    /* include */\n");
+        testProcessing(input, expectedOutput);
+    }
+
+    void macroWithArgumentsGetsExpanded()
+    {
+        const QString input(
+                "#define REPLACE(arg1, arg2) 42\n"
+                "#if REPLACE(2, 3) == 42\n"
                 "    /* include */\n"
                 "#endif\n");
         const QString expectedOutput("    /* include */\n");
@@ -509,7 +520,8 @@ public:
     CPPUNIT_TEST(understandsDecimalNumbers);
     CPPUNIT_TEST(understandsOctalNumbers);
     CPPUNIT_TEST(understandsHexadecimalNumbers);
-    CPPUNIT_TEST(simpleDefinedMacroGetsReplacedInIf);
+    CPPUNIT_TEST(macroWithoutArgumentsGetsExpanded);
+    CPPUNIT_TEST(macroWithArgumentsGetsExpanded);
     CPPUNIT_TEST_SUITE_END();
 
 private:

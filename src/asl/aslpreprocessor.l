@@ -6,6 +6,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 %x PP_LINE
 %x DEFINE_DECL
 %x MACRO_DEF
+%x ARGLIST
 
 %{
     #include <QByteArray>
@@ -16,6 +17,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
     #include "aslpreprocessor_yacc.h"
 
     QStack<QByteArray *> buffers;
+    QStringList macroExpansionStack;
 
     typedef struct macroPart_t {
         bool isParameter;
@@ -29,7 +31,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 
     extern QHash<QString, macro> macroTable;
 
-    bool doMacroExpansion = false;
+    bool doNotMacroExpandNextIdentifer = true;
 
     char *copyStrAndNullTerminate(const char *str, unsigned int len);
     void expandMacro(const QString &macroName);
@@ -64,28 +66,29 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 
 <INITIAL>{directivePrefix}undef {
     BEGIN PP_LINE;
+    doNotMacroExpandNextIdentifer = true;
     return UNDEF;
 }
 
 <INITIAL>{directivePrefix}if {
     BEGIN PP_LINE;
-    doMacroExpansion = true;
     return IF;
 }
 
 <INITIAL>{directivePrefix}elif {
     BEGIN PP_LINE;
-    doMacroExpansion = true;
     return ELIF;
 }
 
 <INITIAL>{directivePrefix}ifdef {
     BEGIN PP_LINE;
+    doNotMacroExpandNextIdentifer = true;
     return IFDEF;
 }
 
 <INITIAL>{directivePrefix}ifndef {
     BEGIN PP_LINE;
+    doNotMacroExpandNextIdentifer = true;
     return IFNDEF;
 }
 
@@ -108,33 +111,59 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 <PP_LINE>">=" { return GE; }
 <PP_LINE>"<<" { return SL; }
 <PP_LINE>">>" { return SR; }
-<PP_LINE>"defined" { return DEFINED; }
+<PP_LINE>"defined" { doNotMacroExpandNextIdentifer = true; return DEFINED; }
 
 <PP_LINE>{identifier} {
-    if (doMacroExpansion) {
-        expandMacro(QString(yytext));
-    } else {
         aslpreprocessorlval.string = copyStrAndNullTerminate(yytext, yyleng);
+    if (doNotMacroExpandNextIdentifer) {
+        doNotMacroExpandNextIdentifer = false;
         return IDENTIFIER;
+    } else {
+        char next = yyinput();
+        unput(next);
+        if ('(' == next) {
+            unsigned int n = 0;
+            char c;
+            
+            do {
+                c = yyinput();
+                if ('(' == c) {
+                    ++n;
+                } else if (')' == c) {
+                    --n;
+                }
+            } while (n > 0);
+        }
+
+        expandMacro(QString(aslpreprocessorlval.string));
+        delete aslpreprocessorlval.string;
     }
 }
 
 <DEFINE_DECL>{identifier} {
-    /*char next = yyinput();*/
-    /*if ('(' == next) {*/
-        /*unput(next);*/
-    /*} else {*/
-        BEGIN MACRO_DEF;
-    /*}*/
-
+    /* yytext has to be copied first, because peeking at the next char will
+     * destroy yytext. */
     aslpreprocessorlval.string = copyStrAndNullTerminate(yytext, yyleng);
+
+    char next = yyinput();
+    unput(next);
+    if ('(' != next) {
+        BEGIN MACRO_DEF;
+    } else {
+        BEGIN ARGLIST;
+    }
+
     return IDENTIFIER;
 }
 
-<DEFINE_DECL>[(,] { return *yytext; }
-<DEFINE_DECL>")" {
+<ARGLIST>[(,] { return *yytext; }
+<ARGLIST>")" {
     BEGIN MACRO_DEF;
     return *yytext;
+}
+<ARGLIST>{identifier} {
+    aslpreprocessorlval.string = copyStrAndNullTerminate(yytext, yyleng);
+    return IDENTIFIER;
 }
 
 <PP_LINE>([0-9]+|0[0-7]+|0x[0-9a-fA-F]+) {
@@ -163,6 +192,9 @@ int yywrap(void)
 {
     yypop_buffer_state();
     delete buffers.pop();
+    if (!macroExpansionStack.isEmpty()) {
+        macroExpansionStack.removeFirst();
+    }
     return !YY_CURRENT_BUFFER;
 }
 
@@ -175,13 +207,14 @@ void pushInput(const QString &sourcecode)
 
 void reset()
 {
-    doMacroExpansion = false;
+    doNotMacroExpandNextIdentifer = false;
     while (YY_CURRENT_BUFFER) {
         yypop_buffer_state();
     }
     while (!buffers.isEmpty()) {
         delete buffers.pop();
     }
+    macroExpansionStack.clear();
 }
 
 char *copyStrAndNullTerminate(const char *str, unsigned int len)
@@ -198,10 +231,13 @@ void expandMacro(const QString &macroName)
         return;
     }
 
+printf(">%s<", macroName.toAscii().constData());
     QStringList expansion;
     foreach (macroPart part, macroTable.value(macroName).parts) {
         expansion.append(part.text);
     }
+    macroExpansionStack.prepend(macroName);
+printf("]%s[", expansion.join("").toAscii().constData());
     pushInput(expansion.join(""));
 }
 
