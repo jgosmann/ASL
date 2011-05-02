@@ -20,6 +20,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 
     #include "aslpreprocessor_yacc.h"
 
+    using namespace asl::ppinternal;
 
     namespace asl
     {
@@ -37,6 +38,11 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
         bool doMacroExpansions = false;
 
         void expandMacro(const QString &macroName);
+
+        /* Destroys yytext! */
+        bool argumentListFollows();
+        QStringList readArgumentList();
+
     } /* namespace ppinternal */
     } /* namespace asl */
 %}
@@ -55,49 +61,49 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 
 <INITIAL>{directivePrefix}define {
     BEGIN DEFINE_DECL;
-    asl::ppinternal::doMacroExpansions = false;
+    doMacroExpansions = false;
     return DEFINE;
 }
 
 <INITIAL>{directivePrefix}undef {
     BEGIN PP_LINE;
-    asl::ppinternal::doMacroExpansions = false;
+    doMacroExpansions = false;
     return UNDEF;
 }
 
 <INITIAL>{directivePrefix}if {
     BEGIN PP_LINE;
-    asl::ppinternal::doMacroExpansions = true;
+    doMacroExpansions = true;
     return IF;
 }
 
 <INITIAL>{directivePrefix}elif {
     BEGIN PP_LINE;
-    asl::ppinternal::doMacroExpansions = true;
+    doMacroExpansions = true;
     return ELIF;
 }
 
 <INITIAL>{directivePrefix}ifdef {
     BEGIN PP_LINE;
-    asl::ppinternal::doMacroExpansions = false;
+    doMacroExpansions = false;
     return IFDEF;
 }
 
 <INITIAL>{directivePrefix}ifndef {
     BEGIN PP_LINE;
-    asl::ppinternal::doMacroExpansions = false;
+    doMacroExpansions = false;
     return IFNDEF;
 }
 
 <INITIAL>{directivePrefix}else {
     BEGIN PP_LINE;
-    asl::ppinternal::doMacroExpansions = true;
+    doMacroExpansions = true;
     return ELSE;
 }
 
 <INITIAL>{directivePrefix}endif {
     BEGIN PP_LINE;
-    asl::ppinternal::doMacroExpansions = true;
+    doMacroExpansions = true;
     return ENDIF;
 }
 
@@ -111,33 +117,27 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 <PP_LINE>"<<" { return SL; }
 <PP_LINE>">>" { return SR; }
 <PP_LINE>"defined" { 
-    asl::ppinternal::doMacroExpansions = false;
+    doMacroExpansions = false;
     return DEFINED;
+}
+
+<PP_LINE>([0-9]+|0[0-7]+|0x[0-9a-fA-F]+) {
+    aslpreprocessorlval.integer = strtoul(yytext, NULL, 0);
+    return INTEGER;
 }
 
 <PP_LINE>{identifier} {
     aslpreprocessorlval.string = new QString(yytext);
-    if (!asl::ppinternal::doMacroExpansions) {
-        asl::ppinternal::doMacroExpansions = true;
+
+    if (!doMacroExpansions) {
+        doMacroExpansions = true;
         return IDENTIFIER;
     } else {
-        char next = yyinput();
-        unput(next);
-        if ('(' == next) {
-            unsigned int n = 0;
-            char c;
-            
-            do {
-                c = yyinput();
-                if ('(' == c) {
-                    ++n;
-                } else if (')' == c) {
-                    --n;
-                }
-            } while (n > 0);
+        if (argumentListFollows()) {
+            readArgumentList();
         }
 
-        asl::ppinternal::expandMacro(*(aslpreprocessorlval.string));
+        expandMacro(*(aslpreprocessorlval.string));
         delete aslpreprocessorlval.string;
     }
 }
@@ -147,12 +147,10 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
      * destroy yytext. */
     aslpreprocessorlval.string = new QString(yytext);
 
-    char next = yyinput();
-    unput(next);
-    if ('(' != next) {
-        BEGIN MACRO_DEF;
-    } else {
+    if (argumentListFollows()) {
         BEGIN ARGLIST;
+    } else {
+        BEGIN MACRO_DEF;
     }
 
     return IDENTIFIER;
@@ -168,10 +166,6 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
     return IDENTIFIER;
 }
 
-<PP_LINE>([0-9]+|0[0-7]+|0x[0-9a-fA-F]+) {
-    aslpreprocessorlval.integer = strtoul(yytext, NULL, 0);
-    return INTEGER;
-}
 
 <MACRO_DEF>. {
     aslpreprocessorlval.string = new QString(yytext);
@@ -190,8 +184,6 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 
 %%
 
-using namespace asl::ppinternal;
-
 int yywrap(void)
 {
     yypop_buffer_state();
@@ -202,16 +194,13 @@ int yywrap(void)
     return !YY_CURRENT_BUFFER;
 }
 
-void pushInput(const QString &sourcecode)
+namespace asl
 {
-    readBuffers.push(new QByteArray(sourcecode.toAscii()));
-    yypush_buffer_state(YY_CURRENT_BUFFER);
-    yy_scan_string(readBuffers.top()->constData());
-}
+namespace ppinternal
+{
 
-void reset()
+void clean()
 {
-    doMacroExpansions = false;
     while (YY_CURRENT_BUFFER) {
         yypop_buffer_state();
     }
@@ -221,10 +210,17 @@ void reset()
     macroExpansionStack.clear();
 }
 
-namespace asl
+void reset() {
+    doMacroExpansions = false;
+    clean();
+}
+
+void pushInput(const QString &sourcecode)
 {
-namespace ppinternal
-{
+    readBuffers.push(new QByteArray(sourcecode.toAscii()));
+    yypush_buffer_state(YY_CURRENT_BUFFER);
+    yy_scan_string(readBuffers.top()->constData());
+}
 
 void expandMacro(const QString &macroName)
 {
@@ -239,6 +235,30 @@ void expandMacro(const QString &macroName)
     }
     macroExpansionStack.prepend(macroName);
     pushInput(expansion.join(""));
+}
+
+bool argumentListFollows()
+{
+    char next = yyinput();
+    unput(next);
+    return '(' == next;
+}
+
+QStringList readArgumentList()
+{
+    unsigned int parenthesisNestingLevel = 0;
+    char c;
+
+    do {
+        c = yyinput();
+        if ('(' == c) {
+            ++parenthesisNestingLevel;
+        } else if (')' == c) {
+            --parenthesisNestingLevel;
+        }
+    } while (parenthesisNestingLevel > 0);
+
+    return QStringList();
 }
 
 } /* namespace ppinternal */

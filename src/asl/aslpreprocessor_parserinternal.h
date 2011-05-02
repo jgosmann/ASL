@@ -24,6 +24,9 @@ namespace ppinternal
     extern QHash<QString, Macro> macroTable;
 
     QString parse(const QString &sourcecode);
+    void pushInput(const QString &sourcecode);
+    void clean();
+    void reset();
 } /* namespace ppinternal */
 } /* namespace asl */
 

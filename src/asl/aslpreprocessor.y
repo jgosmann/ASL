@@ -1,8 +1,6 @@
 
 %{
     #include <QIODevice>
-    #include <QString>
-    #include <QStringList>
     #include <QTextStream>
 
     #ifdef TEST
@@ -15,8 +13,6 @@
 
     QTextStream outStream;
 
-    void pushInput(const QString &sourcecode);
-    void reset();
 
     extern int aslpreprocessorlineno;
 
@@ -187,6 +183,8 @@ ifndef: IFNDEF IDENTIFIER ENDPP { $$ = !isDefined(*$2); delete $2; };
 elif: ELIF expr ENDPP { $$ = $2; };
 
 %%
+
+using namespace asl::ppinternal;
 
 bool isDefined(const QString &macroName)
 {
