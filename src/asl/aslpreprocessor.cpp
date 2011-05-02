@@ -1,11 +1,8 @@
 #include "aslpreprocessor.h"
 
-#include <QTextStream>
+#include "aslpreprocessor_parserinternal.h"
 
 using namespace asl;
-
-/* Defined in aslpreprocessor.y. */
-QString aslPreprocessorParse(const QString &sourcecode);
 
 ASLPreprocessor::ASLPreprocessor()
 {
@@ -13,6 +10,6 @@ ASLPreprocessor::ASLPreprocessor()
 
 QString ASLPreprocessor::process(const QString &sourcecode)
 {
-    return aslPreprocessorParse(sourcecode);
+    return ppinternal::parse(sourcecode);
 }
 

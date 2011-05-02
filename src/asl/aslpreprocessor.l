@@ -10,31 +10,30 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 
 %{
     #include <QByteArray>
-    #include <QHash>
     #include <QStack>
-    #include <QString>
     #include <QStringList>
     #include "aslpreprocessor_yacc.h"
+
+    #ifdef TEST
+        #include "../src/asl/aslpreprocessor_parserinternal.h"
+    #else
+        #include "asl/aslpreprocessor_parserinternal.h"
+    #endif
 
     QStack<QByteArray *> buffers;
     QStringList macroExpansionStack;
 
-    typedef struct macroPart_t {
-        bool isParameter;
-        QString text;
-    } macroPart;
-
-    typedef struct macro_t {
-        QHash<QString, int> parameterPositions;
-        QList<macroPart> parts;
-    } macro;
-
-    extern QHash<QString, macro> macroTable;
-
     bool doNotMacroExpandNextIdentifer = true;
 
     char *copyStrAndNullTerminate(const char *str, unsigned int len);
-    void expandMacro(const QString &macroName);
+
+    namespace asl
+    {
+    namespace ppinternal
+    {
+        void expandMacro(const QString &macroName);
+    } /* namespace ppinternal */
+    } /* namespace asl */
 %}
 
 %%
@@ -135,7 +134,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
             } while (n > 0);
         }
 
-        expandMacro(QString(aslpreprocessorlval.string));
+        asl::ppinternal::expandMacro(QString(aslpreprocessorlval.string));
         delete aslpreprocessorlval.string;
     }
 }
@@ -224,6 +223,11 @@ char *copyStrAndNullTerminate(const char *str, unsigned int len)
     return copy;
 }
 
+namespace asl
+{
+namespace ppinternal
+{
+
 void expandMacro(const QString &macroName)
 {
     if (!macroTable.contains(macroName)) {
@@ -231,13 +235,14 @@ void expandMacro(const QString &macroName)
         return;
     }
 
-printf(">%s<", macroName.toAscii().constData());
     QStringList expansion;
-    foreach (macroPart part, macroTable.value(macroName).parts) {
+    foreach (MacroPart part, *(macroTable.value(macroName).parts)) {
         expansion.append(part.text);
     }
     macroExpansionStack.prepend(macroName);
-printf("]%s[", expansion.join("").toAscii().constData());
     pushInput(expansion.join(""));
 }
+
+} /* namespace ppinternal */
+} /* namespace asl */
 

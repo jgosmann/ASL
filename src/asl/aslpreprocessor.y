@@ -1,16 +1,17 @@
 
 %{
-    #include <QHash>
     #include <QIODevice>
     #include <QString>
     #include <QStringList>
     #include <QTextStream>
 
     #ifdef TEST
-        #include "../src/asl/compilationexception.h"
+        #include "../src/asl/aslpreprocessor_parserinternal.h"
     #else
-        #include "asl/compilationexception.h"
+        #include "asl/aslpreprocessor_parserinternal.h"
     #endif
+
+    using namespace asl::ppinternal;
 
     QTextStream outStream;
 
@@ -21,21 +22,11 @@
 
     bool isDefined(const char *macroName);
 
-    void aslpreprocessorerror(char *msg);
-    int yylex(void);
+    void yyerror(char *msg);
+    int yylex();
 
     /* Macro replacment stuff. */
-    typedef struct macroPart_t {
-        bool isParameter;
-        QString text;
-    } macroPart;
-
-    typedef struct macro_t {
-        QStringList *argumentList;
-        QList<macroPart> parts;
-    } macro;
-
-    QHash<QString, macro> macroTable;
+    QHash<QString, Macro> asl::ppinternal::macroTable;
 
     void expandMacro(const QString &macroName);
 %}
@@ -119,12 +110,11 @@ expr:
 
 define:
     DEFINE IDENTIFIER optargs macrodef ENDPP {
-            macro m;
-            m.argumentList = $3;
-            m.parts = *$4;
+            Macro m;
+            m.arguments = $3;
+            m.parts = $4;
             macroTable.insert(QString($2), m);
             delete[] $2;
-            delete $4;
         }
     ;
 
@@ -146,9 +136,9 @@ arglist:
 macrodef:
     macrodef CHARACTERS {
             $$ = $1;
-            if ($$->isEmpty() || $$->back().isParameter) {
-                macroPart part;
-                part.isParameter = false;
+            if ($$->isEmpty() || $$->back().isArgument) {
+                MacroPart part;
+                part.isArgument = false;
                 part.text = $2;
                 $$->append(part);
             } else {
@@ -198,8 +188,6 @@ elif: ELIF expr ENDPP { $$ = $2; };
 
 %%
 
-using namespace asl;
-
 bool isDefined(const char *macroName)
 {
     return macroTable.contains(QString(macroName));
@@ -207,22 +195,30 @@ bool isDefined(const char *macroName)
 
 void aslpreprocessorerror(char *msg)
 {
-    throw CompilationException(CompilationException::PREPROCESSING,
+    throw asl::CompilationException(asl::CompilationException::PREPROCESSING,
         QString::number(aslpreprocessorlineno) + ": " + QString(msg));
 }
 
 void aslPreprocessorReset()
 {
-    foreach (macro m, macroTable) {
-        if (m.argumentList) {
-            delete m.argumentList;
+    foreach (Macro m, macroTable) {
+        if (m.arguments) {
+            delete m.arguments;
+        }
+        if (m.parts) {
+            delete m.parts;
         }
     }
     macroTable.clear();
     reset();
 }
 
-QString aslPreprocessorParse(const QString &sourcecode)
+namespace asl
+{
+namespace ppinternal
+{
+
+QString parse(const QString &sourcecode)
 {
     aslPreprocessorReset();
 
@@ -235,4 +231,7 @@ QString aslPreprocessorParse(const QString &sourcecode)
     outStream.flush();
     return out;
 }
+
+} /* namespace ppinternal */
+} /* namespace asl */
 
