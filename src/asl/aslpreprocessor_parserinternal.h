@@ -7,6 +7,8 @@
 
 #include "compilationexception.h"
 
+extern int aslpreprocessorlineno;
+
 namespace asl
 {
 namespace ppinternal
@@ -23,10 +25,13 @@ namespace ppinternal
 
     extern QHash<QString, Macro> macroTable;
 
+    bool isDefined(const QString &macroName);
     QString parse(const QString &sourcecode);
+
     void pushInput(const QString &sourcecode);
     void clean();
     void reset();
+
 } /* namespace ppinternal */
 } /* namespace asl */
 

@@ -9,22 +9,14 @@
         #include "asl/aslpreprocessor_parserinternal.h"
     #endif
 
-    using namespace asl::ppinternal;
-
-    QTextStream outStream;
-
-
-    extern int aslpreprocessorlineno;
-
-    bool isDefined(const QString &macroName);
-
     void yyerror(char *msg);
     int yylex();
 
-    /* Macro replacment stuff. */
+    using namespace asl::ppinternal;
+
+    QTextStream outStream;
     QHash<QString, Macro> asl::ppinternal::macroTable;
 
-    void expandMacro(const QString &macroName);
 %}
 
 %union {
@@ -35,17 +27,17 @@
     QList<struct macroPart_t> *macroParts;
 }
 
-%token <string> CHARACTERS
-%token DEFINE ENDPP UNDEF IF ELIF IFDEF IFNDEF ELSE ENDIF
-%token <string> IDENTIFIER
-%token <integer> INTEGER
-
 %type <integer> expr
 %type <integer> ifstart if ifdef ifndef elif
 %type <argumentList> optargs arglist
 %type <macroParts> macrodef
 %type <parsed> part stmt pp
 %type <parsed> ifclause elseclause
+
+%token <string> CHARACTERS
+%token DEFINE ENDPP UNDEF IF ELIF IFDEF IFNDEF ELSE ENDIF
+%token <string> IDENTIFIER
+%token <integer> INTEGER
 
 %left AND OR
 %left '&' '^' '|'
@@ -186,16 +178,12 @@ elif: ELIF expr ENDPP { $$ = $2; };
 
 using namespace asl::ppinternal;
 
-bool isDefined(const QString &macroName)
-{
-    return macroTable.contains(macroName);
-}
-
-void aslpreprocessorerror(char *msg)
+void yyerror(char *msg)
 {
     throw asl::CompilationException(asl::CompilationException::PREPROCESSING,
         QString::number(aslpreprocessorlineno) + ": " + QString(msg));
 }
+
 
 void aslPreprocessorReset()
 {
@@ -215,6 +203,11 @@ namespace asl
 {
 namespace ppinternal
 {
+
+bool isDefined(const QString &macroName)
+{
+    return macroTable.contains(macroName);
+}
 
 QString parse(const QString &sourcecode)
 {

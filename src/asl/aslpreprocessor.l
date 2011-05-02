@@ -224,7 +224,7 @@ void pushInput(const QString &sourcecode)
 
 void expandMacro(const QString &macroName)
 {
-    if (!macroTable.contains(macroName)) {
+    if (!isDefined(macroName)) {
         // TODO: error handling
         return;
     }
