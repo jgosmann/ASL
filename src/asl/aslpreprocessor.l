@@ -2,7 +2,6 @@
 directivePrefix ^[ \t]*#
 identifier [_a-zA-Z][_a-zA-Z0-9]+
 
-%x C_COMMENT
 %x PP_LINE
 %x DEFINE_DECL
 %x MACRO_DEF
@@ -11,8 +10,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 %{
     #include <QByteArray>
     #include <QStack>
-    #include <QStringList>
-    #include "aslpreprocessor_yacc.h"
+    #include <QTextStream>
 
     #ifdef TEST
         #include "../src/asl/aslpreprocessor_parserinternal.h"
@@ -20,15 +18,24 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
         #include "asl/aslpreprocessor_parserinternal.h"
     #endif
 
-    QStack<QByteArray *> buffers;
-    QStringList macroExpansionStack;
+    #include "aslpreprocessor_yacc.h"
 
-    bool doNotMacroExpandNextIdentifer = true;
 
     namespace asl
     {
     namespace ppinternal
     {
+        QStack<QByteArray *> readBuffers;
+        QStringList macroExpansionStack;
+
+        /* Reading a IDENTIFIER with this disabled, should always reenable macro
+         * expansion.
+         *
+         * Defaults to false, because in most places the expansions are
+         * irrelevant for us.
+         */
+        bool doMacroExpansions = false;
+
         void expandMacro(const QString &macroName);
     } /* namespace ppinternal */
     } /* namespace asl */
@@ -36,66 +43,61 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 
 %%
 
-"/*" {
-    BEGIN C_COMMENT;
-    aslpreprocessorlval.string = new QString(yytext);
-    return CHARACTERS;
-}
-<C_COMMENT>"*/" {
-    BEGIN INITIAL;
-    aslpreprocessorlval.string = new QString(yytext);
-    return CHARACTERS;
-}
-<C_COMMENT>.|\n {
+"/*""/"?([^*/]*"*")+"/" {
     aslpreprocessorlval.string = new QString(yytext);
     return CHARACTERS;
 }
 
-"//".* {
+"//".*\n {
     aslpreprocessorlval.string = new QString(yytext);
     return CHARACTERS;
 }
 
 <INITIAL>{directivePrefix}define {
     BEGIN DEFINE_DECL;
+    asl::ppinternal::doMacroExpansions = false;
     return DEFINE;
 }
 
 <INITIAL>{directivePrefix}undef {
     BEGIN PP_LINE;
-    doNotMacroExpandNextIdentifer = true;
+    asl::ppinternal::doMacroExpansions = false;
     return UNDEF;
 }
 
 <INITIAL>{directivePrefix}if {
     BEGIN PP_LINE;
+    asl::ppinternal::doMacroExpansions = true;
     return IF;
 }
 
 <INITIAL>{directivePrefix}elif {
     BEGIN PP_LINE;
+    asl::ppinternal::doMacroExpansions = true;
     return ELIF;
 }
 
 <INITIAL>{directivePrefix}ifdef {
     BEGIN PP_LINE;
-    doNotMacroExpandNextIdentifer = true;
+    asl::ppinternal::doMacroExpansions = false;
     return IFDEF;
 }
 
 <INITIAL>{directivePrefix}ifndef {
     BEGIN PP_LINE;
-    doNotMacroExpandNextIdentifer = true;
+    asl::ppinternal::doMacroExpansions = false;
     return IFNDEF;
 }
 
 <INITIAL>{directivePrefix}else {
     BEGIN PP_LINE;
+    asl::ppinternal::doMacroExpansions = true;
     return ELSE;
 }
 
 <INITIAL>{directivePrefix}endif {
     BEGIN PP_LINE;
+    asl::ppinternal::doMacroExpansions = true;
     return ENDIF;
 }
 
@@ -108,12 +110,15 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 <PP_LINE>">=" { return GE; }
 <PP_LINE>"<<" { return SL; }
 <PP_LINE>">>" { return SR; }
-<PP_LINE>"defined" { doNotMacroExpandNextIdentifer = true; return DEFINED; }
+<PP_LINE>"defined" { 
+    asl::ppinternal::doMacroExpansions = false;
+    return DEFINED;
+}
 
 <PP_LINE>{identifier} {
     aslpreprocessorlval.string = new QString(yytext);
-    if (doNotMacroExpandNextIdentifer) {
-        doNotMacroExpandNextIdentifer = false;
+    if (!asl::ppinternal::doMacroExpansions) {
+        asl::ppinternal::doMacroExpansions = true;
         return IDENTIFIER;
     } else {
         char next = yyinput();
@@ -185,10 +190,12 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 
 %%
 
+using namespace asl::ppinternal;
+
 int yywrap(void)
 {
     yypop_buffer_state();
-    delete buffers.pop();
+    delete readBuffers.pop();
     if (!macroExpansionStack.isEmpty()) {
         macroExpansionStack.removeFirst();
     }
@@ -197,19 +204,19 @@ int yywrap(void)
 
 void pushInput(const QString &sourcecode)
 {
-    buffers.push(new QByteArray(sourcecode.toAscii()));
+    readBuffers.push(new QByteArray(sourcecode.toAscii()));
     yypush_buffer_state(YY_CURRENT_BUFFER);
-    yy_scan_string(buffers.top()->constData());
+    yy_scan_string(readBuffers.top()->constData());
 }
 
 void reset()
 {
-    doNotMacroExpandNextIdentifer = false;
+    doMacroExpansions = false;
     while (YY_CURRENT_BUFFER) {
         yypop_buffer_state();
     }
-    while (!buffers.isEmpty()) {
-        delete buffers.pop();
+    while (!readBuffers.isEmpty()) {
+        delete readBuffers.pop();
     }
     macroExpansionStack.clear();
 }
