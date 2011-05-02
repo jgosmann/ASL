@@ -20,7 +20,7 @@
 
     extern int aslpreprocessorlineno;
 
-    bool isDefined(const char *macroName);
+    bool isDefined(const QString &macroName);
 
     void yyerror(char *msg);
     int yylex();
@@ -33,7 +33,7 @@
 
 %union {
     long int integer;
-    const char *string;
+    QString *string;
     QStringList *parsed;
     QStringList *argumentList;
     QList<struct macroPart_t> *macroParts;
@@ -71,7 +71,7 @@ part:
 
 stmt:
     pp { $$ = $1; }
-    | CHARACTERS { $$ = new QStringList(QString($1)); delete[] $1; }
+    | CHARACTERS { $$ = new QStringList(*$1); delete $1; }
     ;
 
 pp:
@@ -86,7 +86,7 @@ expr:
     | '-' expr %prec UMINUS { $$ = -$2; }
     | '~' expr { $$ = ~$2; }
     | '!' expr { $$ = !$2; }
-    | DEFINED IDENTIFIER { $$ = isDefined($2); delete[] $2; }
+    | DEFINED IDENTIFIER { $$ = isDefined(*$2); delete $2; }
     | expr EQ expr { $$ = $1 == $3; }
     | expr NE expr { $$ = $1 != $3; }
     | expr AND expr { $$ = $1 && $3; }
@@ -113,8 +113,8 @@ define:
             Macro m;
             m.arguments = $3;
             m.parts = $4;
-            macroTable.insert(QString($2), m);
-            delete[] $2;
+            macroTable.insert(*$2, m);
+            delete $2;
         }
     ;
 
@@ -127,10 +127,10 @@ arglist:
     { $$ = new QStringList(); }
     | arglist ',' IDENTIFIER {
             $$ = $1;
-            $$->append($3);
-            delete[] $3;
+            $$->append(*$3);
+            delete $3;
         }
-    | IDENTIFIER { $$ = new QStringList(QString($1)); delete $1; }
+    | IDENTIFIER { $$ = new QStringList(*$1); delete $1; }
     ;
 
 macrodef:
@@ -139,7 +139,7 @@ macrodef:
             if ($$->isEmpty() || $$->back().isArgument) {
                 MacroPart part;
                 part.isArgument = false;
-                part.text = $2;
+                part.text = *$2;
                 $$->append(part);
             } else {
                 $$->back().text += $2;
@@ -148,7 +148,7 @@ macrodef:
         }
     | { $$ = new QList<struct macroPart_t>(); };
 
-undef: UNDEF IDENTIFIER ENDPP { macroTable.remove(QString($2)); delete[] $2; };
+undef: UNDEF IDENTIFIER ENDPP { macroTable.remove(*$2); delete $2; };
 
 ifclause: ifstart part elseclause ENDIF ENDPP {
         if ($1 != 0) {
@@ -180,17 +180,17 @@ elseclause:
 
 if: IF expr ENDPP { $$ = $2; };
 
-ifdef: IFDEF IDENTIFIER ENDPP { $$ = isDefined($2); delete[] $2; };
+ifdef: IFDEF IDENTIFIER ENDPP { $$ = isDefined(*$2); delete $2; };
 
-ifndef: IFNDEF IDENTIFIER ENDPP { $$ = !isDefined($2); delete[] $2; };
+ifndef: IFNDEF IDENTIFIER ENDPP { $$ = !isDefined(*$2); delete $2; };
 
 elif: ELIF expr ENDPP { $$ = $2; };
 
 %%
 
-bool isDefined(const char *macroName)
+bool isDefined(const QString &macroName)
 {
-    return macroTable.contains(QString(macroName));
+    return macroTable.contains(macroName);
 }
 
 void aslpreprocessorerror(char *msg)

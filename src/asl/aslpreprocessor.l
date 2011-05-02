@@ -25,8 +25,6 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 
     bool doNotMacroExpandNextIdentifer = true;
 
-    char *copyStrAndNullTerminate(const char *str, unsigned int len);
-
     namespace asl
     {
     namespace ppinternal
@@ -40,21 +38,21 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 
 "/*" {
     BEGIN C_COMMENT;
-    aslpreprocessorlval.string = copyStrAndNullTerminate(yytext, yyleng);
+    aslpreprocessorlval.string = new QString(yytext);
     return CHARACTERS;
 }
 <C_COMMENT>"*/" {
     BEGIN INITIAL;
-    aslpreprocessorlval.string = copyStrAndNullTerminate(yytext, yyleng);
+    aslpreprocessorlval.string = new QString(yytext);
     return CHARACTERS;
 }
 <C_COMMENT>.|\n {
-    aslpreprocessorlval.string = copyStrAndNullTerminate(yytext, yyleng);
+    aslpreprocessorlval.string = new QString(yytext);
     return CHARACTERS;
 }
 
 "//".* {
-    aslpreprocessorlval.string = copyStrAndNullTerminate(yytext, yyleng);
+    aslpreprocessorlval.string = new QString(yytext);
     return CHARACTERS;
 }
 
@@ -113,7 +111,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 <PP_LINE>"defined" { doNotMacroExpandNextIdentifer = true; return DEFINED; }
 
 <PP_LINE>{identifier} {
-        aslpreprocessorlval.string = copyStrAndNullTerminate(yytext, yyleng);
+    aslpreprocessorlval.string = new QString(yytext);
     if (doNotMacroExpandNextIdentifer) {
         doNotMacroExpandNextIdentifer = false;
         return IDENTIFIER;
@@ -134,7 +132,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
             } while (n > 0);
         }
 
-        asl::ppinternal::expandMacro(QString(aslpreprocessorlval.string));
+        asl::ppinternal::expandMacro(*(aslpreprocessorlval.string));
         delete aslpreprocessorlval.string;
     }
 }
@@ -142,7 +140,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 <DEFINE_DECL>{identifier} {
     /* yytext has to be copied first, because peeking at the next char will
      * destroy yytext. */
-    aslpreprocessorlval.string = copyStrAndNullTerminate(yytext, yyleng);
+    aslpreprocessorlval.string = new QString(yytext);
 
     char next = yyinput();
     unput(next);
@@ -161,7 +159,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
     return *yytext;
 }
 <ARGLIST>{identifier} {
-    aslpreprocessorlval.string = copyStrAndNullTerminate(yytext, yyleng);
+    aslpreprocessorlval.string = new QString(yytext);
     return IDENTIFIER;
 }
 
@@ -171,7 +169,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 }
 
 <MACRO_DEF>. {
-    aslpreprocessorlval.string = copyStrAndNullTerminate(yytext, yyleng);
+    aslpreprocessorlval.string = new QString(yytext);
     return CHARACTERS;
 }
 
@@ -181,7 +179,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 }
 
 .|\n {
-    aslpreprocessorlval.string = copyStrAndNullTerminate(yytext, yyleng);
+    aslpreprocessorlval.string = new QString(yytext);
     return CHARACTERS;
 }
 
@@ -214,13 +212,6 @@ void reset()
         delete buffers.pop();
     }
     macroExpansionStack.clear();
-}
-
-char *copyStrAndNullTerminate(const char *str, unsigned int len)
-{
-    char *copy = new char[len + 1];
-    strncpy(copy, str, len + 1);
-    return copy;
 }
 
 namespace asl
