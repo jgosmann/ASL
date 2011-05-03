@@ -16,10 +16,16 @@ namespace asl
         };
 
         CompilationException(Stage stage, const QString &log);
+        CompilationException(Stage stage, const QString &msg,
+            unsigned int line);
         ~CompilationException() throw() { }
 
         inline Stage stage() const throw() {
             return m_stage;
+        }
+
+        inline unsigned int line() const throw() {
+            return m_line;
         }
 
         inline const QString & log() const throw() {
@@ -32,6 +38,7 @@ namespace asl
 
     private:
         const Stage m_stage;
+        const unsigned int m_line;
         const QString m_log;
     };
 }

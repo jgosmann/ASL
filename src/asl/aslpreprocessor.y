@@ -180,7 +180,7 @@ using namespace asl::ppinternal;
 void yyerror(char *msg)
 {
     throw asl::CompilationException(asl::CompilationException::PREPROCESSING,
-        QString::number(aslpreprocessorlineno) + ": " + QString(msg));
+        QString(msg), aslpreprocessorlineno);
 }
 
 namespace asl
