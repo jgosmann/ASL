@@ -6,13 +6,22 @@
         #include "asl/aslpreprocessor_parserinternal.h"
     #endif
 
+    #include <QStringBuilder>
+
     void yyerror(char *msg);
     int yylex();
 
     using namespace asl::ppinternal;
 
-    QTextStream *outStream;
-    QHash<QString, Macro> asl::ppinternal::macroTable;
+    namespace asl
+    {
+    namespace ppinternal
+    {
+        QTextStream *outStream;
+        QString log;
+        QHash<QString, Macro> macroTable;
+    } /* namespace ppinternal */
+    } /* namespace asl */
 
 %}
 
@@ -189,14 +198,19 @@ using namespace asl::ppinternal;
 
 void yyerror(char *msg)
 {
-    throw asl::CompilationException(asl::CompilationException::PREPROCESSING,
-        QString(msg), aslpreprocessorlineno);
+    log = log % QString::number(aslpreprocessorlineno) % ": (preprocessor) "
+            % QString(msg) % QChar('\n');
 }
 
 namespace asl
 {
 namespace ppinternal
 {
+
+void clearLog()
+{
+    log.clear();
+}
 
 bool isDefined(const QString &macroName)
 {

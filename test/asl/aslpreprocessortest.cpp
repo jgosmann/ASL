@@ -77,16 +77,8 @@ public:
     void throwsExceptionWhenMisingEndif()
     {
         const QString input("#ifndef UNDEFINED_MACRO\n");
-        try {
-            preprocessor.process(input);
-        } catch (CompilationException &e) {
-            CPPUNIT_ASSERT_EQUAL(e.stage(),
-                                 CompilationException::PREPROCESSING);
-            CPPUNIT_ASSERT(strlen(e.what()) > 0);
-            return;
-        }
-        CPPUNIT_FAIL("CompilationException expected when preprocessing program "
-                "with missing #endif.");
+        preprocessor.process(input);
+        assertLogIsNotEmpty();
     }
 
     void excludesIfdefPartIfMacroNotDefined()
@@ -487,6 +479,43 @@ public:
         testProcessing(input, expectedOutput);
     }
 
+    void macroWithoutArugmentsGetsExpandedWhenFollowedByParenthesis() {
+        const QString input(
+                "#define REPLACE 1 +\n"
+                "#if REPLACE(1 + 1) == 3\n"
+                "    /* include */\n"
+                "#endif\n");
+        const QString expectedOutput("    /* include */\n");
+        testProcessing(input, expectedOutput);
+    }
+
+    void throwsExceptionIfMacroMissingEmptyArgumentList()
+    {
+        const QString input(
+                "#define MACRO() 0\n"
+                "#if MACRO + 1\n"
+                "#endif\n");
+        preprocessor.process(input);
+        printf(">%s<", preprocessor.log().toAscii().constData());
+        assertLogIsNotEmpty();
+    }
+
+    //void throwsExpectionIfTooFewArgumentsArePassedToMacro()
+    //{
+        //const QString input(
+                //"#define MACRO() 0\n"
+                //"#if MACRO + 1\n"
+                //"#endif\n");
+        //try {
+            //preprocessor.process(input);
+        //} catch(CompilationException &e) {
+            //assertLogIsNotEmpty(e, 2);
+            //return;
+        //}
+        //CPPUNIT_FAIL("Should throw exception if too few arguments are passed "
+                //"to a macro.");
+    //}
+
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
     CPPUNIT_TEST(doesNotChangeShaderWithoutPreprocessorDirectives);
     CPPUNIT_TEST(excludesIfNDefPartIfMacroIsDefined);
@@ -534,6 +563,9 @@ public:
     CPPUNIT_TEST(macroWithoutArgumentsGetsExpanded);
     CPPUNIT_TEST(macroWithArgumentsGetsExpanded);
     CPPUNIT_TEST(macroArgumentsGetExpanded);
+    CPPUNIT_TEST(macroWithoutArugmentsGetsExpandedWhenFollowedByParenthesis);
+    CPPUNIT_TEST(throwsExceptionIfMacroMissingEmptyArgumentList);
+    //CPPUNIT_TEST(throwsExpectionIfTooFewArgumentsArePassedToMacro);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -555,6 +587,11 @@ private:
                 "    /* is zero */\n"
                 "#endif\n");
         return preprocessor.process(input) == "    /* is zero */\n";
+    }
+
+    void assertLogIsNotEmpty()
+    {
+        CPPUNIT_ASSERT(preprocessor.log().length() > 0);
     }
 
 

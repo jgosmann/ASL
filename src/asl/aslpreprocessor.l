@@ -1,4 +1,6 @@
 
+%option yylineno
+
 directivePrefix ^[ \t]*#
 identifier [_a-zA-Z][_a-zA-Z0-9]+
 
@@ -19,6 +21,8 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
     #endif
 
     #include "aslpreprocessor_yacc.h"
+
+    void aslpreprocessorerror(char *msg);
 
     using namespace asl::ppinternal;
 
@@ -143,7 +147,9 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
         return IDENTIFIER;
     } else {
         QString macroName = *(aslpreprocessorlval.string);
-        if (argumentListFollows()) {
+        bool macroHasArgList = isDefined(macroName)
+                && macroTable.value(macroName).arguments != NULL;
+        if (macroHasArgList && argumentListFollows()) {
             QStringList arguments = readArgumentList();
             expandMacro(macroName, &arguments);
         } else {
@@ -234,6 +240,7 @@ void clean()
 }
 
 void resetAndClean() {
+    yylineno = 1;
     doMacroExpansions = false;
     clean();
 }
@@ -252,8 +259,14 @@ void expandMacro(const QString &macroName, const QStringList *arguments)
         return;
     }
 
-    QStringList expansion;
     const Macro &macro = macroTable.value(macroName);
+
+    if (macro.arguments && !arguments) {
+        aslpreprocessorerror(("Macro " + macroName + " has to few arguments.")
+            .toAscii().data());
+    }
+
+    QStringList expansion;
     foreach (MacroPart part, *(macro.parts.data())) {
         bool isMacroArgument =
             part.isArgument && macro.arguments->contains(part.text);

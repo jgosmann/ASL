@@ -15,6 +15,8 @@ namespace asl
 {
 namespace ppinternal
 {
+    extern QString log;
+
     typedef struct macroPart_t {
         bool isArgument;
         QString text;
@@ -27,6 +29,7 @@ namespace ppinternal
 
     extern QHash<QString, Macro> macroTable;
 
+    void clearLog();
     bool isDefined(const QString &macroName);
     void parse(const QString &sourcecode, QTextStream *out);
 

@@ -18,6 +18,8 @@ namespace asl
  */
 class ASLPreprocessor { public: ASLPreprocessor();
 
+    const QString & log();
+
     void process(const QString &sourcecode, QTextStream *out);
     QString process(const QString &sourcecode);
 
