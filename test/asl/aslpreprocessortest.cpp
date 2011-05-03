@@ -74,11 +74,11 @@ public:
         testProcessing(input, input);
     }
 
-    void throwsExceptionWhenMisingEndif()
+    void logsErrorIfMissingEndif()
     {
         const QString input("#ifndef UNDEFINED_MACRO\n");
         preprocessor.process(input);
-        expectErrorInLog(2, QRegExp(".*syntax.*"));
+        assertLoggedError(2, QRegExp(".*syntax.*"));
     }
 
     void excludesIfdefPartIfMacroNotDefined()
@@ -489,31 +489,100 @@ public:
         testProcessing(input, expectedOutput);
     }
 
-    void throwsExceptionIfMacroMissingEmptyArgumentList()
+    void logsErrorIfMacroMissingEmptyArgumentList()
     {
         const QString input(
                 "#define MACRO() 0\n"
                 "#if MACRO + 1\n"
                 "#endif\n");
         preprocessor.process(input);
-        expectErrorInLog(2, QRegExp(".*argument.*"));
+        assertLoggedError(2, QRegExp(".*argument.*"));
     }
 
-    //void throwsExpectionIfTooFewArgumentsArePassedToMacro()
-    //{
-        //const QString input(
-                //"#define MACRO() 0\n"
-                //"#if MACRO + 1\n"
-                //"#endif\n");
-        //try {
-            //preprocessor.process(input);
-        //} catch(CompilationException &e) {
-            //assertLogIsNotEmpty(e, 2);
-            //return;
-        //}
-        //CPPUNIT_FAIL("Should throw exception if too few arguments are passed "
-                //"to a macro.");
-    //}
+    void logsErrorIfTooFewArgumentsArePassedToMacro()
+    {
+        const QString input(
+                "#define MACRO(a, b) 0\n"
+                "#if MACRO(1) + 1\n"
+                "#endif\n");
+        preprocessor.process(input);
+        assertLoggedError(2, QRegExp(".*too\\s+few\\s+arguments.*"));
+    }
+
+    void logsErrorIfTooManyArgumentsArePassedToMacro()
+    {
+        const QString input(
+                "#define MACRO(a) 0\n"
+                "#if MACRO(1, 1) + 1\n"
+                "#endif\n");
+        preprocessor.process(input);
+        assertLoggedError(2, QRegExp(".*too\\s+many\\s+arguments.*"));
+    }
+
+    void logsErrorIfExpandingUndefinedMacro()
+    {
+        const QString input(
+                "#if MACRO\n"
+                "#endif\n");
+        preprocessor.process(input);
+        assertLoggedError(1, QRegExp(".*undefined.*"));
+    }
+
+    void logsErrorIfPreprocessorDirectiveWithinAnother()
+    {
+        const QString input(
+                "#define #if TEST\n"
+                "#if #define\n");
+        preprocessor.process(input);
+        assertLoggedError(1, QRegExp(".*syntax.*"));
+        assertLoggedError(2, QRegExp(".*syntax.*"));
+    }
+
+    void commentEndsDefine()
+    {
+        const QString input(
+                "#define MACRO 1 /* some comment\n"
+                "    spanning more than one line */\n"
+                "#if MACRO\n"
+                "    /* include */\n"
+                "#endif\n");
+        testProcessing(input, "/* some comment\n    spanning more than one "
+                "line */\n    /* include */\n");
+    }
+
+    void escapedNewlineContinuesDefine()
+    {
+        const QString input(
+                "#define MACRO 0 + \\\n"
+                "    1\n"
+                "#if MACRO\n"
+                "    /* include */\n"
+                "#endif\n");
+        testProcessing(input, "    /* include */\n");
+    }
+
+    void unfulfilledIfClauseExcludesDefine()
+    {
+        const QString input(
+                "#if 0\n"
+                "#define SHOULD_BE_UNDEFINED\n"
+                "#endif\n"
+                "#ifdef SHOULD_BE_UNDEFINED\n"
+                "/* should be excluded */\n"
+                "#endif\n");
+        testProcessing(input, "");
+    }
+
+    void expandsMacrosInMacros()
+    {
+        const QString input(
+                "#define A B\n"
+                "#define B 1\n"
+                "#if A\n"
+                "    /* include */\n"
+                "#endif\n");
+        testProcessing(input, "    /* include */\n");
+    }
 
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
     CPPUNIT_TEST(doesNotChangeShaderWithoutPreprocessorDirectives);
@@ -522,7 +591,7 @@ public:
     CPPUNIT_TEST(ignoresPreprocessorDirectivesInMultilineComment);
     CPPUNIT_TEST(ignoresPreprocessorDirectivesInSinglelineComment);
     CPPUNIT_TEST(ignoresPreprocessorDirectivesIfNotFirstNonWhitespaceInLine);
-    CPPUNIT_TEST(throwsExceptionWhenMisingEndif);
+    CPPUNIT_TEST(logsErrorIfMissingEndif);
     CPPUNIT_TEST(excludesIfdefPartIfMacroNotDefined);
     CPPUNIT_TEST(macrosClearedBeforeParsingNextProgram);
     CPPUNIT_TEST(keepsUnknownDirectives);
@@ -563,8 +632,15 @@ public:
     CPPUNIT_TEST(macroWithArgumentsGetsExpanded);
     CPPUNIT_TEST(macroArgumentsGetExpanded);
     CPPUNIT_TEST(macroWithoutArugmentsGetsExpandedWhenFollowedByParenthesis);
-    CPPUNIT_TEST(throwsExceptionIfMacroMissingEmptyArgumentList);
-    //CPPUNIT_TEST(throwsExpectionIfTooFewArgumentsArePassedToMacro);
+    CPPUNIT_TEST(logsErrorIfMacroMissingEmptyArgumentList);
+    CPPUNIT_TEST(logsErrorIfTooFewArgumentsArePassedToMacro);
+    CPPUNIT_TEST(logsErrorIfTooManyArgumentsArePassedToMacro);
+    CPPUNIT_TEST(logsErrorIfExpandingUndefinedMacro);
+    CPPUNIT_TEST(logsErrorIfPreprocessorDirectiveWithinAnother);
+    CPPUNIT_TEST(commentEndsDefine);
+    CPPUNIT_TEST(escapedNewlineContinuesDefine);
+    //CPPUNIT_TEST(unfulfilledIfClauseExcludesDefine);
+    //CPPUNIT_TEST(expandsMacrosInMacros);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -591,15 +667,19 @@ private:
         return output == "    /* is zero */\n";
     }
 
-    void expectErrorInLog(unsigned int line,
+    void assertLoggedError(unsigned int line,
             const QRegExp &mustContain = QRegExp(".*"))
     {
-        const QRegExp matcher("\\d+:\\s+\\(preprocessor\\)\\s+([^\r\n]*)");
+        const QRegExp matcher("(\\d+):\\s+\\(preprocessor\\)\\s+([^\r\n]*)");
         const QString log = preprocessor.log();
 
         int matchIdx = -1;
         while (0 <= (matchIdx = matcher.indexIn(log, matchIdx + 1))) {
-            if (0 <= mustContain.indexIn(matcher.cap(1))) {
+            //printf(">%s<", matcher.cap(0).toAscii().constData());
+            bool lineCorrect = (matcher.cap(1).toUInt() == line);
+            bool mustContainCorrect =
+                (0 <= mustContain.indexIn(matcher.cap(2)));
+            if (lineCorrect && mustContainCorrect) {
                 return;
             }
         }

@@ -2,7 +2,7 @@
 %option yylineno
 
 directivePrefix ^[ \t]*#
-identifier [_a-zA-Z][_a-zA-Z0-9]+
+identifier [_a-zA-Z][_a-zA-Z0-9]*
 
 %x PP_LINE
 %x DEFINE_DECL
@@ -62,12 +62,12 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 
 %%
 
-"/*""/"?([^*/]*"*")+"/" {
+<INITIAL>"/*""/"?([^*/]*"*")+"/" {
     aslpreprocessorlval.string = new QString(yytext);
     return CHARACTERS;
 }
 
-"//".*\n {
+<INITIAL>"//".*\n {
     aslpreprocessorlval.string = new QString(yytext);
     return CHARACTERS;
 }
@@ -182,6 +182,15 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
     return IDENTIFIER;
 }
 
+<PP_LINE,DEFINE_DECL,MACRO_DEF>"/*"|"//" {
+    unput(yytext[1]);
+    unput(yytext[0]);
+    BEGIN INITIAL;
+    return ENDPP;
+}
+
+<MACRO_DEF>\\\n { }
+
 <MACRO_DEF>. {
     aslpreprocessorlval.string = new QString(yytext);
     return CHARACTERS;
@@ -190,6 +199,10 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 <PP_LINE,DEFINE_DECL,MACRO_DEF>\n {
     BEGIN INITIAL;
     return ENDPP;
+}
+
+<PP_LINE,DEFINE_DECL,MACRO_DEF>[^ \t\r\n] {
+    aslpreprocessorerror("syntax error");
 }
 
 ^[^#/\n]*\n {
@@ -253,15 +266,25 @@ void pushInput(const QString &sourcecode)
 void expandMacro(const QString &macroName, const QStringList *arguments)
 {
     if (!isDefined(macroName)) {
-        // TODO: error handling
+        aslpreprocessorerror(
+            ("undefined macro: " + macroName).toAscii().data());
         return;
     }
 
     const Macro &macro = macroTable.value(macroName);
 
-    if (macro.arguments && !arguments) {
-        aslpreprocessorerror(("Macro " + macroName + " has too few arguments.")
-            .toAscii().data());
+    if (macro.arguments) {
+        if (!arguments || arguments->size() < macro.arguments->size()) {
+            aslpreprocessorerror(
+                ("Macro " + macroName + " has too few arguments.")
+                .toAscii().data());
+            return;
+        } else if (arguments->size() > macro.arguments->size()) {
+            aslpreprocessorerror(
+                ("Macro " + macroName + " has too many arguments.")
+                .toAscii().data());
+            return;
+        }
     }
 
     QStringList expansion;
