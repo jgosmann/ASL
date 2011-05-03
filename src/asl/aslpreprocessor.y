@@ -46,6 +46,8 @@
 %left '*' '/' '%'
 %nonassoc '!' UPLUS UMINUS '~' DEFINED
 
+%destructor { printf("X"); delete $$; } optargs arglist macrodef part stmt pp ifclause elseclause CHARACTERS IDENTIFIER
+
 %%
 
 program: part { (*outStream) << $1->join(""); delete $1; }
