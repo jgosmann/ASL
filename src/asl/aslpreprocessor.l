@@ -37,7 +37,16 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
          */
         bool doMacroExpansions = false;
 
-        void expandMacro(const QString &macroName);
+        /**
+         * Does macro expansion by pushing a new buffer on the stack.
+         *
+         * \arg \a arguments has to be \c NULL if the expanded macro has no
+         *     arguments. If it is a macro with an empty argument list
+         *     (<tt>#define MACRO()</tt>) you have to pass the pointer to an
+         *     empty list.
+         */
+        void expandMacro(const QString &macroName,
+                const QStringList *arguments);
 
         /** \attention Destroys \c yytext! */
         bool argumentListFollows();
@@ -133,11 +142,14 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
         doMacroExpansions = true;
         return IDENTIFIER;
     } else {
+        QString macroName = *(aslpreprocessorlval.string);
         if (argumentListFollows()) {
-            readArgumentList();
+            QStringList arguments = readArgumentList();
+            expandMacro(macroName, &arguments);
+        } else {
+            expandMacro(macroName, NULL);
         }
 
-        expandMacro(*(aslpreprocessorlval.string));
         delete aslpreprocessorlval.string;
     }
 }
@@ -161,11 +173,10 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
     BEGIN MACRO_DEF;
     return *yytext;
 }
-<ARGLIST>{identifier} {
+<ARGLIST,MACRO_DEF>{identifier} {
     aslpreprocessorlval.string = new QString(yytext);
     return IDENTIFIER;
 }
-
 
 <MACRO_DEF>. {
     aslpreprocessorlval.string = new QString(yytext);
@@ -234,7 +245,7 @@ void pushInput(const QString &sourcecode)
     yy_scan_string(readBuffers.top()->constData());
 }
 
-void expandMacro(const QString &macroName)
+void expandMacro(const QString &macroName, const QStringList *arguments)
 {
     if (!isDefined(macroName)) {
         // TODO: error handling
@@ -242,8 +253,17 @@ void expandMacro(const QString &macroName)
     }
 
     QStringList expansion;
-    foreach (MacroPart part, *(macroTable.value(macroName).parts.data())) {
-        expansion.append(part.text);
+    const Macro &macro = macroTable.value(macroName);
+    foreach (MacroPart part, *(macro.parts.data())) {
+        bool isMacroArgument =
+            part.isArgument && macro.arguments->contains(part.text);
+        if (arguments && isMacroArgument) {
+            const unsigned int argIdx = macro.arguments->indexOf(part.text);
+            const QString argExpansion = arguments->at(argIdx);
+            expansion.append(argExpansion);
+        } else {
+            expansion.append(part.text);
+        }
     }
     macroExpansionStack.prepend(macroName);
     pushInput(expansion.join(""));
@@ -258,6 +278,8 @@ bool argumentListFollows()
 
 QStringList readArgumentList()
 {
+    QStringList arguments = QStringList(QString());
+
     unsigned int parenthesisNestingLevel = 0;
     char c;
 
@@ -267,10 +289,14 @@ QStringList readArgumentList()
             ++parenthesisNestingLevel;
         } else if (')' == c) {
             --parenthesisNestingLevel;
+        } else if (',' == c && parenthesisNestingLevel == 1) {
+            arguments.append(QString());
+        } else {
+            arguments.back() += c;
         }
     } while (parenthesisNestingLevel > 0);
 
-    return QStringList();
+    return arguments;
 }
 
 } /* namespace ppinternal */

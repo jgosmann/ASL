@@ -476,6 +476,17 @@ public:
         testProcessing(input, expectedOutput);
     }
 
+    void macroArgumentsGetExpanded()
+    {
+        const QString input(
+                "#define REPLACE(arg1, arg2) arg1 * arg2\n"
+                "#if REPLACE(6, 7) == 42\n"
+                "    /* include */\n"
+                "#endif\n");
+        const QString expectedOutput("    /* include */\n");
+        testProcessing(input, expectedOutput);
+    }
+
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
     CPPUNIT_TEST(doesNotChangeShaderWithoutPreprocessorDirectives);
     CPPUNIT_TEST(excludesIfNDefPartIfMacroIsDefined);
@@ -522,6 +533,7 @@ public:
     CPPUNIT_TEST(understandsHexadecimalNumbers);
     CPPUNIT_TEST(macroWithoutArgumentsGetsExpanded);
     CPPUNIT_TEST(macroWithArgumentsGetsExpanded);
+    CPPUNIT_TEST(macroArgumentsGetExpanded);
     CPPUNIT_TEST_SUITE_END();
 
 private:

@@ -9,8 +9,8 @@ namespace asl
 
 /** GLSL preprocessor implementation tailored to the needs auf the \ref
  * AnnotatedShaderCompiler. That means not all preprocessor directives will be
- * translated. Nevertheless, at least the conditionals (\#if, \#ifdef, ...) and
- * macros in these will work.
+ * translated. Nevertheless, at least the conditionals (\c #if, \c #ifdef, ...)
+ * and macros in these will work.
  *
  * \attention Be aware that you must not execute multiple calls to the methods
  * of this class at the same time (e.g. from different threads). Even with

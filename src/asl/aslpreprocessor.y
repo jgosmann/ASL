@@ -120,7 +120,15 @@ arglist:
     ;
 
 macrodef:
-    macrodef CHARACTERS {
+    macrodef IDENTIFIER {
+            $$ = $1;
+            MacroPart part;
+            part.isArgument = true;
+            part.text = *$2;
+            $$->append(part);
+            delete $2;
+        }
+    | macrodef CHARACTERS {
             $$ = $1;
             if ($$->isEmpty() || $$->back().isArgument) {
                 MacroPart part;
