@@ -177,6 +177,17 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
     return ENDPP;
 }
 
+^[^#/\n]*\n {
+    /* This pattern is to improve perfomance. It matches all whole lines which
+     * definitly to not include a token which is not CHARACTERS. If a line
+     * contains a '#' or '/' it may contain a comment or preprocessor directive
+     * token. Therefore these are disallowed in the line.
+     */
+    aslpreprocessorlval.string = new QString(yytext);
+    return CHARACTERS;
+}
+
+
 .|\n {
     aslpreprocessorlval.string = new QString(yytext);
     return CHARACTERS;
