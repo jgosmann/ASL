@@ -39,7 +39,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 
         void expandMacro(const QString &macroName);
 
-        /* Destroys yytext! */
+        /** \attention Destroys \c yytext! */
         bool argumentListFollows();
         QStringList readArgumentList();
 
