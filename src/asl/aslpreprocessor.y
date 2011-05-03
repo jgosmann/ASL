@@ -55,7 +55,7 @@
 %left '*' '/' '%'
 %nonassoc '!' UPLUS UMINUS '~' DEFINED
 
-%destructor { printf("X"); delete $$; } optargs arglist macrodef part stmt pp ifclause elseclause CHARACTERS IDENTIFIER
+%destructor { delete $$; } optargs arglist macrodef part stmt pp ifclause elseclause CHARACTERS IDENTIFIER
 
 %%
 

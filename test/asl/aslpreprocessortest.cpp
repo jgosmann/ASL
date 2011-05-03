@@ -1,6 +1,6 @@
-#include <QtCore/QScopedPointer>
-#include <QtCore/QString>
-#include <QtOpenGL/QGLPixelBuffer>
+#include <QRegExp>
+#include <QScopedPointer>
+#include <QString>
 
 #include "../src/asl/aslpreprocessor.h"
 #include "../src/asl/compilationexception.h"
@@ -78,7 +78,7 @@ public:
     {
         const QString input("#ifndef UNDEFINED_MACRO\n");
         preprocessor.process(input);
-        assertLogIsNotEmpty();
+        expectErrorInLog(2, QRegExp(".*syntax.*"));
     }
 
     void excludesIfdefPartIfMacroNotDefined()
@@ -496,8 +496,7 @@ public:
                 "#if MACRO + 1\n"
                 "#endif\n");
         preprocessor.process(input);
-        printf(">%s<", preprocessor.log().toAscii().constData());
-        assertLogIsNotEmpty();
+        expectErrorInLog(2, QRegExp(".*argument.*"));
     }
 
     //void throwsExpectionIfTooFewArgumentsArePassedToMacro()
@@ -573,6 +572,7 @@ private:
     {
         CPPUNIT_ASSERT_EQUAL(expectedOutput.toStdString(),
                 preprocessor.process(input).toStdString());
+        assertLogIsEmpty();
     }
 
     bool expressionResultsInZero(const QString &expression)
@@ -586,12 +586,32 @@ private:
                 "#if (" + expression + ") == " + QString::number(value) + "\n"
                 "    /* is zero */\n"
                 "#endif\n");
-        return preprocessor.process(input) == "    /* is zero */\n";
+        const QString output = preprocessor.process(input);
+        assertLogIsEmpty();
+        return output == "    /* is zero */\n";
     }
 
-    void assertLogIsNotEmpty()
+    void expectErrorInLog(unsigned int line,
+            const QRegExp &mustContain = QRegExp(".*"))
     {
-        CPPUNIT_ASSERT(preprocessor.log().length() > 0);
+        const QRegExp matcher("\\d+:\\s+\\(preprocessor\\)\\s+([^\r\n]*)");
+        const QString log = preprocessor.log();
+
+        int matchIdx = -1;
+        while (0 <= (matchIdx = matcher.indexIn(log, matchIdx + 1))) {
+            if (0 <= mustContain.indexIn(matcher.cap(1))) {
+                return;
+            }
+        }
+
+        CPPUNIT_FAIL(("Expected error containing \"" + mustContain.pattern()
+                + "\" in line " + QString::number(line) + ". Actual log:\n"
+                + log).toAscii().constData());
+    }
+
+    void assertLogIsEmpty()
+    {
+        CPPUNIT_ASSERT(preprocessor.log().length() <= 0);
     }
 
 

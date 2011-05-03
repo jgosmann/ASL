@@ -140,23 +140,21 @@ identifier [_a-zA-Z][_a-zA-Z0-9]+
 }
 
 <PP_LINE>{identifier} {
-    aslpreprocessorlval.string = new QString(yytext);
+    QString identifier = QString(yytext);
 
     if (!doMacroExpansions) {
+        aslpreprocessorlval.string = new QString(identifier);
         doMacroExpansions = true;
         return IDENTIFIER;
     } else {
-        QString macroName = *(aslpreprocessorlval.string);
-        bool macroHasArgList = isDefined(macroName)
-                && macroTable.value(macroName).arguments != NULL;
+        bool macroHasArgList = isDefined(identifier)
+                && macroTable.value(identifier).arguments != NULL;
         if (macroHasArgList && argumentListFollows()) {
             QStringList arguments = readArgumentList();
-            expandMacro(macroName, &arguments);
+            expandMacro(identifier, &arguments);
         } else {
-            expandMacro(macroName, NULL);
+            expandMacro(identifier, NULL);
         }
-
-        delete aslpreprocessorlval.string;
     }
 }
 
@@ -262,7 +260,7 @@ void expandMacro(const QString &macroName, const QStringList *arguments)
     const Macro &macro = macroTable.value(macroName);
 
     if (macro.arguments && !arguments) {
-        aslpreprocessorerror(("Macro " + macroName + " has to few arguments.")
+        aslpreprocessorerror(("Macro " + macroName + " has too few arguments.")
             .toAscii().data());
     }
 
