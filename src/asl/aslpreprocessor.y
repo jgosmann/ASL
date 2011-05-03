@@ -75,6 +75,7 @@ pp:
     define { $$ = new QStringList(); }
     | undef { $$ = new QStringList(); }
     | ifclause { $$ = $1; }
+    | error ENDPP { $$ = new QStringList(); }
     ;
 
 expr:
