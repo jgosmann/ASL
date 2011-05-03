@@ -2,8 +2,10 @@
 #define ASLPREPROCESSOR_PARSERINTERNAL_H
 
 #include <QHash>
+#include <QSharedPointer>
 #include <QString>
 #include <QStringList>
+#include <QTextStream>
 
 #include "compilationexception.h"
 
@@ -19,18 +21,17 @@ namespace ppinternal
     } MacroPart;
 
     typedef struct macro_t {
-        QStringList *arguments;
-        QList<MacroPart> *parts;
+        QSharedPointer<QStringList> arguments;
+        QSharedPointer<QList<MacroPart> > parts;
     } Macro;
 
     extern QHash<QString, Macro> macroTable;
 
     bool isDefined(const QString &macroName);
-    QString parse(const QString &sourcecode);
+    void parse(const QString &sourcecode, QTextStream *out);
 
     void pushInput(const QString &sourcecode);
-    void clean();
-    void reset();
+    void resetAndClean();
 
 } /* namespace ppinternal */
 } /* namespace asl */

@@ -208,9 +208,10 @@ void clean()
         delete readBuffers.pop();
     }
     macroExpansionStack.clear();
+    macroTable.clear();
 }
 
-void reset() {
+void resetAndClean() {
     doMacroExpansions = false;
     clean();
 }
@@ -230,7 +231,7 @@ void expandMacro(const QString &macroName)
     }
 
     QStringList expansion;
-    foreach (MacroPart part, *(macroTable.value(macroName).parts)) {
+    foreach (MacroPart part, *(macroTable.value(macroName).parts.data())) {
         expansion.append(part.text);
     }
     macroExpansionStack.prepend(macroName);

@@ -2,6 +2,7 @@
 #define ASLPREPROCESSOR_H
 
 #include <QString>
+#include <QTextStream>
 
 namespace asl
 {
@@ -11,8 +12,10 @@ class ASLPreprocessor
 public:
     ASLPreprocessor();
 
+    void process(const QString &sourcecode, QTextStream *out);
     QString process(const QString &sourcecode);
-    void reset();
+
+    void resetAndClean();
 };
 }
 

@@ -1,8 +1,5 @@
 
 %{
-    #include <QIODevice>
-    #include <QTextStream>
-
     #ifdef TEST
         #include "../src/asl/aslpreprocessor_parserinternal.h"
     #else
@@ -14,7 +11,7 @@
 
     using namespace asl::ppinternal;
 
-    QTextStream outStream;
+    QTextStream *outStream;
     QHash<QString, Macro> asl::ppinternal::macroTable;
 
 %}
@@ -34,6 +31,7 @@
 %type <parsed> part stmt pp
 %type <parsed> ifclause elseclause
 
+/* Do not reorder the tokens! The order matters! */
 %token <string> CHARACTERS
 %token DEFINE ENDPP UNDEF IF ELIF IFDEF IFNDEF ELSE ENDIF
 %token <string> IDENTIFIER
@@ -50,7 +48,7 @@
 
 %%
 
-program: part { outStream << $1->join(""); delete $1; }
+program: part { (*outStream) << $1->join(""); delete $1; }
 
 part:
     part stmt { $$ = $1; $$->append(*$2); delete $2; }
@@ -99,8 +97,8 @@ expr:
 define:
     DEFINE IDENTIFIER optargs macrodef ENDPP {
             Macro m;
-            m.arguments = $3;
-            m.parts = $4;
+            m.arguments = QSharedPointer<QStringList>($3);
+            m.parts = QSharedPointer<QList<MacroPart> >($4);
             macroTable.insert(*$2, m);
             delete $2;
         }
@@ -130,7 +128,7 @@ macrodef:
                 part.text = *$2;
                 $$->append(part);
             } else {
-                $$->back().text += $2;
+                $$->back().text += *$2;
             }
             delete $2;
         }
@@ -145,7 +143,8 @@ ifclause: ifstart part elseclause ENDIF ENDPP {
         } else {
             $$ = $3;
             delete $2;
-        } };
+        }
+    };
 
 ifstart:
       if
@@ -184,21 +183,6 @@ void yyerror(char *msg)
         QString::number(aslpreprocessorlineno) + ": " + QString(msg));
 }
 
-
-void aslPreprocessorReset()
-{
-    foreach (Macro m, macroTable) {
-        if (m.arguments) {
-            delete m.arguments;
-        }
-        if (m.parts) {
-            delete m.parts;
-        }
-    }
-    macroTable.clear();
-    reset();
-}
-
 namespace asl
 {
 namespace ppinternal
@@ -209,18 +193,12 @@ bool isDefined(const QString &macroName)
     return macroTable.contains(macroName);
 }
 
-QString parse(const QString &sourcecode)
+void parse(const QString &sourcecode, QTextStream *out)
 {
-    aslPreprocessorReset();
-
-    QString out;
-    outStream.setString(&out, QIODevice::WriteOnly);
-
+    outStream = out;
     pushInput(sourcecode);
     yyparse();
-
-    outStream.flush();
-    return out;
+    outStream->flush();
 }
 
 } /* namespace ppinternal */
