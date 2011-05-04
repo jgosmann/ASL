@@ -19,7 +19,6 @@ void ASLPreprocessor::process(const QString &sourcecode, QTextStream *out)
 {
     ppinternal::clearLog();
     ppinternal::parse(sourcecode, out);
-    ppinternal::resetAndClean();
 }
 
 QString ASLPreprocessor::process(const QString &sourcecode)

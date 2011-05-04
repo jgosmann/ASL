@@ -81,7 +81,7 @@ public:
     {
         const QString input("#ifndef UNDEFINED_MACRO\n");
         preprocessor.process(input);
-        assertLoggedError(2, QRegExp(".*syntax.*"));
+        assertLoggedError(1, QRegExp(".*syntax.*"));
     }
 
     void excludesIfdefPartIfMacroNotDefined()

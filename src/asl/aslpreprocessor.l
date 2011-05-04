@@ -41,6 +41,8 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
          */
         bool doMacroExpansions = false;
 
+        void popInput();
+
         /**
          * Does macro expansion by pushing a new buffer on the stack.
          *
@@ -235,12 +237,13 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 
 int yywrap(void)
 {
-    yypop_buffer_state();
-    delete readBuffers.pop();
-    if (!macroExpansionStack.isEmpty()) {
-        macroExpansionStack.removeFirst();
+    popInput();
+    if (!YY_CURRENT_BUFFER) {
+        resetAndClean();
+        return 1;
+    } else {
+        return 0;
     }
-    return !YY_CURRENT_BUFFER;
 }
 
 namespace asl
@@ -261,11 +264,19 @@ void clean()
 }
 
 void resetAndClean() {
+    clean();
     yylineno = 1;
     doMacroExpansions = false;
     ifNestingLevel = 0;
     excludeIfNestingLevel = 0;
-    clean();
+}
+
+void popInput() {
+    yypop_buffer_state();
+    delete readBuffers.pop();
+    if (!macroExpansionStack.isEmpty()) {
+        macroExpansionStack.removeFirst();
+    }
 }
 
 void pushInput(const QString &sourcecode)
