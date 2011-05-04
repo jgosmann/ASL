@@ -73,15 +73,25 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 }
 
 <INITIAL>{directivePrefix}define {
-    BEGIN DEFINE_DECL;
-    doMacroExpansions = false;
-    return DEFINE;
+    if (excludeIfNestingLevel > 0) {
+        aslpreprocessorlval.string = new QString(yytext);
+        return CHARACTERS;
+    } else {
+        BEGIN DEFINE_DECL;
+        doMacroExpansions = false;
+        return DEFINE;
+    }
 }
 
 <INITIAL>{directivePrefix}undef {
-    BEGIN PP_LINE;
-    doMacroExpansions = false;
-    return UNDEF;
+    if (excludeIfNestingLevel > 0) {
+        aslpreprocessorlval.string = new QString(yytext);
+        return CHARACTERS;
+    } else {
+        BEGIN PP_LINE;
+        doMacroExpansions = false;
+        return UNDEF;
+    }
 }
 
 <INITIAL>{directivePrefix}if {
@@ -253,6 +263,8 @@ void clean()
 void resetAndClean() {
     yylineno = 1;
     doMacroExpansions = false;
+    ifNestingLevel = 0;
+    excludeIfNestingLevel = 0;
     clean();
 }
 
@@ -314,21 +326,21 @@ QStringList readArgumentList()
 {
     QStringList arguments = QStringList(QString());
 
-    unsigned int parenthesisNestingLevel = 0;
+    unsigned int parenthesisifNestingLevelLevel = 0;
     char c;
 
     do {
         c = yyinput();
         if ('(' == c) {
-            ++parenthesisNestingLevel;
+            ++parenthesisifNestingLevelLevel;
         } else if (')' == c) {
-            --parenthesisNestingLevel;
-        } else if (',' == c && parenthesisNestingLevel == 1) {
+            --parenthesisifNestingLevelLevel;
+        } else if (',' == c && parenthesisifNestingLevelLevel == 1) {
             arguments.append(QString());
         } else {
             arguments.back() += c;
         }
-    } while (parenthesisNestingLevel > 0);
+    } while (parenthesisifNestingLevelLevel > 0);
 
     return arguments;
 }

@@ -16,6 +16,8 @@ namespace asl
 namespace ppinternal
 {
     extern QString log;
+    extern int ifNestingLevel;
+    extern int excludeIfNestingLevel;
 
     typedef struct macroPart_t {
         bool isArgument;

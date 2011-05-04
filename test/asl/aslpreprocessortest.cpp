@@ -573,6 +573,15 @@ public:
         testProcessing(input, "");
     }
 
+    void unfulfilledIfClauseExcludesSyntaxErrors()
+    {
+        const QString input(
+                "#if 0\n"
+                "#define A(,,)\n"
+                "#endif\n");
+        testProcessing(input, "");
+    }
+
     void expandsMacrosInMacros()
     {
         const QString input(
@@ -639,7 +648,8 @@ public:
     CPPUNIT_TEST(logsErrorIfPreprocessorDirectiveWithinAnother);
     CPPUNIT_TEST(commentEndsDefine);
     CPPUNIT_TEST(escapedNewlineContinuesDefine);
-    //CPPUNIT_TEST(unfulfilledIfClauseExcludesDefine);
+    CPPUNIT_TEST(unfulfilledIfClauseExcludesDefine);
+    CPPUNIT_TEST(unfulfilledIfClauseExcludesSyntaxErrors);
     //CPPUNIT_TEST(expandsMacrosInMacros);
     CPPUNIT_TEST_SUITE_END();
 
@@ -675,7 +685,6 @@ private:
 
         int matchIdx = -1;
         while (0 <= (matchIdx = matcher.indexIn(log, matchIdx + 1))) {
-            //printf(">%s<", matcher.cap(0).toAscii().constData());
             bool lineCorrect = (matcher.cap(1).toUInt() == line);
             bool mustContainCorrect =
                 (0 <= mustContain.indexIn(matcher.cap(2)));

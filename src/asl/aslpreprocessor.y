@@ -19,7 +19,12 @@
     {
         QTextStream *outStream;
         QString log;
+        int ifNestingLevel;
+        int excludeIfNestingLevel;
         QHash<QString, Macro> macroTable;
+
+        void handleIfBlockStart(bool isTrue);
+        void handleIfBlockEnd();
     } /* namespace ppinternal */
     } /* namespace asl */
 
@@ -156,15 +161,17 @@ macrodef:
 
 undef: UNDEF IDENTIFIER ENDPP { macroTable.remove(*$2); delete $2; };
 
-ifclause: ifstart part elseclause ENDIF ENDPP {
+ifclause: ifstart { ++ifNestingLevel; handleIfBlockStart($1 != 0); } part { handleIfBlockEnd(); } elseclause ENDIF { --ifNestingLevel; } ENDPP {
         if ($1 != 0) {
-            $$ = $2;
-            delete $3;
-        } else {
             $$ = $3;
-            delete $2;
+            delete $5;
+        } else {
+            $$ = $5;
+            delete $3;
         }
     };
+
+incnestlvl: 
 
 ifstart:
       if
@@ -173,14 +180,14 @@ ifstart:
       ;
 
 elseclause:
-    ELSE ENDPP part { $$ = $3; }
-    | elif part elseclause {
+    ELSE ENDPP { handleIfBlockStart(true); } part { handleIfBlockEnd(); $$ = $4; }
+    | elif { handleIfBlockStart($1 != 0); } part { handleIfBlockEnd(); } elseclause {
         if ($1 != 0) {
-            $$ = $2;
-            delete $3;
-        } else {
             $$ = $3;
-            delete $2;
+            delete $5;
+        } else {
+            $$ = $5;
+            delete $3;
         } }
     | { $$ = new QStringList(); }
     ;
@@ -216,6 +223,20 @@ void clearLog()
 bool isDefined(const QString &macroName)
 {
     return macroTable.contains(macroName);
+}
+
+void handleIfBlockStart(bool isTrue)
+{
+    if (!isTrue && excludeIfNestingLevel == 0) {
+        excludeIfNestingLevel = ifNestingLevel;
+    }
+}
+
+void handleIfBlockEnd()
+{
+    if (ifNestingLevel == excludeIfNestingLevel) {
+        excludeIfNestingLevel = 0;
+    }
 }
 
 void parse(const QString &sourcecode, QTextStream *out)
