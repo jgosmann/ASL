@@ -713,6 +713,29 @@ public:
         testProcessing(input, "");
     }
 
+    void handlesElifAfterIfdef()
+    {
+        const QString input(
+                "#ifdef UNDEFINED\n"
+                "#elif 1\n"
+                "#define INCLUDE\n"
+                "#endif\n"
+                + inputToAssertMacroIsDefined("INCLUDE"));
+        testProcessing(input, "");
+    }
+
+    void handlesElifAfterIfndef()
+    {
+        const QString input(
+                "#define DEFINED\n"
+                "#ifndef DEFINED\n"
+                "#elif 1\n"
+                "#define INCLUDE\n"
+                "#endif\n"
+                + inputToAssertMacroIsDefined("INCLUDE"));
+        testProcessing(input, "");
+    }
+
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
     CPPUNIT_TEST(doesNotChangeShaderWithoutPreprocessorDirectives);
     CPPUNIT_TEST(excludesIfNDefPartIfMacroIsDefined);
@@ -775,6 +798,8 @@ public:
     CPPUNIT_TEST(errorDirectiveGeneratesError);
     CPPUNIT_TEST(excludesCommentsFromErrorDirective);
     CPPUNIT_TEST(allowsCommentsInDirectives);
+    CPPUNIT_TEST(handlesElifAfterIfdef);
+    CPPUNIT_TEST(handlesElifAfterIfndef);
     CPPUNIT_TEST_SUITE_END();
 
 private:
