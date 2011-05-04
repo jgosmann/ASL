@@ -8,6 +8,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 %x DEFINE_DECL
 %x MACRO_DEF
 %x ARGLIST
+%x ERROR_DIRECTIVE
 
 %{
     #include <QByteArray>
@@ -57,6 +58,8 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
         /** \attention Destroys \c yytext! */
         bool argumentListFollows();
         QStringList readArgumentList();
+
+        QString readErrorDirective();
 
     } /* namespace ppinternal */
     } /* namespace asl */
@@ -130,6 +133,12 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     BEGIN PP_LINE;
     doMacroExpansions = true;
     return ENDIF;
+}
+
+<INITIAL>{directivePrefix}error[^\n] {
+    BEGIN ERROR_DIRECTIVE;
+    doMacroExpansions = false;
+    return ERROR;
 }
 
 <PP_LINE>[-+*/%()<>!&^|~] { return *yytext; }
@@ -208,7 +217,18 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     return CHARACTERS;
 }
 
-<PP_LINE,DEFINE_DECL,MACRO_DEF>\n {
+<PP_LINE,DEFINE_DECL,MACRO_DEF,ERROR_DIRECTIVE>"/*""/"?([^*/]*"*")+"/" { }
+<ERROR_DIRECTIVE>"//".*\n {
+    BEGIN INITIAL;
+    return ENDPP;
+}
+
+<ERROR_DIRECTIVE>. {
+    aslpreprocessorlval.string = new QString(yytext);
+    return CHARACTERS;
+}
+
+<PP_LINE,DEFINE_DECL,MACRO_DEF,ERROR_DIRECTIVE>\n {
     BEGIN INITIAL;
     return ENDPP;
 }

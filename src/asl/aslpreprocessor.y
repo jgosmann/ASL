@@ -46,10 +46,11 @@
 %type <macroParts> macrodef
 %type <parsed> part stmt pp
 %type <parsed> ifclause elseclause
+%type <string> errormsg
 
 /* Do not reorder the tokens! The order matters! */
 %token <string> CHARACTERS
-%token DEFINE ENDPP UNDEF IF ELIF IFDEF IFNDEF ELSE ENDIF
+%token DEFINE ENDPP UNDEF IF ELIF IFDEF IFNDEF ELSE ENDIF ERROR
 %token <string> IDENTIFIER
 %token <integer> INTEGER
 
@@ -82,7 +83,20 @@ pp:
     define { $$ = new QStringList(); }
     | undef { $$ = new QStringList(); }
     | ifclause { $$ = $1; }
+    | ERROR errormsg ENDPP {
+            $$ = new QStringList();
+            --aslpreprocessorlineno; // because of ENDPP we are already in the
+                                     // next line.
+            yyerror($2->toAscii().data());
+            ++aslpreprocessorlineno;
+            delete $2;
+        }
     | error ENDPP { $$ = new QStringList(); }
+    ;
+
+errormsg:
+    errormsg CHARACTERS { $$ = $1; $$->append($2); delete $2; }
+    | { $$ = new QString(); }
     ;
 
 expr:

@@ -619,8 +619,7 @@ public:
                 "#if MACRO\n"
                 "    /* include */\n"
                 "#endif\n");
-        testProcessing(input, "/* some comment\n    spanning more than one "
-                "line */\n    /* include */\n");
+        testProcessing(input, "    /* include */\n");
     }
 
     void escapedNewlineContinuesDefine()
@@ -673,6 +672,45 @@ public:
                 "/* include */\n"
                 "#endif");
         testProcessing(input, "/* include */\n");
+    }
+
+    void errorDirectiveGeneratesError()
+    {
+        const QString input("#error message\n");
+        preprocessor.process(input);
+        assertLoggedError(1, QRegExp(".*message.*"));
+    }
+
+    void excludesCommentsFromErrorDirective()
+    {
+        const QString input("#error part1 /* comment */ part2 // end\n");
+        preprocessor.process(input);
+        assertLoggedError(1, QRegExp(".*part1  part2.*"));
+    }
+
+    void allowsCommentsInDirectives()
+    {
+        const QString input(
+                "#define /* c */ INCLUDE1 /* c */ 1 /* c */\n"
+                "#ifdef /* c */ INCLUDE1 /* c */\n"
+                "    #define INCLUDE2\n"
+                "#endif /* c */\n"
+                "#ifndef /* c */ UNDEF /* c */\n"
+                "    #define INCLUDE3\n"
+                "#endif\n"
+                "#if /* c */ 1 /* c */\n"
+                "    #define INCLUDE4\n"
+                "#endif\n"
+                "#if 0\n"
+                "#elif /* c */ 1 /* c */\n"
+                "    #define INCLUDE5\n"
+                "#endif\n"
+                "#if 0\n"
+                "#else /* c */\n"
+                "    #define INCLUDE6\n"
+                "#endif\n"
+                + inputToAssertNCountedMacrosAreDefined("INCLUDE", 6));
+        testProcessing(input, "");
     }
 
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
@@ -734,6 +772,9 @@ public:
     CPPUNIT_TEST(unfulfilledIfClauseExcludesSyntaxErrors);
     CPPUNIT_TEST(expandsMacrosInMacros);
     CPPUNIT_TEST(newlineAtEofNotRequired);
+    CPPUNIT_TEST(errorDirectiveGeneratesError);
+    CPPUNIT_TEST(excludesCommentsFromErrorDirective);
+    CPPUNIT_TEST(allowsCommentsInDirectives);
     CPPUNIT_TEST_SUITE_END();
 
 private:
