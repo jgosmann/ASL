@@ -301,8 +301,8 @@ void expandMacro(const QString &macroName, const QStringList *arguments)
 
     QStringList expansion;
     foreach (MacroPart part, *(macro.parts.data())) {
-        bool isMacroArgument =
-            part.isArgument && macro.arguments->contains(part.text);
+        bool isMacroArgument = macro.arguments
+            && part.isArgument && macro.arguments->contains(part.text);
         if (arguments && isMacroArgument) {
             const unsigned int argIdx = macro.arguments->indexOf(part.text);
             const QString argExpansion = arguments->at(argIdx);

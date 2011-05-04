@@ -650,7 +650,7 @@ public:
     CPPUNIT_TEST(escapedNewlineContinuesDefine);
     CPPUNIT_TEST(unfulfilledIfClauseExcludesDefine);
     CPPUNIT_TEST(unfulfilledIfClauseExcludesSyntaxErrors);
-    //CPPUNIT_TEST(expandsMacrosInMacros);
+    CPPUNIT_TEST(expandsMacrosInMacros);
     CPPUNIT_TEST_SUITE_END();
 
 private:
