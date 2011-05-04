@@ -6,6 +6,7 @@
         #include "asl/aslpreprocessor_parserinternal.h"
     #endif
 
+    #include <QStack>
     #include <QStringBuilder>
 
     void yyerror(char *msg);
@@ -21,6 +22,7 @@
         QString log;
         int ifNestingLevel;
         int excludeIfNestingLevel;
+        QStack<bool> ifConditionResults;
         QHash<QString, Macro> macroTable;
 
         void handleIfBlockStart(bool isTrue);
@@ -161,7 +163,7 @@ macrodef:
 
 undef: UNDEF IDENTIFIER ENDPP { macroTable.remove(*$2); delete $2; };
 
-ifclause: ifstart { ++ifNestingLevel; handleIfBlockStart($1 != 0); } part { handleIfBlockEnd(); } elseclause ENDIF { --ifNestingLevel; } ENDPP {
+ifclause: ifstart { ++ifNestingLevel; ifConditionResults.push($1 != 0); handleIfBlockStart($1 != 0); } part { handleIfBlockEnd(); } elseclause ENDIF { ifConditionResults.pop(); --ifNestingLevel; } ENDPP {
         if ($1 != 0) {
             $$ = $3;
             delete $5;
@@ -180,8 +182,8 @@ ifstart:
       ;
 
 elseclause:
-    ELSE ENDPP { handleIfBlockStart(true); } part { handleIfBlockEnd(); $$ = $4; }
-    | elif { handleIfBlockStart($1 != 0); } part { handleIfBlockEnd(); } elseclause {
+    ELSE ENDPP { handleIfBlockStart(!ifConditionResults.top()); } part { handleIfBlockEnd(); $$ = $4; }
+    | elif { handleIfBlockStart(!ifConditionResults.top() && $1 != 0); ifConditionResults.top() = ($1 != 0); } part { handleIfBlockEnd(); } elseclause {
         if ($1 != 0) {
             $$ = $3;
             delete $5;
