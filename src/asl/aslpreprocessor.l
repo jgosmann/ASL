@@ -282,6 +282,13 @@ void popInput() {
 void pushInput(const QString &sourcecode)
 {
     readBuffers.push(new QByteArray(sourcecode.toAscii()));
+
+    if (readBuffers.size() == 1) {
+        if (sourcecode.rightRef(1) != "\n") {
+            readBuffers.top()->append('\n');
+        }
+    }
+
     yypush_buffer_state(YY_CURRENT_BUFFER);
     yy_scan_string(readBuffers.top()->constData());
 }
@@ -322,6 +329,7 @@ void expandMacro(const QString &macroName, const QStringList *arguments)
             expansion.append(part.text);
         }
     }
+
     macroExpansionStack.prepend(macroName);
     pushInput(expansion.join(""));
 }

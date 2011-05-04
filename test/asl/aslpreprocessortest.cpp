@@ -666,6 +666,15 @@ public:
         testProcessing(input, "    /* include */\n");
     }
 
+    void newlineAtEofNotRequired()
+    {
+        const QString input(
+                "#if 1\n"
+                "/* include */\n"
+                "#endif");
+        testProcessing(input, "/* include */\n");
+    }
+
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
     CPPUNIT_TEST(doesNotChangeShaderWithoutPreprocessorDirectives);
     CPPUNIT_TEST(excludesIfNDefPartIfMacroIsDefined);
@@ -724,6 +733,7 @@ public:
     CPPUNIT_TEST(unfulfilledIfClauseExcludesDefine);
     CPPUNIT_TEST(unfulfilledIfClauseExcludesSyntaxErrors);
     CPPUNIT_TEST(expandsMacrosInMacros);
+    CPPUNIT_TEST(newlineAtEofNotRequired);
     CPPUNIT_TEST_SUITE_END();
 
 private:
