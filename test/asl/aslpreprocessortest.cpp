@@ -81,7 +81,7 @@ public:
     {
         const QString input("#ifndef UNDEFINED_MACRO\n");
         preprocessor.process(input);
-        assertLoggedError(1, QRegExp(".*syntax.*"));
+        assertLoggedError(0, 1, QRegExp(".*syntax.*"));
     }
 
     void excludesIfdefPartIfMacroNotDefined()
@@ -569,7 +569,7 @@ public:
                 "#if MACRO + 1\n"
                 "#endif\n");
         preprocessor.process(input);
-        assertLoggedError(2, QRegExp(".*argument.*"));
+        assertLoggedError(0, 2, QRegExp(".*argument.*"));
     }
 
     void logsErrorIfTooFewArgumentsArePassedToMacro()
@@ -579,7 +579,7 @@ public:
                 "#if MACRO(1) + 1\n"
                 "#endif\n");
         preprocessor.process(input);
-        assertLoggedError(2, QRegExp(".*too\\s+few\\s+arguments.*"));
+        assertLoggedError(0, 2, QRegExp(".*too\\s+few\\s+arguments.*"));
     }
 
     void logsErrorIfTooManyArgumentsArePassedToMacro()
@@ -589,7 +589,7 @@ public:
                 "#if MACRO(1, 1) + 1\n"
                 "#endif\n");
         preprocessor.process(input);
-        assertLoggedError(2, QRegExp(".*too\\s+many\\s+arguments.*"));
+        assertLoggedError(0, 2, QRegExp(".*too\\s+many\\s+arguments.*"));
     }
 
     void logsErrorIfExpandingUndefinedMacro()
@@ -598,7 +598,7 @@ public:
                 "#if MACRO\n"
                 "#endif\n");
         preprocessor.process(input);
-        assertLoggedError(1, QRegExp(".*undefined.*"));
+        assertLoggedError(0, 1, QRegExp(".*undefined.*"));
     }
 
     void logsErrorIfPreprocessorDirectiveWithinAnother()
@@ -607,8 +607,8 @@ public:
                 "#define #if TEST\n"
                 "#if #define\n");
         preprocessor.process(input);
-        assertLoggedError(1, QRegExp(".*syntax.*"));
-        assertLoggedError(2, QRegExp(".*syntax.*"));
+        assertLoggedError(0, 1, QRegExp(".*syntax.*"));
+        assertLoggedError(0, 2, QRegExp(".*syntax.*"));
     }
 
     void commentEndsDefine()
@@ -678,14 +678,14 @@ public:
     {
         const QString input("#error message\n");
         preprocessor.process(input);
-        assertLoggedError(1, QRegExp(".*message.*"));
+        assertLoggedError(0, 1, QRegExp(".*message.*"));
     }
 
     void excludesCommentsFromErrorDirective()
     {
         const QString input("#error part1 /* comment */ part2 // end\n");
         preprocessor.process(input);
-        assertLoggedError(1, QRegExp(".*part1  part2.*"));
+        assertLoggedError(0, 1, QRegExp(".*part1  part2.*"));
     }
 
     void allowsCommentsInDirectives()
@@ -734,6 +734,24 @@ public:
                 "#endif\n"
                 + inputToAssertMacroIsDefined("INCLUDE"));
         testProcessing(input, "");
+    }
+
+    void lineDirectiveChangesLine()
+    {
+        const QString input(
+                "#line 42\n"
+                "#define X(,,)\n");
+        preprocessor.process(input);
+        assertLoggedError(0, 43);
+    }
+
+    void lineDirectiveChangesLineAndSourceStringNumber()
+    {
+        const QString input(
+                "#line 42 23\n"
+                "#define X(,,)\n");
+        preprocessor.process(input);
+        assertLoggedError(23, 43);
     }
 
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
@@ -800,6 +818,8 @@ public:
     CPPUNIT_TEST(allowsCommentsInDirectives);
     CPPUNIT_TEST(handlesElifAfterIfdef);
     CPPUNIT_TEST(handlesElifAfterIfndef);
+    CPPUNIT_TEST(lineDirectiveChangesLine);
+    CPPUNIT_TEST(lineDirectiveChangesLineAndSourceStringNumber);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -826,24 +846,30 @@ private:
         return output == "    /* is zero */\n";
     }
 
-    void assertLoggedError(unsigned int line,
+    void assertLoggedError(unsigned int sourceStringNo, unsigned int line,
             const QRegExp &mustContain = QRegExp(".*"))
     {
-        const QRegExp matcher("(\\d+):\\s+\\(preprocessor\\)\\s+([^\r\n]*)");
+        const QRegExp matcher(
+            "(\\d+):(\\d+):\\s+error:\\s+\\(preprocessor\\)\\s+([^\r\n]*)");
         const QString log = preprocessor.log();
 
-        int matchIdx = -1;
-        while (0 <= (matchIdx = matcher.indexIn(log, matchIdx + 1))) {
-            bool lineCorrect = (matcher.cap(1).toUInt() == line);
+        int pos = 0;
+        while (0 <= (pos = matcher.indexIn(log, pos))) {
+            bool fileCorrect = (matcher.cap(1).toUInt() == sourceStringNo);
+            bool lineCorrect = (matcher.cap(2).toUInt() == line);
             bool mustContainCorrect =
-                (0 <= mustContain.indexIn(matcher.cap(2)));
-            if (lineCorrect && mustContainCorrect) {
+                (0 <= mustContain.indexIn(matcher.cap(3)));
+
+            if (fileCorrect && lineCorrect && mustContainCorrect) {
                 return;
             }
+
+            pos += matcher.matchedLength();
         }
 
         CPPUNIT_FAIL(("Expected error containing \"" + mustContain.pattern()
-                + "\" in line " + QString::number(line) + ". Actual log:\n"
+                + "\" in sourcestring and line " + sourceStringNo + ":"
+                + QString::number(line) + ". Actual log:\n"
                 + log).toAscii().constData());
     }
 

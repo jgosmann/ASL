@@ -18,6 +18,9 @@
     {
     namespace ppinternal
     {
+        int sourceStringNo;
+        int glslVersion = 0;
+
         QTextStream *outStream;
         QString log;
         int ifNestingLevel;
@@ -50,7 +53,7 @@
 
 /* Do not reorder the tokens! The order matters! */
 %token <string> CHARACTERS
-%token DEFINE ENDPP UNDEF IF ELIF IFDEF IFNDEF ELSE ENDIF ERROR
+%token DEFINE ENDPP UNDEF IF ELIF IFDEF IFNDEF ELSE ENDIF ERROR LINE
 %token <string> IDENTIFIER
 %token <integer> INTEGER
 
@@ -90,6 +93,15 @@ pp:
             yyerror($2->toAscii().data());
             ++aslpreprocessorlineno;
             delete $2;
+        }
+    | LINE INTEGER ENDPP {
+            aslpreprocessorlineno = $2 + 1;
+            $$ = new QStringList();
+        }
+    | LINE INTEGER INTEGER ENDPP {
+            aslpreprocessorlineno = $2 + 1;
+            sourceStringNo = $3;
+            $$ = new QStringList();
         }
     | error ENDPP { $$ = new QStringList(); }
     ;
@@ -222,8 +234,9 @@ using namespace asl::ppinternal;
 
 void yyerror(char *msg)
 {
-    log = log % QString::number(aslpreprocessorlineno) % ": (preprocessor) "
-            % QString(msg) % QChar('\n');
+    log = log % QString::number(sourceStringNo) % QChar(':')
+            % QString::number(aslpreprocessorlineno)
+            % ": error: (preprocessor) " % QString(msg) % QChar('\n');
 }
 
 namespace asl

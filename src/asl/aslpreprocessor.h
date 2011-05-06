@@ -20,8 +20,9 @@ class ASLPreprocessor { public: ASLPreprocessor();
 
     const QString & log();
 
-    void process(const QString &sourcecode, QTextStream *out);
-    QString process(const QString &sourcecode);
+    void process(const QString &sourcecode, QTextStream *out,
+            unsigned int sourceStringNo = 0);
+    QString process(const QString &sourcecode, unsigned int sourceStringNo = 0);
 
     void resetAndClean();
 };

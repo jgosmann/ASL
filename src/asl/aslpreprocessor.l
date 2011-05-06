@@ -141,6 +141,12 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     return ERROR;
 }
 
+<INITIAL>{directivePrefix}line {
+    BEGIN PP_LINE;
+    doMacroExpansions = false;
+    return LINE;
+}
+
 <PP_LINE>[-+*/%()<>!&^|~] { return *yytext; }
 <PP_LINE>"==" { return EQ; }
 <PP_LINE>"!=" { return NE; }
