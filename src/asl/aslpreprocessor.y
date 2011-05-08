@@ -18,8 +18,8 @@
     {
     namespace ppinternal
     {
-        int sourceStringNo;
-        int glslVersion = 0;
+        unsigned int sourceStringNo;
+        unsigned int glslVersion = 0;
 
         QTextStream *outStream;
         QString log;

@@ -15,8 +15,8 @@ namespace asl
 {
 namespace ppinternal
 {
-    extern int sourceStringNo;
-    extern int glslVersion;
+    extern unsigned int sourceStringNo;
+    extern unsigned int glslVersion;
 
     extern QString log;
     extern int ifNestingLevel;

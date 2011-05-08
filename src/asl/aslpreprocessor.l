@@ -350,6 +350,8 @@ QString expandPredefinedMacro(const QString &macroName,
         return QString::number(aslpreprocessorlineno);
     } else if("__FILE__" == macroName) {
         return QString::number(sourceStringNo);
+    } else if("__VERSION__" == macroName) {
+        return QString::number(glslVersion);
     }
     return "";
 }

@@ -773,6 +773,35 @@ public:
         testProcessing(input, "/* include */\n", 2);
     }
 
+    void testVersionMacro()
+    {
+        const QString input(
+                "#if __VERSION__ >= 110\n"
+                "/* include */\n"
+                "#endif\n");
+        testProcessing(input, "/* include */\n");
+    }
+
+    void parsesVersionString()
+    {
+        CPPUNIT_ASSERT_EQUAL(
+            ASLPreprocessor::parseGlslVersionString(
+                reinterpret_cast<const GLubyte *>("2.1")),
+            (unsigned int) 210);
+        CPPUNIT_ASSERT_EQUAL(
+            ASLPreprocessor::parseGlslVersionString(
+                reinterpret_cast<const GLubyte *>("1.1.3")),
+            (unsigned int) 113);
+        CPPUNIT_ASSERT_EQUAL(
+            ASLPreprocessor::parseGlslVersionString(
+                reinterpret_cast<const GLubyte *>("1.2 vendor specific")),
+            (unsigned int) 120);
+        CPPUNIT_ASSERT_EQUAL(
+            ASLPreprocessor::parseGlslVersionString(
+                reinterpret_cast<const GLubyte *>("1.1.4 vendor specific")),
+            (unsigned int) 114);
+    }
+
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
     CPPUNIT_TEST(doesNotChangeShaderWithoutPreprocessorDirectives);
     CPPUNIT_TEST(excludesIfNDefPartIfMacroIsDefined);
@@ -841,6 +870,8 @@ public:
     CPPUNIT_TEST(lineDirectiveChangesLineAndSourceStringNumber);
     CPPUNIT_TEST(testLineMacro);
     CPPUNIT_TEST(testFileMacro);
+    CPPUNIT_TEST(testVersionMacro);
+    CPPUNIT_TEST(parsesVersionString);
     CPPUNIT_TEST_SUITE_END();
 
 private:

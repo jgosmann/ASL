@@ -1,6 +1,11 @@
 QT += core gui opengl
 CONFIG += warn_on
 
+release {
+    QMAKE_CFLAGS_RELEASE += -D NDEBUG
+    QMAKE_CXXFLAGS_RELEASE += -D NDEBUG
+}
+
 TARGET = cg
 TEMPLATE = app
 
