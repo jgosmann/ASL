@@ -199,8 +199,6 @@ ifclause: ifstart { ++ifNestingLevel; ifConditionResults.push($1 != 0); handleIf
         }
     };
 
-incnestlvl: 
-
 ifstart:
       if
       | ifdef

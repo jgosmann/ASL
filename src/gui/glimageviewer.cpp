@@ -5,9 +5,9 @@ GLImageViewer::GLImageViewer(QWidget *parent, Qt::WindowFlags f) :
     m_textureLoaded(false),
     m_useShaderProgram(true),
     m_imageRatio(4.f/3.f),
+    m_imageZoom(100),
     m_imageSize(QSize(1, 1)),
-    m_originalSize(QSize(1, 1)),
-    m_imageZoom(100)
+    m_originalSize(QSize(1, 1))
 {}
 
 GLImageViewer::~GLImageViewer()

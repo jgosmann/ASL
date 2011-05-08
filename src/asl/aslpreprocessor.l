@@ -346,6 +346,11 @@ void handleMacro(const QString &macroName, const QStringList *arguments)
 QString expandPredefinedMacro(const QString &macroName,
         const QStringList *arguments)
 {
+    /* Suppress unused argument warning. Maybe there will be predefined macros
+     * with arguments in later versions.
+     */
+    (void) arguments;
+
     if ("__LINE__" == macroName) {
         return QString::number(aslpreprocessorlineno);
     } else if("__FILE__" == macroName) {
