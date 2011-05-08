@@ -11,6 +11,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 %x ERROR_DIRECTIVE
 
 %{
+    #include <cassert>
     #include <QByteArray>
     #include <QStack>
     #include <QTextStream>
@@ -23,7 +24,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 
     #include "aslpreprocessor_yacc.h"
 
-    void aslpreprocessorerror(char *msg);
+    void aslpreprocessorerror(const char *msg);
 
     using namespace asl::ppinternal;
 
@@ -52,8 +53,16 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
          *     (<tt>#define MACRO()</tt>) you have to pass the pointer to an
          *     empty list.
          */
-        void expandMacro(const QString &macroName,
+        void handleMacro(const QString &macroName,
                 const QStringList *arguments);
+        QString expandPredefinedMacro(const QString &macroName,
+                const QStringList *arguments);
+        bool checkIfValidMacroAndLogErrorIfNot(const QString &macroName,
+                const QStringList *arguments);
+        QString expandUserMacro(const QString &macroName,
+                const QStringList *arguments);
+        void pushExpandedMacro(const QString &macroName,
+                const QString &expansion);
 
         /** \attention Destroys \c yytext! */
         bool argumentListFollows();
@@ -178,9 +187,9 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
                 && macroTable.value(identifier).arguments != NULL;
         if (macroHasArgList && argumentListFollows()) {
             QStringList arguments = readArgumentList();
-            expandMacro(identifier, &arguments);
+            handleMacro(identifier, &arguments);
         } else {
-            expandMacro(identifier, NULL);
+            handleMacro(identifier, NULL);
         }
     }
 }
@@ -319,12 +328,39 @@ void pushInput(const QString &sourcecode)
     yy_scan_string(readBuffers.top()->constData());
 }
 
-void expandMacro(const QString &macroName, const QStringList *arguments)
+void handleMacro(const QString &macroName, const QStringList *arguments)
+{
+    QString expansion = expandPredefinedMacro(macroName, arguments);
+    bool expandedMacro = !expansion.isEmpty();
+
+    if (!expandedMacro) {
+        if (!checkIfValidMacroAndLogErrorIfNot(macroName, arguments)) {
+            return;
+        }
+        expansion = expandUserMacro(macroName, arguments);
+    }
+
+    pushExpandedMacro(macroName, expansion);
+}
+
+QString expandPredefinedMacro(const QString &macroName,
+        const QStringList *arguments)
+{
+    if ("__LINE__" == macroName) {
+        return QString::number(aslpreprocessorlineno);
+    } else if("__FILE__" == macroName) {
+        return QString::number(sourceStringNo);
+    }
+    return "";
+}
+
+bool checkIfValidMacroAndLogErrorIfNot(const QString &macroName,
+        const QStringList *arguments)
 {
     if (!isDefined(macroName)) {
         aslpreprocessorerror(
             ("undefined macro: " + macroName).toAscii().data());
-        return;
+        return false;
     }
 
     const Macro &macro = macroTable.value(macroName);
@@ -334,14 +370,23 @@ void expandMacro(const QString &macroName, const QStringList *arguments)
             aslpreprocessorerror(
                 ("Macro " + macroName + " has too few arguments.")
                 .toAscii().data());
-            return;
+            return false;
         } else if (arguments->size() > macro.arguments->size()) {
             aslpreprocessorerror(
                 ("Macro " + macroName + " has too many arguments.")
                 .toAscii().data());
-            return;
+            return false;
         }
     }
+
+    return true;
+}
+
+QString expandUserMacro(const QString &macroName, const QStringList *arguments)
+{
+    assert(checkIfValidMacroAndLogErrorIfNot(macroName, arguments));
+
+    const Macro &macro = macroTable.value(macroName);
 
     QStringList expansion;
     foreach (MacroPart part, *(macro.parts.data())) {
@@ -356,8 +401,13 @@ void expandMacro(const QString &macroName, const QStringList *arguments)
         }
     }
 
+    return expansion.join("");
+}
+
+void pushExpandedMacro(const QString &macroName, const QString &expansion)
+{
     macroExpansionStack.prepend(macroName);
-    pushInput(expansion.join(""));
+    pushInput(expansion);
 }
 
 bool argumentListFollows()

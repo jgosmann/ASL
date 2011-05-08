@@ -9,7 +9,7 @@
     #include <QStack>
     #include <QStringBuilder>
 
-    void yyerror(char *msg);
+    void yyerror(const char *msg);
     int yylex();
 
     using namespace asl::ppinternal;
@@ -232,7 +232,7 @@ elif: ELIF expr ENDPP { $$ = $2; };
 
 using namespace asl::ppinternal;
 
-void yyerror(char *msg)
+void yyerror(const char *msg)
 {
     log = log % QString::number(sourceStringNo) % QChar(':')
             % QString::number(aslpreprocessorlineno)

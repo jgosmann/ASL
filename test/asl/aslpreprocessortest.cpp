@@ -754,6 +754,25 @@ public:
         assertLoggedError(23, 43);
     }
 
+    void testLineMacro()
+    {
+        const QString input(
+                "/* line 1 */\n"
+                "#if __LINE__ == 2\n"
+                "/* include */\n"
+                "#endif\n");
+        testProcessing(input, "/* line 1 */\n/* include */\n");
+    }
+
+    void testFileMacro()
+    {
+        const QString input(
+                "#if __FILE__ == 2\n"
+                "/* include */\n"
+                "#endif\n");
+        testProcessing(input, "/* include */\n", 2);
+    }
+
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
     CPPUNIT_TEST(doesNotChangeShaderWithoutPreprocessorDirectives);
     CPPUNIT_TEST(excludesIfNDefPartIfMacroIsDefined);
@@ -820,13 +839,16 @@ public:
     CPPUNIT_TEST(handlesElifAfterIfndef);
     CPPUNIT_TEST(lineDirectiveChangesLine);
     CPPUNIT_TEST(lineDirectiveChangesLineAndSourceStringNumber);
+    CPPUNIT_TEST(testLineMacro);
+    CPPUNIT_TEST(testFileMacro);
     CPPUNIT_TEST_SUITE_END();
 
 private:
-    void testProcessing(const QString &input, const QString &expectedOutput)
+    void testProcessing(const QString &input, const QString &expectedOutput,
+            unsigned int sourceStringNo = 0)
     {
         CPPUNIT_ASSERT_EQUAL(expectedOutput.toStdString(),
-                preprocessor.process(input).toStdString());
+                preprocessor.process(input, sourceStringNo).toStdString());
         assertLogIsEmpty();
     }
 
@@ -875,7 +897,10 @@ private:
 
     void assertLogIsEmpty()
     {
-        CPPUNIT_ASSERT(preprocessor.log().length() <= 0);
+        if (preprocessor.log().length() > 0) {
+            CPPUNIT_FAIL(("Error while preprocessing file:\n"
+                    + preprocessor.log()).toAscii().constData());
+        }
     }
 
     QString inputToAssertNCountedMacrosAreDefined(const QString &macroName,
