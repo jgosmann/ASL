@@ -3,17 +3,17 @@
 #include <QtCore/QString>
 #include <QtOpenGL/QGLPixelBuffer>
 
-#include "../src/asl/annotatedshadercompiler.h"
+#include "../src/asl/aslcompiler.h"
 #include "../src/asl/compilationexception.h"
 
 #include "common.h"
 
 namespace asl
 {
-class AnnotatedShaderCompilerTest : public TestFixture
+class ASLCompilerTest : public TestFixture
 {
 public:
-    AnnotatedShaderCompilerTest() : pixelBufferForGLContext(1, 1) { }
+    ASLCompilerTest() : pixelBufferForGLContext(1, 1) { }
 
     void setUp()
     {
@@ -62,7 +62,7 @@ public:
         CPPUNIT_ASSERT(compiled->description() == "");
     }
 
-    CPPUNIT_TEST_SUITE(AnnotatedShaderCompilerTest);
+    CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(throwsExceptionWhenCompilingInvalidShader);
     CPPUNIT_TEST(compilesAndLinksTrivialShader);
     CPPUNIT_TEST(shaderNameDefaultsToFilename);
@@ -73,13 +73,13 @@ private:
     static const QString trivialShader;
 
     QGLPixelBuffer pixelBufferForGLContext;
-    asl::AnnotatedShaderCompiler shaderCompiler;
+    asl::ASLCompiler shaderCompiler;
 };
 }
 
-CPPUNIT_TEST_SUITE_REGISTRATION(asl::AnnotatedShaderCompilerTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(asl::ASLCompilerTest);
 
 using namespace asl;
 
-const QString AnnotatedShaderCompilerTest::trivialShader("void main() { }");
+const QString ASLCompilerTest::trivialShader("void main() { }");
 

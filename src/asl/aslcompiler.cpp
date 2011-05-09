@@ -1,4 +1,4 @@
-#include "annotatedshadercompiler.h"
+#include "aslcompiler.h"
 
 #include <QFileInfo>
 #include <QScopedPointer>
@@ -7,15 +7,12 @@
 
 using namespace asl;
 
-AnnotatedShaderCompiler::AnnotatedShaderCompiler(QObject *parent) :
-    QObject(parent)
+ASLCompiler::ASLCompiler(QObject *parent) : QObject(parent)
 {
 }
 
-AnnotatedGLShaderProgram *
-AnnotatedShaderCompiler::compile(QGLShader::ShaderType type,
-                                 const QString &source,
-                                 const QString &pathOfSource)
+AnnotatedGLShaderProgram * ASLCompiler::compile(QGLShader::ShaderType type,
+         const QString &source, const QString &pathOfSource)
 {
     QScopedPointer<AnnotatedGLShaderProgram> shaderPrgm(
             new AnnotatedGLShaderProgram(

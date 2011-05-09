@@ -9,11 +9,11 @@
 
 namespace asl
 {
-class AnnotatedShaderCompiler : public QObject
+class ASLCompiler : public QObject
 {
     Q_OBJECT
 public:
-    explicit AnnotatedShaderCompiler(QObject *parent = 0);
+    explicit ASLCompiler(QObject *parent = 0);
 
     /**
      * Use always `/' as an universal directory separator for the
