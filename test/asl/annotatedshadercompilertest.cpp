@@ -20,6 +20,21 @@ public:
         pixelBufferForGLContext.makeCurrent();
     }
 
+    void throwsExceptionWhenCompilingInvalidShader()
+    {
+        const QString invalidShader("invalid main() { }");
+        try {
+            shaderCompiler.compile(QGLShader::Fragment, invalidShader);
+        } catch (CompilationException &e) {
+            CPPUNIT_ASSERT_EQUAL(e.stage(),
+                                 CompilationException::COMPILATION);
+            CPPUNIT_ASSERT(strlen(e.what()) > 0);
+            return;
+        }
+        CPPUNIT_FAIL("CompilationException expected when compiling shader "
+            "with invalid syntax.");
+    }
+
     void compilesAndLinksTrivialShader()
     {
         QScopedPointer<AnnotatedGLShaderProgram> compiled(
@@ -40,27 +55,18 @@ public:
         CPPUNIT_ASSERT(compiled->name() == filename);
     }
 
-    void throwsExceptionWhenCompilingInvalidShader()
+    void shaderDescriptionDefaultsToEmptyString()
     {
-        const QString invalidShader("invalid main() { }");
-        try {
-            QScopedPointer<AnnotatedGLShaderProgram> compiled(
-                shaderCompiler.compile(QGLShader::Fragment, invalidShader));
-            (void) compiled; /* Prevent unused variable warning. */
-        } catch (CompilationException &e) {
-            CPPUNIT_ASSERT_EQUAL(e.stage(),
-                                 CompilationException::COMPILATION);
-            CPPUNIT_ASSERT(strlen(e.what()) > 0);
-            return;
-        }
-        CPPUNIT_FAIL("CompilationException expected when compiling shader "
-            "with invalid syntax.");
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment, trivialShader));
+        CPPUNIT_ASSERT(compiled->description() == "");
     }
 
     CPPUNIT_TEST_SUITE(AnnotatedShaderCompilerTest);
+    CPPUNIT_TEST(throwsExceptionWhenCompilingInvalidShader);
     CPPUNIT_TEST(compilesAndLinksTrivialShader);
     CPPUNIT_TEST(shaderNameDefaultsToFilename);
-    CPPUNIT_TEST(throwsExceptionWhenCompilingInvalidShader);
+    CPPUNIT_TEST(shaderDescriptionDefaultsToEmptyString);
     CPPUNIT_TEST_SUITE_END();
 
 private:
