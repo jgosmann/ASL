@@ -3,6 +3,7 @@ CONFIG += warn_on
 
 TARGET = cg
 TEMPLATE = app
+INCLUDEPATH += .
 
 include(asl/asl.pri)
 include(gui/gui.pri)

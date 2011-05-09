@@ -162,7 +162,7 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout">
            <item>
-            <widget class="QListView" name="listView_ShaderList">
+            <widget class="ShaderListView" name="listView_ShaderList">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                <horstretch>0</horstretch>
@@ -223,7 +223,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>27</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
@@ -244,6 +244,11 @@
    <extends>QWidget</extends>
    <header>gui/glimageviewer.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ShaderListView</class>
+   <extends>QListView</extends>
+   <header location="global">gui/shaderlistview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
