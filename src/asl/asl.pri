@@ -5,7 +5,8 @@ HEADERS += asl/shaderparameterinfo.h \
     asl/aslcompiler.h \
     asl/compilationexception.h \
     asl/aslpreprocessor.h \
-    asl/aslpreprocessor_parserinternal.h
+    asl/aslpreprocessor_parserinternal.h \
+    asl/aslparser_internal.h
 
 SOURCES += \
     asl/annotatedglshaderprogram.cpp \
@@ -13,7 +14,9 @@ SOURCES += \
     asl/compilationexception.cpp \
     asl/aslpreprocessor.cpp
 
-LEXSOURCES += asl/aslpreprocessor.l
+LEXSOURCES += asl/aslpreprocessor.l \
+    asl/aslparser.l
 
-YACCSOURCES += asl/aslpreprocessor.y
+YACCSOURCES += asl/aslpreprocessor.y \
+    asl/aslparser.y
 

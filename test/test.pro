@@ -49,6 +49,7 @@ UI_DIR = ../ui
 
 include(asl/asl.pri)
 HEADERS += common.h
-SOURCES += testmain.cpp
+SOURCES += testmain.cpp \
+    common.cpp
 
 DEFINES += TEST

@@ -1,4 +1,5 @@
 #include "aslcompiler.h"
+#include "aslparser_internal.h"
 
 #include <QFileInfo>
 #include <QScopedPointer>
@@ -23,6 +24,8 @@ AnnotatedGLShaderProgram * ASLCompiler::compile(QGLShader::ShaderType type,
         throw CompilationException(CompilationException::COMPILATION,
                 shaderPrgm->log());
     }
+
+    parserinternal::parse(source);
 
     shaderPrgm->link();
     // TODO: check for errors

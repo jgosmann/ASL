@@ -52,14 +52,23 @@ public:
         QScopedPointer<AnnotatedGLShaderProgram> compiled(
             shaderCompiler.compile(QGLShader::Fragment, trivialShader,
                 path));
-        CPPUNIT_ASSERT(compiled->name() == filename);
+        CPPUNIT_ASSERT_EQUAL(filename, compiled->name());
     }
 
     void shaderDescriptionDefaultsToEmptyString()
     {
         QScopedPointer<AnnotatedGLShaderProgram> compiled(
                 shaderCompiler.compile(QGLShader::Fragment, trivialShader));
-        CPPUNIT_ASSERT(compiled->description() == "");
+        CPPUNIT_ASSERT_EQUAL(QString(""), compiled->description());
+    }
+
+    void parsesShaderName()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/** ShaderName: test-shader */\n"
+                    + trivialShader));
+        CPPUNIT_ASSERT_EQUAL(QString("test-shader"), compiled->name());
     }
 
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
@@ -67,6 +76,7 @@ public:
     CPPUNIT_TEST(compilesAndLinksTrivialShader);
     CPPUNIT_TEST(shaderNameDefaultsToFilename);
     CPPUNIT_TEST(shaderDescriptionDefaultsToEmptyString);
+    CPPUNIT_TEST(parsesShaderName);
     CPPUNIT_TEST_SUITE_END();
 
 private:
