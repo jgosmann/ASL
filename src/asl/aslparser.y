@@ -2,10 +2,13 @@
 %{
     #ifdef TEST
         #include "../src/asl/aslparser_internal.h"
+        #include "../src/asl/annotatedglshaderprogrambuilder.h"
     #else
         #include "asl/aslparser_internal.h"
+        #include "asl/annotatedglshaderprogrambuilder.h"
     #endif
 
+    #include <QFileInfo>
     #include <QStringBuilder>
 
     extern int aslparserlineno;
@@ -19,6 +22,7 @@
     namespace parserinternal
     {
         QString log;
+        AnnotatedGLShaderProgramBuilder builder;
     } /* namespace parserinternal */
     } /* namespace asl */
 
@@ -29,7 +33,9 @@
     QString *string;
 }
 
-%token WHITESPACE ANNOTATION_START ANNOTATION_STRING ANNOTATION_END ANNOTATION_WHITESPACE CHARACTERS KEY
+
+%token <string> ANNOTATION_STRING
+%token WHITESPACE ANNOTATION_START ANNOTATION_END CHARACTERS KEY
 
 %%
 
@@ -47,11 +53,7 @@ annotations:
     annotations keyValuePair
     | ;
 
-keyValuePair: KEY value;
-
-value: string;
-
-string: WHITESPACE ANNOTATION_STRING ANNOTATION_WHITESPACE;
+keyValuePair: KEY ANNOTATION_STRING { builder.setName(*$2); delete $2; };
 
 remainingProgram:
     remainingProgram WHITESPACE
@@ -79,10 +81,14 @@ void clearLog()
     log.clear();
 }
 
-void parse(const QString &sourcecode)
+AnnotatedGLShaderProgram * parse(const QString &sourcecode,
+        const QString &pathOfSource)
 {
+    builder = AnnotatedGLShaderProgramBuilder();
+    builder.setName(QFileInfo(pathOfSource).fileName());
     setInput(sourcecode);
     yyparse();
+    return builder.build();
 }
 
 } /* namespace parserinternal */

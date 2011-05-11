@@ -3,9 +3,11 @@
 
 whitespace [ \t\r\n]
 annotationWhitespace [ \t\r\n*]
+notAnnotationWhitespace [^ \t\r\n*]
 identifier [_a-zA-Z][_a-zA-Z0-9]*
 
 %x ANNOTATION
+%x READ_ANNOTATION_STRING
 
 %{
     #ifdef TEST
@@ -36,13 +38,20 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     return ANNOTATION_START;
 }
 
-<ANNOTATION>{annotationWhitespace}* {
-    return ANNOTATION_WHITESPACE;
-}
-
-<ANNOTATION>"*/" {
+<ANNOTATION,READ_ANNOTATION_STRING>"*/" {
     BEGIN INITIAL;
     return ANNOTATION_END;
+}
+
+<ANNOTATION>[-_a-zA-Z0-9]+: {
+    aslparserlval.string = new QString(yytext);
+    BEGIN READ_ANNOTATION_STRING;
+    return KEY;
+}
+
+<READ_ANNOTATION_STRING>{notAnnotationWhitespace}([^*/\/]*{notAnnotationWhitespace})? {
+    aslparserlval.string = new QString(yytext);
+    return ANNOTATION_STRING;
 }
 
 {whitespace}+ { return WHITESPACE; }
@@ -69,6 +78,7 @@ void clean()
 void resetAndClean() {
     clean();
     yylineno = 1;
+    BEGIN INITIAL;
 }
 
 void setInput(const QString &sourcecode)

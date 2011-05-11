@@ -1,7 +1,6 @@
 #include "aslcompiler.h"
 #include "aslparser_internal.h"
 
-#include <QFileInfo>
 #include <QScopedPointer>
 
 #include "compilationexception.h"
@@ -16,8 +15,8 @@ AnnotatedGLShaderProgram * ASLCompiler::compile(QGLShader::ShaderType type,
          const QString &source, const QString &pathOfSource)
 {
     QScopedPointer<AnnotatedGLShaderProgram> shaderPrgm(
-            new AnnotatedGLShaderProgram(
-                QFileInfo(pathOfSource).fileName(), ""));
+            parserinternal::parse(source, pathOfSource));
+
     bool success = shaderPrgm->addShaderFromSourceCode(type, source);
 
     if (!success || !shaderPrgm->log().isEmpty()) {
