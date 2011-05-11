@@ -2,6 +2,7 @@
 #define ANNOTATEDGLSHADER_H
 
 #include <QGLShaderProgram>
+#include <QList>
 
 #include "shaderparameterinfo.h"
 
@@ -26,7 +27,7 @@ public:
         return m_description;
     }
 
-    inline const asl::ShaderParameterInfo & parameterInfo() const {
+    inline const QList<asl::ShaderParameterInfo> & parameterInfo() const {
         return m_parameterInfo;
     }
 
@@ -37,7 +38,7 @@ public slots:
 private:
     const QString m_name;
     const QString m_description;
-    const asl::ShaderParameterInfo m_parameterInfo;
+    const QList<asl::ShaderParameterInfo> m_parameterInfo;
 
 };
 }
