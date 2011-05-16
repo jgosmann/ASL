@@ -84,7 +84,7 @@ public:
     {
         const QString input("#ifndef UNDEFINED_MACRO\n");
         preprocessor.process(input);
-        assertLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
                 .withMessageMatching(QRegExp(".*syntax.*")));
     }
 
@@ -573,7 +573,7 @@ public:
                 "#if MACRO + 1\n"
                 "#endif\n");
         preprocessor.process(input);
-        assertLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 2)
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 2)
                 .withMessageMatching(QRegExp(".*argument.*")));
     }
 
@@ -584,7 +584,7 @@ public:
                 "#if MACRO(1) + 1\n"
                 "#endif\n");
         preprocessor.process(input);
-        assertLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 2)
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 2)
                 .withMessageMatching(QRegExp(".*too\\s+few\\s+arguments.*")));
     }
 
@@ -595,7 +595,7 @@ public:
                 "#if MACRO(1, 1) + 1\n"
                 "#endif\n");
         preprocessor.process(input);
-        assertLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 2)
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 2)
                 .withMessageMatching(QRegExp(".*too\\s+many\\s+arguments.*")));
     }
 
@@ -605,7 +605,7 @@ public:
                 "#if MACRO\n"
                 "#endif\n");
         preprocessor.process(input);
-        assertLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
                .withMessageMatching(QRegExp(".*undefined.*")));
     }
 
@@ -615,9 +615,9 @@ public:
                 "#define #if TEST\n"
                 "#if #define\n");
         preprocessor.process(input);
-        assertLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
                .withMessageMatching(QRegExp(".*syntax.*")));
-        assertLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 2)
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 2)
                .withMessageMatching(QRegExp(".*syntax.*")));
     }
 
@@ -688,7 +688,7 @@ public:
     {
         const QString input("#error message\n");
         preprocessor.process(input);
-        assertLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
                .withMessageMatching(QRegExp(".*message.*")));
     }
 
@@ -696,7 +696,7 @@ public:
     {
         const QString input("#error part1 /* comment */ part2 // end\n");
         preprocessor.process(input);
-        assertLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
                .withMessageMatching(QRegExp(".*part1  part2.*")));
     }
 
@@ -754,7 +754,7 @@ public:
                 "#line 42\n"
                 "#define X(,,)\n");
         preprocessor.process(input);
-        assertLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 43));
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 43));
     }
 
     void lineDirectiveChangesLineAndSourceStringNumber()
@@ -763,7 +763,7 @@ public:
                 "#line 42 23\n"
                 "#define X(,,)\n");
         preprocessor.process(input);
-        assertLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(23, 43));
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(23, 43));
     }
 
     void testLineMacro()
@@ -892,7 +892,7 @@ private:
     {
         CPPUNIT_ASSERT_EQUAL(expectedOutput.toStdString(),
                 preprocessor.process(input, sourceStringNo).toStdString());
-        assertLogIsEmpty();
+        assertSuccess();
     }
 
     bool expressionResultsInZero(const QString &expression)
@@ -907,18 +907,19 @@ private:
                 "    /* is zero */\n"
                 "#endif\n");
         const QString output = preprocessor.process(input);
-        assertLogIsEmpty();
+        assertSuccess();
         return output == "    /* is zero */\n";
     }
 
-    void assertLogged(const asl::LogEntry &entry)
+    void assertFailedAndLogged(const asl::LogEntry &entry)
     {
+        CPPUNIT_ASSERT(!preprocessor.success());
         asl::assertLogContains(preprocessor.log(), entry);
     }
 
-    void assertLogIsEmpty()
+    void assertSuccess()
     {
-        if (preprocessor.log().length() > 0) {
+        if (!preprocessor.success()) {
             CPPUNIT_FAIL(("Error while preprocessing file:\n"
                     + preprocessor.log()).toAscii().constData());
         }

@@ -19,6 +19,7 @@ namespace ppinternal
     extern unsigned int glslVersion;
 
     extern QString log;
+    extern bool success;
     extern int ifNestingLevel;
     extern int excludeIfNestingLevel;
 

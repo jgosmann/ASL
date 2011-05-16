@@ -23,6 +23,7 @@
 
         QTextStream *outStream;
         QString log;
+        bool success;
         int ifNestingLevel;
         int excludeIfNestingLevel;
         QStack<bool> ifConditionResults;
@@ -232,6 +233,7 @@ using namespace asl::ppinternal;
 
 void yyerror(const char *msg)
 {
+    success = false;
     log = log % QString::number(sourceStringNo) % QChar(':')
             % QString::number(aslpreprocessorlineno)
             % ": error: (preprocessor) " % QString(msg) % QChar('\n');
@@ -268,6 +270,7 @@ void handleIfBlockEnd()
 
 void parse(const QString &sourcecode, QTextStream *out)
 {
+    success = true;
     outStream = out;
     pushInput(sourcecode);
     yyparse();

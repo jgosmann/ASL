@@ -22,7 +22,8 @@ class ASLPreprocessor {
 public:
     ASLPreprocessor();
 
-    const QString & log();
+    const QString & log() const;
+    bool success() const;
 
     void process(const QString &sourcecode, QTextStream *out,
             unsigned int sourceStringNo = 0);

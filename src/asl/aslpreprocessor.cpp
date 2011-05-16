@@ -15,9 +15,14 @@ ASLPreprocessor::ASLPreprocessor()
     setGlslVersion(systemGlslVersion());
 }
 
-const QString & ASLPreprocessor::log()
+const QString & ASLPreprocessor::log() const
 {
     return ppinternal::log;
+}
+
+bool ASLPreprocessor::success() const
+{
+    return ppinternal::success;
 }
 
 void ASLPreprocessor::process(const QString &sourcecode, QTextStream *out,
