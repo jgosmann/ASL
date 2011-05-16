@@ -22,9 +22,16 @@ public:
     asl::AnnotatedGLShaderProgram * compile(QGLShader::ShaderType type, const
             QString &source, const QString &pathOfSource = "");
 
+    QString log() const { return m_log; }
+    const bool success() const { return m_success; }
+
 signals:
 
 public slots:
+
+private:
+    QString m_log;
+    bool m_success;
 
 };
 }

@@ -4,7 +4,6 @@
 #include <QStringList>
 
 #include "../src/asl/aslpreprocessor.h"
-#include "../src/asl/compilationexception.h"
 
 #include "common.h"
 
@@ -911,10 +910,28 @@ private:
         return output == "    /* is zero */\n";
     }
 
-    void assertFailedAndLogged(const asl::LogEntry &entry)
+    void assertFailedAndLogged(asl::LogEntry entry)
     {
+
         CPPUNIT_ASSERT(!preprocessor.success());
-        asl::assertLogContains(preprocessor.log(), entry);
+        asl::assertLogContains(preprocessor.log(),
+                entry.withMessageMatching(
+                    prefixRegexWithPreprocessorIndicator(entry.matchesMsg())));
+    }
+
+    QRegExp prefixRegexWithPreprocessorIndicator(QRegExp regex)
+    {
+        switch (regex.patternSyntax()) {
+            case QRegExp::Wildcard: /* fall through */
+            case QRegExp::WildcardUnix: /* fall through */
+            case QRegExp::FixedString:
+                regex.setPattern("(preprocessor) " + regex.pattern());
+                break;
+            default:
+                regex.setPattern("\\(preprocessor\\) " + regex.pattern());
+                break;
+        }
+        return regex;
     }
 
     void assertSuccess()
@@ -970,7 +987,7 @@ private:
     static const QString LOG_ERROR;
 };
 
-const QString ASLPreprocessorTest::LOG_ERROR = QString("error");
+const QString ASLPreprocessorTest::LOG_ERROR("ERROR");
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(asl::ASLPreprocessorTest);

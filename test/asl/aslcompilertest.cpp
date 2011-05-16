@@ -4,9 +4,11 @@
 #include <QtOpenGL/QGLPixelBuffer>
 
 #include "../src/asl/aslcompiler.h"
-#include "../src/asl/compilationexception.h"
 
 #include "common.h"
+
+#include "logassertions.h"
+#include "logentry.h"
 
 namespace asl
 {
@@ -20,29 +22,18 @@ public:
         pixelBufferForGLContext.makeCurrent();
     }
 
-    void throwsExceptionWhenCompilingInvalidShader()
+    void logsErrorWhenCompilingInvalidShader()
     {
         const QString invalidShader("invalid main() { }");
-        try {
-            shaderCompiler.compile(QGLShader::Fragment, invalidShader);
-        } catch (CompilationException &e) {
-            CPPUNIT_ASSERT_EQUAL(e.stage(),
-                                 CompilationException::COMPILATION);
-            CPPUNIT_ASSERT(strlen(e.what()) > 0);
-            return;
-        }
-        CPPUNIT_FAIL("CompilationException expected when compiling shader "
-            "with invalid syntax.");
+        shaderCompiler.compile(QGLShader::Fragment, invalidShader);
+        assertFailedAndLogged(LogEntry().withType(LOG_ERROR).occuringIn(0));
     }
 
     void compilesAndLinksTrivialShader()
     {
         QScopedPointer<AnnotatedGLShaderProgram> compiled(
             shaderCompiler.compile(QGLShader::Fragment, trivialShader));
-        CPPUNIT_ASSERT(!compiled.isNull());
-        CPPUNIT_ASSERT_MESSAGE(compiled->log().toStdString(),
-                               compiled->log().isEmpty());
-        CPPUNIT_ASSERT(compiled->isLinked());
+        assertCleanCompilation(compiled.data());
     }
 
     void shaderNameDefaultsToFilename()
@@ -72,7 +63,7 @@ public:
     }
 
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
-    CPPUNIT_TEST(throwsExceptionWhenCompilingInvalidShader);
+    CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(compilesAndLinksTrivialShader);
     CPPUNIT_TEST(shaderNameDefaultsToFilename);
     CPPUNIT_TEST(shaderDescriptionDefaultsToEmptyString);
@@ -80,7 +71,26 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
 private:
+    void assertCleanCompilation(const AnnotatedGLShaderProgram *program)
+    {
+        CPPUNIT_ASSERT(program);
+        CPPUNIT_ASSERT_MESSAGE(qPrintable(shaderCompiler.log()),
+                shaderCompiler.log().isEmpty());
+        CPPUNIT_ASSERT_MESSAGE(qPrintable(program->log()),
+                program->log().isEmpty());
+        CPPUNIT_ASSERT(shaderCompiler.success());
+        CPPUNIT_ASSERT(program->isLinked());
+    }
+
+    void assertFailedAndLogged(const asl::LogEntry &entry)
+    {
+        CPPUNIT_ASSERT(!shaderCompiler.success());
+        asl::assertLogContains(shaderCompiler.log(), entry);
+    }
+
     static const QString trivialShader;
+    static const QString LOG_ERROR;
+    static const QString LOG_WARNING;
 
     QGLPixelBuffer pixelBufferForGLContext;
     asl::ASLCompiler shaderCompiler;
@@ -92,4 +102,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(asl::ASLCompilerTest);
 using namespace asl;
 
 const QString ASLCompilerTest::trivialShader("void main() { }");
+const QString ASLCompilerTest::LOG_ERROR("ERROR");
+const QString ASLCompilerTest::LOG_WARNING("WARNING");
 

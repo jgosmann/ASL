@@ -7,8 +7,6 @@
 #include <QStringList>
 #include <QTextStream>
 
-#include "compilationexception.h"
-
 extern int aslpreprocessorlineno;
 
 namespace asl

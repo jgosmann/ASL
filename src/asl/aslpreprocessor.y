@@ -234,9 +234,9 @@ using namespace asl::ppinternal;
 void yyerror(const char *msg)
 {
     success = false;
-    log = log % QString::number(sourceStringNo) % QChar(':')
+    log = log % "ERROR: " % QString::number(sourceStringNo) % QChar(':')
             % QString::number(aslpreprocessorlineno)
-            % ": error: (preprocessor) " % QString(msg) % QChar('\n');
+            % ": (preprocessor) " % QString(msg) % QChar('\n');
 }
 
 namespace asl

@@ -3,8 +3,6 @@
 
 #include <QScopedPointer>
 
-#include "compilationexception.h"
-
 using namespace asl;
 
 ASLCompiler::ASLCompiler(QObject *parent) : QObject(parent)
@@ -14,14 +12,19 @@ ASLCompiler::ASLCompiler(QObject *parent) : QObject(parent)
 AnnotatedGLShaderProgram * ASLCompiler::compile(QGLShader::ShaderType type,
          const QString &source, const QString &pathOfSource)
 {
+    m_log.clear();
+    m_success = true;
+
     QScopedPointer<AnnotatedGLShaderProgram> shaderPrgm(
             parserinternal::parse(source, pathOfSource));
 
-    bool success = shaderPrgm->addShaderFromSourceCode(type, source);
+    m_success = shaderPrgm->addShaderFromSourceCode(type, source);
 
-    if (!success || !shaderPrgm->log().isEmpty()) {
-        throw CompilationException(CompilationException::COMPILATION,
-                shaderPrgm->log());
+    if (!shaderPrgm->log().isEmpty()) {
+        m_log += shaderPrgm->log();
+    }
+    if (!m_success) {
+        return NULL;
     }
 
     parserinternal::parse(source);
