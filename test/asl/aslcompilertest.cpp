@@ -120,6 +120,18 @@ public:
                 compiled->description());
     }
 
+    void warnsAboutUnknownKeys()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/** unknownKey: value */\n"
+                    + trivialShader));
+        CPPUNIT_ASSERT(shaderCompiler.success());
+        asl::assertLogContains(shaderCompiler.log(),
+                LogEntry().withType(LOG_WARNING).occuringAt(0, 1)
+                    .withMessageMatching(QRegExp(".*unknown.*unknownKey.*")));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -131,6 +143,7 @@ public:
     CPPUNIT_TEST(removesLeadingAndTrailingAteriskInAslCommentLine);
     CPPUNIT_TEST(parsesMultilineStrings);
     CPPUNIT_TEST(parsesMultilineStringsWithNoInitialIndentation);
+    CPPUNIT_TEST(warnsAboutUnknownKeys);
     CPPUNIT_TEST_SUITE_END();
 
 private:

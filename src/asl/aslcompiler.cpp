@@ -28,6 +28,7 @@ AnnotatedGLShaderProgram * ASLCompiler::compile(QGLShader::ShaderType type,
     }
 
     parserinternal::parse(source);
+    m_log += parserinternal::log;
 
     shaderPrgm->link();
     // TODO: check for errors

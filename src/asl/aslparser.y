@@ -24,7 +24,9 @@
         QString log;
         AnnotatedGLShaderProgramBuilder builder;
 
+        void addToLog(const QString &type, const QString &msg);
         void handleKeyStringValuePair(QString *key, QString *value);
+        void warn(const QString &msg);
     } /* namespace parserinternal */
     } /* namespace asl */
 
@@ -79,15 +81,20 @@ using namespace asl::parserinternal;
 
 void yyerror(const char *msg)
 {
-    log = log % /*QString::number(sourceStringNo) %*/ QChar(':')
-            % QString::number(aslparserlineno)
-            % ": error: (aslcompiler) " % QString(msg) % QChar('\n');
+    addToLog("ERROR", msg);
 }
 
 namespace asl
 {
 namespace parserinternal
 {
+
+void addToLog(const QString &type, const QString &msg)
+{
+    log = log % type % ": " % "0" % /*QString::number(sourceStringNo) %*/ QChar(':')
+            % QString::number(aslparserlineno)
+            % ": (aslcompiler) " % QString(msg) % QChar('\n');
+}
 
 void clearLog()
 {
@@ -100,6 +107,8 @@ void handleKeyStringValuePair(QString *key, QString *value)
         builder.setName(*value);
     } else if ("ShaderDescription:" == *key) {
         builder.setDescription(*value);
+    } else {
+        warn("unknown key: " + *key);
     }
 
     delete key;
@@ -114,6 +123,11 @@ AnnotatedGLShaderProgram * parse(const QString &sourcecode,
     setInput(sourcecode);
     yyparse();
     return builder.build();
+}
+
+void warn(const QString &msg)
+{
+    addToLog("WARNING", msg);
 }
 
 } /* namespace parserinternal */
