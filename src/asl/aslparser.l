@@ -30,6 +30,8 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     {
         void clean();
 
+        unsigned int calcIndentationDepth(const char *identationStr);
+
         unsigned int currentIdentation;
     } /* namespace ppinternal */
     } /* namespace asl */
@@ -38,7 +40,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 %%
 
 "/**" {
-    currentIdentation = UINT_MAX;
+    currentIdentation = 0;
     BEGIN ANNOTATION;
     return ANNOTATION_START;
 }
@@ -59,16 +61,12 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     return ANNOTATION_STRING;
 }
 
-<ANNOTATION,READ_ANNOTATION_STRING>^{annotationWhitespace}+ {
-    unsigned int identation = 0;
-    for (unsigned int i = 0; i < yyleng; ++i) {
-        if ('\t' == yytext[i]) {
-            identation += 8;
-        } else {
-            ++identation;
-        }
-    }
+<ANNOTATION>^({annotationWhitespace}*{whitespace})? {
+    currentIdentation = calcIndentationDepth(yytext);
+}
 
+<READ_ANNOTATION_STRING>^({annotationWhitespace}*{whitespace})? {
+    const unsigned int identation = calcIndentationDepth(yytext);
     if (identation < currentIdentation) {
         currentIdentation = identation;
         BEGIN ANNOTATION;
@@ -97,6 +95,19 @@ namespace parserinternal
 
 void clean()
 {
+}
+
+unsigned int calcIndentationDepth(const char *indentationStr)
+{
+    unsigned int identation = 0;
+    for (unsigned int i = 0; i < yyleng; ++i) {
+        if ('\t' == yytext[i]) {
+            identation += 8;
+        } else {
+            ++identation;
+        }
+    }
+    return identation;
 }
 
 void resetAndClean() {
