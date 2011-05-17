@@ -24,9 +24,16 @@ public:
 
     void logsErrorWhenCompilingInvalidShader()
     {
-        const QString invalidShader("invalid main() { }");
         shaderCompiler.compile(QGLShader::Fragment, invalidShader);
         assertFailedAndLogged(LogEntry().withType(LOG_ERROR).occuringIn(0));
+    }
+
+    void resetsStateBeforeCompiling()
+    {
+        shaderCompiler.compile(QGLShader::Fragment, invalidShader);
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment, trivialShader));
+        assertCleanCompilation(compiled.data());
     }
 
     void compilesAndLinksTrivialShader()
@@ -62,12 +69,24 @@ public:
         CPPUNIT_ASSERT_EQUAL(QString("test-shader"), compiled->name());
     }
 
+    void parsesShaderDescription()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/** ShaderDescription: Some description. */\n"
+                    + trivialShader));
+        CPPUNIT_ASSERT_EQUAL(QString("Some description."),
+                compiled->description());
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
+    CPPUNIT_TEST(resetsStateBeforeCompiling);
     CPPUNIT_TEST(compilesAndLinksTrivialShader);
     CPPUNIT_TEST(shaderNameDefaultsToFilename);
     CPPUNIT_TEST(shaderDescriptionDefaultsToEmptyString);
     CPPUNIT_TEST(parsesShaderName);
+    CPPUNIT_TEST(parsesShaderDescription);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -89,6 +108,7 @@ private:
     }
 
     static const QString trivialShader;
+    static const QString invalidShader;
     static const QString LOG_ERROR;
     static const QString LOG_WARNING;
 
@@ -102,6 +122,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(asl::ASLCompilerTest);
 using namespace asl;
 
 const QString ASLCompilerTest::trivialShader("void main() { }");
+const QString ASLCompilerTest::invalidShader("invalid main() { }");
 const QString ASLCompilerTest::LOG_ERROR("ERROR");
 const QString ASLCompilerTest::LOG_WARNING("WARNING");
 

@@ -23,6 +23,8 @@
     {
         QString log;
         AnnotatedGLShaderProgramBuilder builder;
+
+        void handleKeyStringValuePair(QString *key, QString *value);
     } /* namespace parserinternal */
     } /* namespace asl */
 
@@ -34,7 +36,7 @@
 }
 
 
-%token <string> ANNOTATION_STRING
+%token <string> KEY ANNOTATION_STRING
 %token WHITESPACE ANNOTATION_START ANNOTATION_END CHARACTERS KEY
 
 %%
@@ -53,7 +55,7 @@ annotations:
     annotations keyValuePair
     | ;
 
-keyValuePair: KEY ANNOTATION_STRING { builder.setName(*$2); delete $2; };
+keyValuePair: KEY ANNOTATION_STRING { handleKeyStringValuePair($1, $2); };
 
 remainingProgram:
     remainingProgram WHITESPACE
@@ -79,6 +81,18 @@ namespace parserinternal
 void clearLog()
 {
     log.clear();
+}
+
+void handleKeyStringValuePair(QString *key, QString *value)
+{
+    if ("ShaderName:" == *key) {
+        builder.setName(*value);
+    } else if ("ShaderDescription:" == *key) {
+        builder.setDescription(*value);
+    }
+
+    delete key;
+    delete value;
 }
 
 AnnotatedGLShaderProgram * parse(const QString &sourcecode,
