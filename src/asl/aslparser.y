@@ -35,9 +35,10 @@
     QString *string;
 }
 
+%type <string> string
 
 %token <string> KEY ANNOTATION_STRING
-%token WHITESPACE ANNOTATION_START ANNOTATION_END CHARACTERS KEY
+%token WHITESPACE ANNOTATION_START ANNOTATION_END CHARACTERS
 
 %%
 
@@ -55,7 +56,17 @@ annotations:
     annotations keyValuePair
     | ;
 
-keyValuePair: KEY ANNOTATION_STRING { handleKeyStringValuePair($1, $2); };
+keyValuePair: KEY string { handleKeyStringValuePair($1, $2); };
+
+string:
+    string ANNOTATION_STRING {
+            $$ = $1;
+            $$->append(" ");
+            $$->append($2);
+            delete $2;
+        }
+    | ANNOTATION_STRING { $$ = $1; }
+    ;
 
 remainingProgram:
     remainingProgram WHITESPACE

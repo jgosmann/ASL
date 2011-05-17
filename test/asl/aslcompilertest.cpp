@@ -90,6 +90,20 @@ public:
         CPPUNIT_ASSERT_EQUAL(QString("test-shader"), compiled->name());
     }
 
+    void parsesMultilineStrings()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/**\n"
+                    " * ShaderDescription: Line 1.\n"
+                    " *     Line 2. *\n"
+                    " * \t Line 3.\n"
+                    " */\n"
+                    + trivialShader));
+        CPPUNIT_ASSERT_EQUAL(QString("Line 1. Line 2. Line 3."),
+                compiled->description());
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -99,6 +113,7 @@ public:
     CPPUNIT_TEST(parsesShaderName);
     CPPUNIT_TEST(parsesShaderDescription);
     CPPUNIT_TEST(removesLeadingAndTrailingAteriskInAslCommentLine);
+    CPPUNIT_TEST(parsesMultilineStrings);
     CPPUNIT_TEST_SUITE_END();
 
 private:

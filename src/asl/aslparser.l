@@ -18,6 +18,8 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 
     #include "aslparser_yacc.h"
 
+    #include <climits>
+
     void aslparsererror(const char *msg);
 
     using namespace asl::parserinternal;
@@ -27,13 +29,16 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     namespace parserinternal
     {
         void clean();
+
+        unsigned int currentIdentation;
     } /* namespace ppinternal */
     } /* namespace asl */
 %}
 
 %%
 
-"/*" {
+"/**" {
+    currentIdentation = UINT_MAX;
     BEGIN ANNOTATION;
     return ANNOTATION_START;
 }
@@ -52,6 +57,22 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 <READ_ANNOTATION_STRING>{notAnnotationWhitespace}([^*/\/]*{notAnnotationWhitespace})? {
     aslparserlval.string = new QString(yytext);
     return ANNOTATION_STRING;
+}
+
+<ANNOTATION,READ_ANNOTATION_STRING>^{annotationWhitespace}+ {
+    unsigned int identation = 0;
+    for (unsigned int i = 0; i < yyleng; ++i) {
+        if ('\t' == yytext[i]) {
+            identation += 8;
+        } else {
+            ++identation;
+        }
+    }
+
+    if (identation < currentIdentation) {
+        currentIdentation = identation;
+        BEGIN ANNOTATION;
+    }
 }
 
 <ANNOTATION,READ_ANNOTATION_STRING>.|\n {
