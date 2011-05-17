@@ -51,6 +51,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 }
 
 <ANNOTATION>[-_a-zA-Z0-9]+: {
+    yytext[yyleng - 1] = '\0'; // We don't want to return the colon.
     aslparserlval.string = new QString(yytext);
     BEGIN READ_ANNOTATION_STRING;
     return KEY;

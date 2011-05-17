@@ -103,9 +103,9 @@ void clearLog()
 
 void handleKeyStringValuePair(QString *key, QString *value)
 {
-    if ("ShaderName:" == *key) {
+    if ("ShaderName" == *key) {
         builder.setName(*value);
-    } else if ("ShaderDescription:" == *key) {
+    } else if ("ShaderDescription" == *key) {
         builder.setDescription(*value);
     } else {
         warn("unknown key: " + *key);
