@@ -98,9 +98,11 @@ public:
                     " * ShaderDescription: Line 1.\n"
                     " *     Line 2. *\n"
                     " * \t Line 3.\n"
+                    "    ShaderName: Line 4.\n"
                     " */\n"
                     + trivialShader));
-        CPPUNIT_ASSERT_EQUAL(QString("Line 1. Line 2. Line 3."),
+        CPPUNIT_ASSERT_EQUAL(
+                QString("Line 1. Line 2. Line 3. ShaderName: Line 4."),
                 compiled->description());
     }
 

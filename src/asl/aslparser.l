@@ -30,7 +30,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     {
         void clean();
 
-        unsigned int calcIndentationDepth(const char *identationStr);
+        unsigned int calcIndentationDepth(const char *str, unsigned int len);
 
         unsigned int currentIdentation;
     } /* namespace ppinternal */
@@ -56,17 +56,17 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     return KEY;
 }
 
-<READ_ANNOTATION_STRING>{notAnnotationWhitespace}([^*/\/]*{notAnnotationWhitespace})? {
+<READ_ANNOTATION_STRING>{notAnnotationWhitespace}([^\n*/\/]*{notAnnotationWhitespace})? {
     aslparserlval.string = new QString(yytext);
     return ANNOTATION_STRING;
 }
 
 <ANNOTATION>^({annotationWhitespace}*{whitespace})? {
-    currentIdentation = calcIndentationDepth(yytext);
+    currentIdentation = calcIndentationDepth(yytext, yyleng);
 }
 
 <READ_ANNOTATION_STRING>^({annotationWhitespace}*{whitespace})? {
-    const unsigned int identation = calcIndentationDepth(yytext);
+    const unsigned int identation = calcIndentationDepth(yytext, yyleng);
     if (identation < currentIdentation) {
         currentIdentation = identation;
         BEGIN ANNOTATION;
@@ -97,11 +97,11 @@ void clean()
 {
 }
 
-unsigned int calcIndentationDepth(const char *indentationStr)
+unsigned int calcIndentationDepth(const char *str, unsigned int len)
 {
     unsigned int identation = 0;
-    for (unsigned int i = 0; i < yyleng; ++i) {
-        if ('\t' == yytext[i]) {
+    for (unsigned int i = 0; i < len; ++i) {
+        if ('\t' == str[i]) {
             identation += 8;
         } else {
             ++identation;
