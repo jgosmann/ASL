@@ -79,6 +79,17 @@ public:
                 compiled->description());
     }
 
+    void removesLeadingAndTrailingAteriskInAslCommentLine()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/**\n"
+                    " * ShaderName: test-shader *\n"
+                    " */\n"
+                    + trivialShader));
+        CPPUNIT_ASSERT_EQUAL(QString("test-shader"), compiled->name());
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -87,6 +98,7 @@ public:
     CPPUNIT_TEST(shaderDescriptionDefaultsToEmptyString);
     CPPUNIT_TEST(parsesShaderName);
     CPPUNIT_TEST(parsesShaderDescription);
+    CPPUNIT_TEST(removesLeadingAndTrailingAteriskInAslCommentLine);
     CPPUNIT_TEST_SUITE_END();
 
 private:
