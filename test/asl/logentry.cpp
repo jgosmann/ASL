@@ -4,7 +4,7 @@
 using namespace asl;
 
 LogEntry::LogEntry() : m_type(QString()), m_sourceStringNo(0), m_line(0),
-        m_isLineSpecified(false), m_matchesMsg(QRegExp(".*"))
+        m_matchesMsg(QRegExp(".*"))
 {
 }
 
@@ -17,15 +17,14 @@ LogEntry & LogEntry::withType(const QString &type)
 LogEntry & LogEntry::occuringIn(unsigned int sourceStringNo)
 {
     m_sourceStringNo = sourceStringNo;
-    m_isLineSpecified = false;
+    m_line.reset();
     return *this;
 }
 
 LogEntry & LogEntry::occuringAt(unsigned int sourceStringNo, unsigned int line)
 {
     m_sourceStringNo = sourceStringNo;
-    m_line = line;
-    m_isLineSpecified = true;
+    m_line.set(line);
     return *this;
 }
 

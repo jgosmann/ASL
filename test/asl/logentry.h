@@ -1,6 +1,8 @@
 #ifndef LOGENTRY_H
 #define LOGENTRY_H
 
+#include "../src/asl/defaultprovider.h"
+
 #include <QRegExp>
 #include <QString>
 
@@ -18,16 +20,15 @@ class LogEntry
 
         inline const QString &type() const { return m_type; }
         inline unsigned int sourceStringNo() const { return m_sourceStringNo; }
-        inline unsigned int line() const { return m_line; }
+        inline unsigned int line() const { return m_line.value(); }
         inline unsigned int isLineSpecified() const
-             { return m_isLineSpecified; }
+             { return m_line.isSet(); }
         inline QRegExp matchesMsg() const { return m_matchesMsg; }
 
     private:
         QString m_type;
         unsigned int m_sourceStringNo;
-        unsigned int m_line;
-        bool m_isLineSpecified;
+        DefaultProvider<unsigned int> m_line;
         QRegExp m_matchesMsg;
 };
 } /* namespace asl */
