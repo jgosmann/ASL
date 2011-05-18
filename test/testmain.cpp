@@ -7,7 +7,7 @@
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
-    (void) app; /* Prevent unused variable warning. */
+    Q_UNUSED(app);
 
     CppUnit::TextUi::TestRunner runner;
     CppUnit::TestFactoryRegistry &registry =
