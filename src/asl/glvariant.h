@@ -14,11 +14,11 @@ namespace asl
         GLint asInts[MAX_GL_VECTOR_DIMENSION * MAX_GL_VECTOR_DIMENSION];
 
         inline void set(GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3) {
-             asFloats[0] = v0;
-             asFloats[1] = v1;
-             asFloats[2] = v2;
-             asFloats[3] = v3;
-         }
+            asFloats[0] = v0;
+            asFloats[1] = v1;
+            asFloats[2] = v2;
+            asFloats[3] = v3;
+        }
 
         inline void set(GLint v0, GLint v1, GLint v2, GLint v3) {
             asInts[0] = v0;
