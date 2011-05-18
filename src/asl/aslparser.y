@@ -9,6 +9,7 @@
     #endif
 
     #include <QFileInfo>
+    #include <QSet>
     #include <QStringBuilder>
 
     extern int aslparserlineno;
@@ -23,6 +24,8 @@
     {
         QString log;
         AnnotatedGLShaderProgramBuilder builder;
+
+        QSet<QString> definedKeys;
 
         void addToLog(const QString &type, const QString &msg);
         void handleKeyStringValuePair(QString *key, QString *value);
@@ -52,7 +55,7 @@ header:
     header WHITESPACE
     | ;
 
-annotationComment: ANNOTATION_START annotations ANNOTATION_END;
+annotationComment: ANNOTATION_START { definedKeys.clear(); } annotations ANNOTATION_END;
 
 annotations:
     annotations keyValuePair
@@ -103,6 +106,14 @@ void clearLog()
 
 void handleKeyStringValuePair(QString *key, QString *value)
 {
+    if (definedKeys.contains(*key)) {
+        --aslparserlineno;
+        warn("duplicate key: " + *key);
+        ++aslparserlineno;
+    } else {
+        definedKeys.insert(*key);
+    }
+
     if ("ShaderName" == *key) {
         builder.setName(*value);
     } else if ("ShaderDescription" == *key) {

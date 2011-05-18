@@ -30,7 +30,9 @@ public:
 
     void resetsStateBeforeCompiling()
     {
-        shaderCompiler.compile(QGLShader::Fragment, invalidShader);
+        QScopedPointer<AnnotatedGLShaderProgram> createsLogEntries(
+                shaderCompiler.compile(QGLShader::Fragment,
+                   "/** unknownKey: foo */\n" + invalidShader));
         QScopedPointer<AnnotatedGLShaderProgram> compiled(
                 shaderCompiler.compile(QGLShader::Fragment, trivialShader));
         assertCleanCompilation(compiled.data());
@@ -120,6 +122,20 @@ public:
                 compiled->description());
     }
 
+    void parsesTwoKeysWithSameIdentation()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/**\n"
+                    " * ShaderName: name\n"
+                    " * ShaderDescription: desc\n"
+                    " */\n"
+                    + trivialShader));
+        assertCleanCompilation(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(QString("name"), compiled->name());
+        CPPUNIT_ASSERT_EQUAL(QString("desc"), compiled->description());
+    }
+
     void warnsAboutUnknownKeys()
     {
         QScopedPointer<AnnotatedGLShaderProgram> compiled(
@@ -130,6 +146,21 @@ public:
         asl::assertLogContains(shaderCompiler.log(),
                 LogEntry().withType(LOG_WARNING).occuringAt(0, 1)
                     .withMessageMatching(QRegExp(".*unknown.*unknownKey.*")));
+    }
+
+    void warnsAboutDuplicateKeys()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/**\n"
+                    " * ShaderName: name1\n"
+                    " * ShaderName: name2\n"
+                    " */\n"
+                    + trivialShader));
+        CPPUNIT_ASSERT(shaderCompiler.success());
+        asl::assertLogContains(shaderCompiler.log(),
+                LogEntry().withType(LOG_WARNING).occuringAt(0, 3)
+                    .withMessageMatching(QRegExp(".*duplicate.*ShaderName.*")));
     }
 
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
@@ -143,7 +174,9 @@ public:
     CPPUNIT_TEST(removesLeadingAndTrailingAteriskInAslCommentLine);
     CPPUNIT_TEST(parsesMultilineStrings);
     CPPUNIT_TEST(parsesMultilineStringsWithNoInitialIndentation);
+    CPPUNIT_TEST(parsesTwoKeysWithSameIdentation);
     CPPUNIT_TEST(warnsAboutUnknownKeys);
+    CPPUNIT_TEST(warnsAboutDuplicateKeys);
     CPPUNIT_TEST_SUITE_END();
 
 private:

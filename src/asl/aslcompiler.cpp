@@ -12,11 +12,13 @@ ASLCompiler::ASLCompiler(QObject *parent) : QObject(parent)
 AnnotatedGLShaderProgram * ASLCompiler::compile(QGLShader::ShaderType type,
          const QString &source, const QString &pathOfSource)
 {
+    parserinternal::clearLog();
     m_log.clear();
     m_success = true;
 
     QScopedPointer<AnnotatedGLShaderProgram> shaderPrgm(
             parserinternal::parse(source, pathOfSource));
+    m_log += parserinternal::log;
 
     m_success = shaderPrgm->addShaderFromSourceCode(type, source);
 
@@ -27,8 +29,6 @@ AnnotatedGLShaderProgram * ASLCompiler::compile(QGLShader::ShaderType type,
         return NULL;
     }
 
-    parserinternal::parse(source);
-    m_log += parserinternal::log;
 
     shaderPrgm->link();
     // TODO: check for errors

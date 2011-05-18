@@ -68,7 +68,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 
 <READ_ANNOTATION_STRING>^({annotationWhitespace}*{whitespace})? {
     const unsigned int identation = calcIndentationDepth(yytext, yyleng);
-    if (identation < currentIdentation) {
+    if (identation <= currentIdentation) {
         currentIdentation = identation;
         BEGIN ANNOTATION;
     }
