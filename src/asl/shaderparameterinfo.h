@@ -9,20 +9,16 @@
 
 namespace asl
 {
-    struct ShaderParameterInfo
-    {
-    public:
-        const QString name;
-        const QString description;
-        const asl::GLTypeInfo * const type;
-        const asl::GLVariant defaultValue;
-        const asl::GLVariant minimum;
-        const asl::GLVariant maximum;
-        const QStringList preferredUIControls;
-
-        /* TODO some working constructor */
-        ShaderParameterInfo() : type(NULL) { }
-    };
+struct ShaderParameterInfo
+{
+    QString name;
+    QString description;
+    asl::GLTypeInfo * const type;
+    asl::GLVariant defaultValue;
+    asl::GLVariant minimum;
+    asl::GLVariant maximum;
+    QStringList preferredUIControls;
+};
 }
 
 #endif // SHADERPARAMETER_H

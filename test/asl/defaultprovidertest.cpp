@@ -51,6 +51,19 @@ public:
         CPPUNIT_ASSERT(!t.isSet());
     }
 
+    void assignmentOperatorSetsValue()
+    {
+        DefaultProvider<int> t(1);
+        t = 2;
+        CPPUNIT_ASSERT_EQUAL(2, t.value());
+    }
+
+    void castToTypeReturnsValue()
+    {
+        DefaultProvider<int> t(1);
+        CPPUNIT_ASSERT_EQUAL(1, static_cast<int>(t));
+    }
+
     CPPUNIT_TEST_SUITE(DefaultProviderTest);
     CPPUNIT_TEST(returnsDefaultValueIfNotSet);
     CPPUNIT_TEST(returnsSetValue);
@@ -58,6 +71,8 @@ public:
     CPPUNIT_TEST(isSetReturnsTrueIfSet);
     CPPUNIT_TEST(defaultValueReturnsDefaultValue);
     CPPUNIT_TEST(resetRestoresDefaultValues);
+    CPPUNIT_TEST(assignmentOperatorSetsValue);
+    CPPUNIT_TEST(castToTypeReturnsValue);
     CPPUNIT_TEST_SUITE_END();
 
 private:

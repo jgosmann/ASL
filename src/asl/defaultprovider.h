@@ -14,6 +14,14 @@ public:
     inline void set(T v) { m_value = v; m_isSet = true; }
     inline T value() const { return m_value; }
 
+    const T & operator=(const T &rhs)
+    {
+        set(rhs);
+        return rhs;
+    }
+
+    operator T() const { return value(); }
+
 private:
     const T m_default;
     T m_value;
