@@ -27,8 +27,8 @@ public:
         return m_description;
     }
 
-    inline const QList<asl::ShaderParameterInfo> & parameterInfo() const {
-        return m_parameterInfo;
+    inline const QList<asl::ShaderParameterInfo> & parameters() const {
+        return m_parameters;
     }
 
 signals:
@@ -38,7 +38,7 @@ public slots:
 private:
     const QString m_name;
     const QString m_description;
-    const QList<asl::ShaderParameterInfo> m_parameterInfo;
+    const QList<asl::ShaderParameterInfo> m_parameters;
 
 };
 }

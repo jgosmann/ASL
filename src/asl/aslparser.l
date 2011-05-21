@@ -77,9 +77,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 <ANNOTATION,READ_ANNOTATION_STRING>.|\n {
 }
 
-{whitespace}+ { return WHITESPACE; }
-
-. { return CHARACTERS; }
+.|\n { }
 
 %%
 

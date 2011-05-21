@@ -40,20 +40,24 @@
     QString *string;
 }
 
-%type <string> string
+%type <string> string datatype
 
-%token <string> KEY ANNOTATION_STRING
-%token WHITESPACE ANNOTATION_START ANNOTATION_END CHARACTERS
+%token <string> KEY IDENTIFIER ANNOTATION_STRING
+%token ANNOTATION_START ANNOTATION_END UNIFORM
 
 %%
 
 program:
-    remainingProgram
-    | header annotationComment remainingProgram;
-
-header:
-    header WHITESPACE
+    annotationComment remainingProgram
     | ;
+
+remainingProgram:
+    remainingProgram parameter
+    | ;
+
+parameter: annotationComment UNIFORM datatype IDENTIFIER ';'
+
+datatype: IDENTIFIER { $$ = $1; };
 
 annotationComment: ANNOTATION_START { definedKeys.clear(); } annotations ANNOTATION_END;
 
@@ -73,10 +77,6 @@ string:
     | ANNOTATION_STRING { $$ = $1; }
     ;
 
-remainingProgram:
-    remainingProgram WHITESPACE
-    | remainingProgram CHARACTERS
-    | ;
 
 %%
 
