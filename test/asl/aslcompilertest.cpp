@@ -5,10 +5,11 @@
 
 #include "../src/asl/aslcompiler.h"
 
-#include "common.h"
+#include "../testenv.h"
 
 #include "logassertions.h"
 #include "logentry.h"
+#include "shaderparameterinfomatcher.h"
 
 namespace asl
 {
@@ -163,6 +164,21 @@ public:
                     .withMessageMatching(QRegExp(".*duplicate.*ShaderName.*")));
     }
 
+    void parsesParameterName()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/**\n"
+                    " * Name: test-param\n"
+                    " */\n"
+                    "uniform int param;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withName("test-param"));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -177,6 +193,7 @@ public:
     CPPUNIT_TEST(parsesTwoKeysWithSameIdentation);
     CPPUNIT_TEST(warnsAboutUnknownKeys);
     CPPUNIT_TEST(warnsAboutDuplicateKeys);
+    CPPUNIT_TEST(parsesParameterName);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -195,6 +212,14 @@ private:
     {
         CPPUNIT_ASSERT(!shaderCompiler.success());
         asl::assertLogContains(shaderCompiler.log(), entry);
+    }
+
+    void assertHasExactlyOneParameterMatching(
+            const AnnotatedGLShaderProgram *program,
+            const ShaderParameterInfoMatcher &matcher)
+    {
+        CPPUNIT_ASSERT_EQUAL(1, program->parameters().size());
+        CPPUNIT_ASSERT(matcher.matches(program->parameters()[0]));
     }
 
     static const QString trivialShader;

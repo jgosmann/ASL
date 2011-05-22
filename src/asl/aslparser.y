@@ -3,9 +3,11 @@
     #ifdef TEST
         #include "../src/asl/aslparser_internal.h"
         #include "../src/asl/annotatedglshaderprogrambuilder.h"
+        #include "../src/asl/shaderparameterinfobuilder.h"
     #else
         #include "asl/aslparser_internal.h"
         #include "asl/annotatedglshaderprogrambuilder.h"
+        #include "asl/shaderparameterinfobuilder.h"
     #endif
 
     #include <QFileInfo>
@@ -23,7 +25,9 @@
     namespace parserinternal
     {
         QString log;
-        AnnotatedGLShaderProgramBuilder builder;
+        bool readIntroAslComment;
+        AnnotatedGLShaderProgramBuilder programBuilder;
+        ShaderParameterInfoBuilder parameterInfoBuilder;
 
         QSet<QString> definedKeys;
 
@@ -42,6 +46,8 @@
 
 %type <string> string datatype
 
+%destructor { delete $$; } string datatype;
+
 %token <string> KEY IDENTIFIER ANNOTATION_STRING
 %token ANNOTATION_START ANNOTATION_END UNIFORM
 
@@ -55,11 +61,11 @@ remainingProgram:
     remainingProgram parameter
     | ;
 
-parameter: annotationComment UNIFORM datatype IDENTIFIER ';'
+parameter: annotationComment UNIFORM datatype IDENTIFIER ';' { delete $3; delete $4; }
 
 datatype: IDENTIFIER { $$ = $1; };
 
-annotationComment: ANNOTATION_START { definedKeys.clear(); } annotations ANNOTATION_END;
+annotationComment: ANNOTATION_START { definedKeys.clear(); parameterInfoBuilder.reset(); } annotations ANNOTATION_END { if (readIntroAslComment) { programBuilder.addParameter(parameterInfoBuilder.build()); } readIntroAslComment = true; }
 
 annotations:
     annotations keyValuePair
@@ -113,11 +119,12 @@ void handleKeyStringValuePair(QString *key, QString *value)
     } else {
         definedKeys.insert(*key);
     }
-
     if ("ShaderName" == *key) {
-        builder.setName(*value);
+        programBuilder.setName(*value);
     } else if ("ShaderDescription" == *key) {
-        builder.setDescription(*value);
+        programBuilder.setDescription(*value);
+    } else if ("Name" == *key) {
+        parameterInfoBuilder.withName(*value);
     } else {
         warn("unknown key: " + *key);
     }
@@ -129,11 +136,12 @@ void handleKeyStringValuePair(QString *key, QString *value)
 AnnotatedGLShaderProgram * parse(const QString &sourcecode,
         const QString &pathOfSource)
 {
-    builder = AnnotatedGLShaderProgramBuilder();
-    builder.setName(QFileInfo(pathOfSource).fileName());
+    readIntroAslComment = false;
+    programBuilder = AnnotatedGLShaderProgramBuilder();
+    programBuilder.setName(QFileInfo(pathOfSource).fileName());
     setInput(sourcecode);
     yyparse();
-    return builder.build();
+    return programBuilder.build();
 }
 
 void warn(const QString &msg)

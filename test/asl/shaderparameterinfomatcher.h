@@ -1,7 +1,7 @@
 #ifndef SHADERPARAMETERINFOMATCHER_H
 #define SHADERPARAMETERINFOMATCHER_H
 
-#include "../../src/asl/defaultprovider.h"
+#include "../../src/common/defaultable.h"
 #include "../../src/asl/shaderparameterinfo.h"
 
 namespace asl
@@ -11,24 +11,27 @@ class ShaderParameterInfoMatcher
     public:
         ShaderParameterInfoMatcher() : m_name(""), m_description("") { }
 
-        inline void withName(const QString &name)
+        inline ShaderParameterInfoMatcher & withName(const QString &name)
         {
             m_name = name;
+            return *this;
         }
 
-        inline void withDescription(const QString &description)
+        inline ShaderParameterInfoMatcher & withDescription(
+                const QString &description)
         {
             m_description = description;
+            return *this;
         }
 
         bool matches(const ShaderParameterInfo &matchWith) const;
 
     private:
         template<class T> bool matchValueIfSpecified(
-                const DefaultProvider<T> &expected, const T &actual) const;
+                const common::Defaultable<T> &expected, const T &actual) const;
 
-        DefaultProvider<QString> m_name;
-        DefaultProvider<QString> m_description;
+        common::Defaultable<QString> m_name;
+        common::Defaultable<QString> m_description;
 };
 } /* namespace asl */
 

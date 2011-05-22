@@ -5,7 +5,7 @@
 
 #include "../src/asl/aslpreprocessor.h"
 
-#include "common.h"
+#include "../testenv.h"
 
 #include "logassertions.h"
 #include "logentry.h"

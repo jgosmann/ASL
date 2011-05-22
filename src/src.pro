@@ -10,6 +10,7 @@ TARGET = cg
 TEMPLATE = app
 
 include(asl/asl.pri)
+include(common/common.pri)
 include(gui/gui.pri)
 include(render/render.pri)
 

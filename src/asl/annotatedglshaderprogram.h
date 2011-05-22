@@ -14,10 +14,12 @@ class AnnotatedGLShaderProgram : public QGLShaderProgram
 
     Q_PROPERTY(QString name READ name)
     Q_PROPERTY(QString description READ description)
+    Q_PROPERTY(QList<asl::ShaderParameterInfo> parameters READ parameters)
 
 public:
     explicit AnnotatedGLShaderProgram(const QString &name,
-            const QString &description);
+            const QString &description,
+            const QList<asl::ShaderParameterInfo> &parameters);
 
     inline const QString & name() const {
         return m_name;

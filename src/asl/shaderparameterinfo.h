@@ -13,7 +13,7 @@ struct ShaderParameterInfo
 {
     QString name;
     QString description;
-    asl::GLTypeInfo * const type;
+    asl::GLTypeInfo * type;
     asl::GLVariant defaultValue;
     asl::GLVariant minimum;
     asl::GLVariant maximum;

@@ -1,6 +1,7 @@
 
 #include "shaderparameterinfomatcher.h"
 
+using namespace common;
 using namespace asl;
 
 bool ShaderParameterInfoMatcher::matches(const ShaderParameterInfo &matchWith)
@@ -11,7 +12,7 @@ bool ShaderParameterInfoMatcher::matches(const ShaderParameterInfo &matchWith)
 }
 
 template<class T> bool ShaderParameterInfoMatcher::matchValueIfSpecified(
-        const DefaultProvider<T> &expected, const T &actual) const
+        const Defaultable<T> &expected, const T &actual) const
 {
     return !expected.isSet() || expected.value() == actual;
 }

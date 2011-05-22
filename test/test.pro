@@ -48,8 +48,9 @@ OBJECTS_DIR = ../obj
 UI_DIR = ../ui
 
 include(asl/asl.pri)
-HEADERS += common.h
+include(common/common.pri)
+HEADERS += testenv.h
 SOURCES += testmain.cpp \
-    common.cpp
+    testenv.cpp
 
 DEFINES += TEST

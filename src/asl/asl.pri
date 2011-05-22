@@ -7,12 +7,13 @@ HEADERS += asl/shaderparameterinfo.h \
     asl/aslpreprocessor_parserinternal.h \
     asl/aslparser_internal.h \
     asl/annotatedglshaderprogrambuilder.h \
-    asl/defaultprovider.h
+    asl/shaderparameterinfobuilder.h
 
 SOURCES += \
     asl/annotatedglshaderprogram.cpp \
     asl/aslcompiler.cpp \
-    asl/aslpreprocessor.cpp
+    asl/aslpreprocessor.cpp \
+    asl/shaderparameterinfobuilder.cpp
 
 LEXSOURCES += asl/aslpreprocessor.l \
     asl/aslparser.l

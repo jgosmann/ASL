@@ -3,6 +3,8 @@
 
 #include "annotatedglshaderprogram.h"
 
+#include <QList>
+
 namespace asl
 {
 /**
@@ -23,14 +25,21 @@ public:
         m_description = description;
     }
 
+    inline void addParameter(const ShaderParameterInfo &parameter)
+    {
+        m_parameters.append(parameter);
+    }
+
     inline AnnotatedGLShaderProgram * build()
     {
-        return new AnnotatedGLShaderProgram(m_name, m_description);
+        return new AnnotatedGLShaderProgram(m_name, m_description,
+                m_parameters);
     }
 
 private:
     QString m_name;
     QString m_description;
+    QList<asl::ShaderParameterInfo> m_parameters;
 };
 }
 

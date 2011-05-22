@@ -1,50 +1,50 @@
 
-#include "../src/asl/defaultprovider.h"
+#include "../src/common/defaultable.h"
 
-#include "common.h"
+#include "../testenv.h"
 
-namespace asl
+namespace common
 {
-class DefaultProviderTest : public TestFixture
+class DefaultableTest : public TestFixture
 {
 public:
 
     void returnsDefaultValueIfNotSet()
     {
-        DefaultProvider<int> t(42);
+        Defaultable<int> t(42);
         CPPUNIT_ASSERT_EQUAL(42, t.value());
     }
 
     void returnsSetValue()
     {
-        DefaultProvider<int> t(1);
+        Defaultable<int> t(1);
         t.set(2);
         CPPUNIT_ASSERT_EQUAL(2, t.value());
     }
 
     void isSetReturnsFalseIfNotSet()
     {
-        DefaultProvider<int> t(1);
+        Defaultable<int> t(1);
         CPPUNIT_ASSERT(!t.isSet());
     }
 
     void isSetReturnsTrueIfSet()
     {
-        DefaultProvider<int> t(1);
+        Defaultable<int> t(1);
         t.set(1);
         CPPUNIT_ASSERT(t.isSet());
     }
 
     void defaultValueReturnsDefaultValue()
     {
-        DefaultProvider<int> t(42);
+        Defaultable<int> t(42);
         t.set(23);
         CPPUNIT_ASSERT_EQUAL(42, t.defaultValue());
     }
 
     void resetRestoresDefaultValues()
     {
-        DefaultProvider<int> t(42);
+        Defaultable<int> t(42);
         t.set(23);
         t.reset();
         CPPUNIT_ASSERT_EQUAL(42, t.value());
@@ -53,18 +53,18 @@ public:
 
     void assignmentOperatorSetsValue()
     {
-        DefaultProvider<int> t(1);
+        Defaultable<int> t(1);
         t = 2;
         CPPUNIT_ASSERT_EQUAL(2, t.value());
     }
 
     void castToTypeReturnsValue()
     {
-        DefaultProvider<int> t(1);
+        Defaultable<int> t(1);
         CPPUNIT_ASSERT_EQUAL(1, static_cast<int>(t));
     }
 
-    CPPUNIT_TEST_SUITE(DefaultProviderTest);
+    CPPUNIT_TEST_SUITE(DefaultableTest);
     CPPUNIT_TEST(returnsDefaultValueIfNotSet);
     CPPUNIT_TEST(returnsSetValue);
     CPPUNIT_TEST(isSetReturnsFalseIfNotSet);
@@ -79,5 +79,5 @@ private:
 };
 } /* namespace asl */
 
-CPPUNIT_TEST_SUITE_REGISTRATION(asl::DefaultProviderTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(common::DefaultableTest);
 

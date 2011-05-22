@@ -1,7 +1,7 @@
 #ifndef LOGENTRY_H
 #define LOGENTRY_H
 
-#include "../src/asl/defaultprovider.h"
+#include "../src/common/defaultable.h"
 
 #include <QRegExp>
 #include <QString>
@@ -28,7 +28,7 @@ class LogEntry
     private:
         QString m_type;
         unsigned int m_sourceStringNo;
-        DefaultProvider<unsigned int> m_line;
+        common::Defaultable<unsigned int> m_line;
         QRegExp m_matchesMsg;
 };
 } /* namespace asl */
