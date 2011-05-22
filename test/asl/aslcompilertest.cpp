@@ -193,6 +193,19 @@ public:
 
     }
 
+    void parsesParameterType()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/***/\n"
+                    "uniform int param;\n"
+                    +trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withType(GLTypeInfo::getFor("int")));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -209,6 +222,7 @@ public:
     CPPUNIT_TEST(warnsAboutDuplicateKeys);
     CPPUNIT_TEST(parsesParameterName);
     CPPUNIT_TEST(defaultsParameterNameToIdentifier);
+    CPPUNIT_TEST(parsesParameterType);
     CPPUNIT_TEST_SUITE_END();
 
 private:

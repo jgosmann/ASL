@@ -27,6 +27,14 @@ GLTypeInfo::GLTypeInfo(const QString &glslName, GLTypeInfo::Structure structure,
 {
 }
 
+bool GLTypeInfo::operator==(const GLTypeInfo &rhs) const
+{
+    return m_structure == rhs.m_structure
+        && m_type == rhs.m_type
+        && m_columnDimensionality == rhs.m_columnDimensionality
+        && m_rowDimensionality == rhs.m_rowDimensionality;
+}
+
 GLTypeInfo::KnownTypesTable::KnownTypesTable()
 {
     /* Scalars, Open GL Shading Language, 3rd Edition, p. 68 */

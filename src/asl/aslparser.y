@@ -60,9 +60,24 @@ remainingProgram:
     remainingProgram parameter
     | ;
 
-parameter: annotationComment UNIFORM datatype IDENTIFIER ';' { parameterInfoBuilder.withIdentifier(*$4); programBuilder.addParameter(parameterInfoBuilder.build()); delete $3; delete $4; }
+parameter: annotationComment UNIFORM datatype IDENTIFIER ';' {
+            parameterInfoBuilder.withIdentifier(*$4);
+            try {
+                programBuilder.addParameter(parameterInfoBuilder.build());
+            } catch (const common::NoValueException &e) {
+                yyerror(e.what());
+            }
+            delete $4;
+        }
 
-datatype: IDENTIFIER { $$ = $1; };
+datatype: IDENTIFIER {
+            try {
+                parameterInfoBuilder.withType(asl::GLTypeInfo::getFor(*$1));
+            } catch (const std::invalid_argument &e) {
+                yyerror(e.what());
+            }
+            delete $1;
+        };
 
 annotationComment: ANNOTATION_START { definedKeys.clear(); parameterInfoBuilder.reset(); } annotations ANNOTATION_END {}
 

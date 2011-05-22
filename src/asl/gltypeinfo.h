@@ -43,6 +43,8 @@ public:
         return m_columnDimensionality;
     }
 
+    inline bool isEqualTo(const GLTypeInfo *type) { return *this == *type; }
+
     inline bool isScalar() const {
         return structure() == SCALAR;
     }
@@ -70,6 +72,8 @@ public:
     inline bool isBool() const {
         return type() == BOOL;
     }
+
+    bool operator==(const GLTypeInfo &rhs) const;
 
 private:
     GLTypeInfo(const QString &glslName, Structure structure, Type type,

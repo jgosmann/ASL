@@ -2,6 +2,8 @@
 #define SHADERPARAMETERINFOBUILDER_H
 
 #include "../common/nullable.h"
+#include "../common/novalueexception.h"
+#include "gltypeinfo.h"
 #include "shaderparameterinfo.h"
 
 #include <QString>
@@ -11,6 +13,8 @@ namespace asl
 class ShaderParameterInfoBuilder
 {
 public:
+    ShaderParameterInfoBuilder() : m_type(NULL) { }
+
     inline void withIdentifier(const QString &identifier)
     {
         m_identifier = identifier;
@@ -18,13 +22,16 @@ public:
 
     inline void withName(const QString &name) { m_name = name; }
 
-    asl::ShaderParameterInfo build() const;
+    inline void withType(const GLTypeInfo *type) { m_type = type; }
+
+    asl::ShaderParameterInfo build() const throw(common::NoValueException);
 
     inline void reset() { *this = ShaderParameterInfoBuilder(); }
 
 private:
     QString m_identifier;
     common::Nullable<QString> m_name;
+    const GLTypeInfo *m_type;
 };
 } /* namespace asl */
 
