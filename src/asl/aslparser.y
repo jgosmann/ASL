@@ -25,7 +25,6 @@
     namespace parserinternal
     {
         QString log;
-        bool readIntroAslComment;
         AnnotatedGLShaderProgramBuilder programBuilder;
         ShaderParameterInfoBuilder parameterInfoBuilder;
 
@@ -61,11 +60,11 @@ remainingProgram:
     remainingProgram parameter
     | ;
 
-parameter: annotationComment UNIFORM datatype IDENTIFIER ';' { delete $3; delete $4; }
+parameter: annotationComment UNIFORM datatype IDENTIFIER ';' { parameterInfoBuilder.withIdentifier(*$4); programBuilder.addParameter(parameterInfoBuilder.build()); delete $3; delete $4; }
 
 datatype: IDENTIFIER { $$ = $1; };
 
-annotationComment: ANNOTATION_START { definedKeys.clear(); parameterInfoBuilder.reset(); } annotations ANNOTATION_END { if (readIntroAslComment) { programBuilder.addParameter(parameterInfoBuilder.build()); } readIntroAslComment = true; }
+annotationComment: ANNOTATION_START { definedKeys.clear(); parameterInfoBuilder.reset(); } annotations ANNOTATION_END {}
 
 annotations:
     annotations keyValuePair
@@ -136,7 +135,6 @@ void handleKeyStringValuePair(QString *key, QString *value)
 AnnotatedGLShaderProgram * parse(const QString &sourcecode,
         const QString &pathOfSource)
 {
-    readIntroAslComment = false;
     programBuilder = AnnotatedGLShaderProgramBuilder();
     programBuilder.setName(QFileInfo(pathOfSource).fileName());
     setInput(sourcecode);

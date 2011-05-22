@@ -8,6 +8,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 
 %x ANNOTATION
 %x READ_ANNOTATION_STRING
+%x READ_UNIFORM
 
 %{
     #ifdef TEST
@@ -28,6 +29,8 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     {
     namespace parserinternal
     {
+        bool readFirstAslComment;
+
         void clean();
 
         unsigned int calcIndentationDepth(const char *str, unsigned int len);
@@ -46,7 +49,12 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 }
 
 <ANNOTATION,READ_ANNOTATION_STRING>"*/" {
-    BEGIN INITIAL;
+    if (readFirstAslComment) {
+        BEGIN READ_UNIFORM;
+    } else {
+        BEGIN INITIAL;
+        readFirstAslComment = true;
+    }
     return ANNOTATION_END;
 }
 
@@ -74,10 +82,21 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     }
 }
 
-<ANNOTATION,READ_ANNOTATION_STRING>.|\n {
+<READ_UNIFORM>"uniform" {
+    return UNIFORM;
 }
 
-.|\n { }
+<READ_UNIFORM>{identifier} {
+    aslparserlval.string = new QString(yytext);
+    return IDENTIFIER;
+}
+
+<READ_UNIFORM>";" {
+    BEGIN INITIAL;
+    return yytext[0];
+}
+
+<INITIAL,READ_UNIFORM,ANNOTATION,READ_ANNOTATION_STRING>.|\n { }
 
 %%
 
@@ -112,6 +131,7 @@ unsigned int calcIndentationDepth(const char *str, unsigned int len)
 void resetAndClean() {
     clean();
     yylineno = 1;
+    readFirstAslComment = false;
     BEGIN INITIAL;
 }
 

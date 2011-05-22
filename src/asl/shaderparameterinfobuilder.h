@@ -11,6 +11,11 @@ namespace asl
 class ShaderParameterInfoBuilder
 {
 public:
+    inline void withIdentifier(const QString &identifier)
+    {
+        m_identifier = identifier;
+    }
+
     inline void withName(const QString &name) { m_name = name; }
 
     asl::ShaderParameterInfo build() const;
@@ -18,6 +23,7 @@ public:
     inline void reset() { *this = ShaderParameterInfoBuilder(); }
 
 private:
+    QString m_identifier;
     common::Nullable<QString> m_name;
 };
 } /* namespace asl */
