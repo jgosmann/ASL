@@ -13,7 +13,8 @@ SOURCES += \
     asl/annotatedglshaderprogram.cpp \
     asl/aslcompiler.cpp \
     asl/aslpreprocessor.cpp \
-    asl/shaderparameterinfobuilder.cpp
+    asl/shaderparameterinfobuilder.cpp \
+    asl/gltypeinfo.cpp
 
 LEXSOURCES += asl/aslpreprocessor.l \
     asl/aslparser.l
