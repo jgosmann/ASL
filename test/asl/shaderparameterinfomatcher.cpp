@@ -12,8 +12,8 @@ bool ShaderParameterInfoMatcher::matches(const ShaderParameterInfo &matchWith)
 }
 
 template<class T> bool ShaderParameterInfoMatcher::matchValueIfSpecified(
-        const Defaultable<T> &expected, const T &actual) const
+        const Nullable<T> &expected, const T &actual) const
 {
-    return !expected.isSet() || expected.value() == actual;
+    return !expected.hasValue() || expected.value() == actual;
 }
 
