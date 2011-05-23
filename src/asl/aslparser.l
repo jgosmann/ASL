@@ -96,6 +96,10 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     return yytext[0];
 }
 
+<INITIAL>"/*"([^*]("/"?[^*/]*("*"[^/])?)+)?"*/" { }
+<INITIAL>"//".*\n { }
+<INITIAL>#(.|\\\n)* { }
+
 <INITIAL>[^ \t\r\n] {
     if (!readFirstAslComment) {
         return UNEXPECTED_CHAR;

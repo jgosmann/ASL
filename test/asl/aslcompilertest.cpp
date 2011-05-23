@@ -248,6 +248,20 @@ public:
                     QRegExp(".*not starting with ASL comment.*")));
     }
 
+    void allowsCommentsAndPreprocessorBeforeFirstAslComment()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/* some comment */\n"
+                    "// another comment\n"
+                    "#define FOO bar\n"
+                    "#define MULTILINE 42 \\\n"
+                    "    23\n"
+                    "/***/\n"
+                    + trivialShader));
+        assertCleanCompilation(compiled.data());
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
