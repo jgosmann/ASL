@@ -268,6 +268,7 @@ public:
     CPPUNIT_TEST(doesNotLeakAnnotationsFromPreviousCompilation);
     CPPUNIT_TEST(logsWarningIfAnnotatedUnsupportedType);
     CPPUNIT_TEST(logsWarningIfAslProgramStartsNotWithAslComment);
+    CPPUNIT_TEST(allowsCommentsAndPreprocessorBeforeFirstAslComment);
     CPPUNIT_TEST_SUITE_END();
 
 private:

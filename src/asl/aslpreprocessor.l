@@ -76,7 +76,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 
 %%
 
-<INITIAL>"/*""/"?([^*/]*"*")+"/" {
+<INITIAL>"/*"("/"?[^*/]*("*"[^/])?)+"*/" {
     aslpreprocessorlval.string = new QString(yytext);
     return CHARACTERS;
 }

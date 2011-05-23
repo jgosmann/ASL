@@ -813,6 +813,12 @@ public:
             (unsigned int) 114);
     }
 
+    void allowsMultipleSlashesInMultilineComments()
+    {
+        const QString input("/*\n/ /***\n#define X 1\n / \n*/\n");
+        testProcessing(input, input);
+    }
+
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
     CPPUNIT_TEST(doesNotChangeShaderWithoutPreprocessorDirectives);
     CPPUNIT_TEST(excludesIfNDefPartIfMacroIsDefined);
@@ -883,6 +889,7 @@ public:
     CPPUNIT_TEST(testFileMacro);
     CPPUNIT_TEST(testVersionMacro);
     CPPUNIT_TEST(parsesVersionString);
+    CPPUNIT_TEST(allowsMultipleSlashesInMultilineComments);
     CPPUNIT_TEST_SUITE_END();
 
 private:
