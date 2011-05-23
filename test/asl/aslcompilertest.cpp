@@ -262,6 +262,22 @@ public:
         assertCleanCompilation(compiled.data());
     }
 
+    void allowCommentsInAnnotatedUniform()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/***/\n"
+                    "uniform /* comment */ int /* more\n"
+                    "    comment */ foo // c\n"
+                    " ; /* c */\n"
+                    + trivialShader));
+        assertCleanCompilation(compiled.data());
+        ShaderParameterInfoMatcher parameter;
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withType(GLTypeInfo::getFor("int")));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -283,6 +299,7 @@ public:
     CPPUNIT_TEST(logsWarningIfAnnotatedUnsupportedType);
     CPPUNIT_TEST(logsWarningIfAslProgramStartsNotWithAslComment);
     CPPUNIT_TEST(allowsCommentsAndPreprocessorBeforeFirstAslComment);
+    CPPUNIT_TEST(allowCommentsInAnnotatedUniform);
     CPPUNIT_TEST_SUITE_END();
 
 private:
