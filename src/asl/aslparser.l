@@ -110,6 +110,7 @@ integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
     BEGIN READ_LINE;
     return LINE;
 }
+<READ_LINE>. { }
 <READ_LINE>\n {
     BEGIN INITIAL;
     return END;
