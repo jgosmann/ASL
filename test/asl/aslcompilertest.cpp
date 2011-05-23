@@ -236,6 +236,18 @@ public:
                 LogEntry().withType(LOG_WARNING).occuringAt(0, 3));
     }
 
+    void logsWarningIfAslProgramStartsNotWithAslComment()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "uniform int foo;\n"
+                    "/***/\n"
+                    + trivialShader));
+        assertLogContains(shaderCompiler.log(),
+                LogEntry().withType(LOG_WARNING).withMessageMatching(
+                    QRegExp(".*not starting with ASL comment.*")));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -255,6 +267,7 @@ public:
     CPPUNIT_TEST(parsesParameterType);
     CPPUNIT_TEST(doesNotLeakAnnotationsFromPreviousCompilation);
     CPPUNIT_TEST(logsWarningIfAnnotatedUnsupportedType);
+    CPPUNIT_TEST(logsWarningIfAslProgramStartsNotWithAslComment);
     CPPUNIT_TEST_SUITE_END();
 
 private:

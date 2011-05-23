@@ -43,17 +43,25 @@
     QString *string;
 }
 
-%type <string> string datatype
+%type <string> string
 
-%destructor { delete $$; } string datatype;
+%destructor { delete $$; } string
 
 %token <string> KEY IDENTIFIER ANNOTATION_STRING
-%token ANNOTATION_START ANNOTATION_END UNIFORM
+%token ANNOTATION_START ANNOTATION_END UNIFORM UNEXPECTED_CHAR
 
 %%
 
 program:
-    annotationComment remainingProgram
+    leadingChars
+    | annotationComment remainingProgram
+    | leadingChars annotationComment remainingProgram {
+            warn("ASL program is not starting with ASL comment.");
+        }
+    | ;
+
+leadingChars:
+    leadingChars UNEXPECTED_CHAR
     | ;
 
 remainingProgram:
@@ -79,7 +87,10 @@ datatype: IDENTIFIER {
             delete $1;
         };
 
-annotationComment: ANNOTATION_START { definedKeys.clear(); parameterInfoBuilder.reset(); } annotations ANNOTATION_END {}
+annotationComment: ANNOTATION_START {
+            definedKeys.clear();
+            parameterInfoBuilder.reset();
+         } annotations ANNOTATION_END {}
 
 annotations:
     annotations keyValuePair

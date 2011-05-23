@@ -96,6 +96,12 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     return yytext[0];
 }
 
+<INITIAL>[^ \t\r\n] {
+    if (!readFirstAslComment) {
+        return UNEXPECTED_CHAR;
+    }
+}
+
 <INITIAL,READ_UNIFORM,ANNOTATION,READ_ANNOTATION_STRING>.|\n { }
 
 %%
