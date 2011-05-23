@@ -206,6 +206,24 @@ public:
                 parameter.withType(GLTypeInfo::getFor("int")));
     }
 
+    void doesNotLeakAnnotationsFromPreviousCompilation()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled1(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/**\n"
+                    " * ShaderName: nameOfWrongShader\n"
+                    " * ShaderDescription: Description of wrong shader.\n"
+                    " */\n"
+                    "/***/\n"
+                    "uniform int param;\n"
+                    + trivialShader));
+        QScopedPointer<AnnotatedGLShaderProgram> compiled2(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n" + trivialShader));
+        CPPUNIT_ASSERT_EQUAL(QString(""), compiled2->description());
+        CPPUNIT_ASSERT_EQUAL(0, compiled2->parameters().size());
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -223,6 +241,7 @@ public:
     CPPUNIT_TEST(parsesParameterName);
     CPPUNIT_TEST(defaultsParameterNameToIdentifier);
     CPPUNIT_TEST(parsesParameterType);
+    CPPUNIT_TEST(doesNotLeakAnnotationsFromPreviousCompilation);
     CPPUNIT_TEST_SUITE_END();
 
 private:
