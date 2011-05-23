@@ -224,6 +224,18 @@ public:
         CPPUNIT_ASSERT_EQUAL(0, compiled2->parameters().size());
     }
 
+    void logsWarningIfAnnotatedUnsupportedType()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/***/\n"
+                    "uniform sampler1D unsupported;\n"
+                    + trivialShader));
+        assertLogContains(shaderCompiler.log(),
+                LogEntry().withType(LOG_WARNING).occuringAt(0, 3));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -242,6 +254,7 @@ public:
     CPPUNIT_TEST(defaultsParameterNameToIdentifier);
     CPPUNIT_TEST(parsesParameterType);
     CPPUNIT_TEST(doesNotLeakAnnotationsFromPreviousCompilation);
+    CPPUNIT_TEST(logsWarningIfAnnotatedUnsupportedType);
     CPPUNIT_TEST_SUITE_END();
 
 private:

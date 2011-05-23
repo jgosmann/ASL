@@ -65,7 +65,7 @@ parameter: annotationComment UNIFORM datatype IDENTIFIER ';' {
             try {
                 programBuilder.addParameter(parameterInfoBuilder.build());
             } catch (const common::NoValueException &e) {
-                yyerror(e.what());
+                warn(e.what());
             }
             delete $4;
         }
@@ -74,7 +74,7 @@ datatype: IDENTIFIER {
             try {
                 parameterInfoBuilder.withType(asl::GLTypeInfo::getFor(*$1));
             } catch (const std::invalid_argument &e) {
-                yyerror(e.what());
+                warn(e.what());
             }
             delete $1;
         };
