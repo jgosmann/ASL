@@ -25,6 +25,7 @@
     namespace parserinternal
     {
         QString log;
+        unsigned int sourceStringNo;
         AnnotatedGLShaderProgramBuilder programBuilder;
         ShaderParameterInfoBuilder parameterInfoBuilder;
 
@@ -47,26 +48,39 @@
 
 %destructor { delete $$; } string
 
+%token <integer> INTEGER
 %token <string> KEY IDENTIFIER ANNOTATION_STRING
-%token ANNOTATION_START ANNOTATION_END UNIFORM UNEXPECTED_CHAR
+%token ANNOTATION_START ANNOTATION_END UNIFORM LINE END UNEXPECTED_CHAR 
 
 %%
 
 program:
     leadingChars
-    | annotationComment remainingProgram
+    | pplines annotationComment remainingProgram
     | leadingChars annotationComment remainingProgram {
             warn("ASL program is not starting with ASL comment.");
         }
     | ;
 
 leadingChars:
-    leadingChars UNEXPECTED_CHAR
-    | ;
+    leadingChars UNEXPECTED_CHAR pplines
+    | UNEXPECTED_CHAR pplines;
+
+pplines: pplines ppline | ;
 
 remainingProgram:
     remainingProgram parameter
+    | remainingProgram ppline
     | ;
+
+ppline:
+    LINE INTEGER END {
+            aslparserlineno = $2 + 1;
+        }
+    | LINE INTEGER INTEGER END {
+            aslparserlineno = $2 + 1;
+            sourceStringNo = $3;
+        }
 
 parameter: annotationComment UNIFORM datatype IDENTIFIER ';' {
             parameterInfoBuilder.withIdentifier(*$4);
@@ -125,7 +139,7 @@ namespace parserinternal
 
 void addToLog(const QString &type, const QString &msg)
 {
-    log = log % type % ": " % "0" % /*QString::number(sourceStringNo) %*/ QChar(':')
+    log = log % type % ": " % QString::number(sourceStringNo) % QChar(':')
             % QString::number(aslparserlineno)
             % ": (aslcompiler) " % QString(msg) % QChar('\n');
 }

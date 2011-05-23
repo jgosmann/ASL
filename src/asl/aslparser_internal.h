@@ -10,6 +10,7 @@ namespace asl
 namespace parserinternal
 {
     extern QString log;
+    extern unsigned int sourceStringNo;
 
     void clearLog();
     AnnotatedGLShaderProgram * parse(const QString &sourcecode,

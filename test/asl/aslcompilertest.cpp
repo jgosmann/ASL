@@ -278,6 +278,36 @@ public:
                 parameter.withType(GLTypeInfo::getFor("int")));
     }
 
+    void linePreprocessorDirectiveSetsLine()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "#line 23\n"
+                    "/**\n"
+                    " * ShaderName: name1\n"
+                    " * ShaderName: name2\n"
+                    " */\n"
+                    + trivialShader));
+        CPPUNIT_ASSERT(shaderCompiler.success());
+        assertLogContains(shaderCompiler.log(),
+                LogEntry().withType(LOG_WARNING).occuringAt(0, 26));
+    }
+
+    void linePreprocessorDirectiveSetsLineAndSourcestringNo()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "#line 23 42\n"
+                    "/**\n"
+                    " * ShaderName: name1\n"
+                    " * ShaderName: name2\n"
+                    " */\n"
+                    + trivialShader));
+        CPPUNIT_ASSERT(shaderCompiler.success());
+        assertLogContains(shaderCompiler.log(),
+                LogEntry().withType(LOG_WARNING).occuringAt(42, 26));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -300,6 +330,8 @@ public:
     CPPUNIT_TEST(logsWarningIfAslProgramStartsNotWithAslComment);
     CPPUNIT_TEST(allowsCommentsAndPreprocessorBeforeFirstAslComment);
     CPPUNIT_TEST(allowCommentsInAnnotatedUniform);
+    CPPUNIT_TEST(linePreprocessorDirectiveSetsLine);
+    CPPUNIT_TEST(linePreprocessorDirectiveSetsLineAndSourcestringNo);
     CPPUNIT_TEST_SUITE_END();
 
 private:

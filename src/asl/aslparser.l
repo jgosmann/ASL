@@ -5,10 +5,12 @@ whitespace [ \t\r\n]
 annotationWhitespace [ \t\r\n*]
 notAnnotationWhitespace [^ \t\r\n*]
 identifier [_a-zA-Z][_a-zA-Z0-9]*
+integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
 
 %x ANNOTATION
 %x READ_ANNOTATION_STRING
 %x READ_UNIFORM
+%x READ_LINE
 
 %{
     #ifdef TEST
@@ -96,9 +98,29 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     return yytext[0];
 }
 
+<READ_LINE>{integer} {
+    aslparserlval.integer = strtoul(yytext, NULL, 0);
+    return INTEGER;
+}
+
 <INITIAL,READ_UNIFORM>"/*"([^*]("/"?[^*/]*("*"[^/])?)+)?"*/" { }
 <INITIAL,READ_UNIFORM>"//".*\n { }
-<INITIAL>#(.|\\\n)* { }
+
+<INITIAL>^[ \t]*#line {
+    BEGIN READ_LINE;
+    return LINE;
+}
+<READ_LINE>\n {
+    BEGIN INITIAL;
+    return END;
+}
+
+
+<INITIAL>^[ \t]*#(.|\\\n)* {
+    if (QString(yytext).trimmed().startsWith("#line")) {
+        REJECT;
+    }
+}
 
 <INITIAL>[^ \t\r\n] {
     if (!readFirstAslComment) {
@@ -141,6 +163,7 @@ unsigned int calcIndentationDepth(const char *str, unsigned int len)
 void resetAndClean() {
     clean();
     yylineno = 1;
+    sourceStringNo = 0;
     readFirstAslComment = false;
     BEGIN INITIAL;
 }
