@@ -373,6 +373,29 @@ public:
                 parameter.withIdentifier("nameOfIdentifier"));
     }
 
+    void defaultsParameterDescriptionToEmptyString()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    aslShaderWithOneAslParameterWithoutAnnotations));
+        ShaderParameterInfoMatcher parameter;
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withDescription(""));
+    }
+
+    void parsesParameterDescription()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/** Description: desc */\n"
+                    "uniform int param;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withDescription("desc"));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -404,6 +427,8 @@ public:
             warnsAboutAndDoesNotInterpretUniformAnnotationsinStartAslComment);
     CPPUNIT_TEST(allowsNonAnnotatingTextInAslComments);
     CPPUNIT_TEST(parsesIdentifier);
+    CPPUNIT_TEST(defaultsParameterDescriptionToEmptyString);
+    CPPUNIT_TEST(parsesParameterDescription);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -434,6 +459,7 @@ private:
 
     static const QString trivialShader;
     static const QString invalidShader;
+    static const QString aslShaderWithOneAslParameterWithoutAnnotations;
     static const QString LOG_ERROR;
     static const QString LOG_WARNING;
 
@@ -448,6 +474,8 @@ using namespace asl;
 
 const QString ASLCompilerTest::trivialShader("void main() { }");
 const QString ASLCompilerTest::invalidShader("invalid main() { }");
+const QString ASLCompilerTest::aslShaderWithOneAslParameterWithoutAnnotations(
+        "/***/\n/***/\nuniform int param;\n" + trivialShader);
 const QString ASLCompilerTest::LOG_ERROR("ERROR");
 const QString ASLCompilerTest::LOG_WARNING("WARNING");
 

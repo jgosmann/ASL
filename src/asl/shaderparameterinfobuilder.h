@@ -22,6 +22,11 @@ public:
 
     inline void withName(const QString &name) { m_name = name; }
 
+    inline void withDescription(const QString &description)
+    {
+        m_description = description;
+    }
+
     inline void withType(const GLTypeInfo *type) { m_type = type; }
 
     asl::ShaderParameterInfo build() const throw(common::NoValueException);
@@ -31,6 +36,7 @@ public:
 private:
     QString m_identifier;
     common::Nullable<QString> m_name;
+    common::Nullable<QString> m_description;
     const GLTypeInfo *m_type;
 };
 } /* namespace asl */

@@ -170,6 +170,8 @@ void handleKeyStringValuePair(QString *key, QString *value)
     if (parsedFirstAslComment) {
         if ("Name" == *key) {
             parameterInfoBuilder.withName(*value);
+        } else if ("Description" == *key) {
+            parameterInfoBuilder.withDescription(*value);
         } else {
             warn("unknown key: " + *key);
         }
