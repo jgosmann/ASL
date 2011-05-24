@@ -19,11 +19,7 @@ ShaderParameterInfo ShaderParameterInfoBuilder::build() const
     }
     info.identifier = m_identifier;
 
-    if (m_name.hasValue()) {
-        info.name = m_name.value();
-    } else {
-        info.name = m_identifier;
-    }
+    info.name = m_name.valueOrDefault(m_identifier);
 
     return info;
 }
