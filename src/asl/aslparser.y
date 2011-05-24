@@ -91,6 +91,9 @@ parameter: annotationComment UNIFORM datatype IDENTIFIER ';' {
             }
             delete $4;
         }
+    | annotationComment error {
+            warn("ASL comment is not preceding uniform declaration.");
+        }
 
 datatype: IDENTIFIER {
             try {

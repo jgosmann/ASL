@@ -308,6 +308,18 @@ public:
                 LogEntry().withType(LOG_WARNING).occuringAt(42, 26));
     }
 
+    void warnsAboutAslCommontNotPrecedingUniform()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/***/\n"
+                    + trivialShader));
+        assertLogContains(shaderCompiler.log(),
+                LogEntry().withType(LOG_WARNING).occuringAt(0, 3)
+                    .withMessageMatching(QRegExp(".*not preceding uniform.*")));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -332,6 +344,7 @@ public:
     CPPUNIT_TEST(allowCommentsInAnnotatedUniform);
     CPPUNIT_TEST(linePreprocessorDirectiveSetsLine);
     CPPUNIT_TEST(linePreprocessorDirectiveSetsLineAndSourcestringNo);
+    CPPUNIT_TEST(warnsAboutAslCommontNotPrecedingUniform);
     CPPUNIT_TEST_SUITE_END();
 
 private:
