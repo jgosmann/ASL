@@ -334,6 +334,18 @@ public:
                 LogEntry().withType(LOG_WARNING).occuringAt(0, 2));
     }
 
+    void warnsAboutAndDoesNotInterpretUniformAnnotationsinStartAslComment()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/** Name: do-not-use */\n"
+                    "uniform int param;\n"
+                    + trivialShader));
+        CPPUNIT_ASSERT_EQUAL(0, compiled->parameters().size());
+        assertLogContains(shaderCompiler.log(),
+                LogEntry().withType(LOG_WARNING).occuringAt(0, 1));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -361,6 +373,8 @@ public:
     CPPUNIT_TEST(warnsAboutAslCommontNotPrecedingUniform);
     CPPUNIT_TEST(
             warnsAboutAndDoesNotInterpretGeneralAnnotationsInUniformAslComment);
+    CPPUNIT_TEST(
+            warnsAboutAndDoesNotInterpretUniformAnnotationsinStartAslComment);
     CPPUNIT_TEST_SUITE_END();
 
 private:
