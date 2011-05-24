@@ -346,6 +346,20 @@ public:
                 LogEntry().withType(LOG_WARNING).occuringAt(0, 1));
     }
 
+    void allowsNonAnnotatingTextInAslComments()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/**\n"
+                    " * some text\n"
+                    " * ShaderName: name\n"
+                    " * some more text containing colon : foo\n"
+                    " */\n"
+                    + trivialShader));
+        assertCleanCompilation(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(QString("name"), compiled->name());
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -375,6 +389,7 @@ public:
             warnsAboutAndDoesNotInterpretGeneralAnnotationsInUniformAslComment);
     CPPUNIT_TEST(
             warnsAboutAndDoesNotInterpretUniformAnnotationsinStartAslComment);
+    CPPUNIT_TEST(allowsNonAnnotatingTextInAslComments);
     CPPUNIT_TEST_SUITE_END();
 
 private:
