@@ -14,6 +14,11 @@ ShaderParameterInfo ShaderParameterInfoBuilder::build() const
     }
     info.type = m_type;
 
+    if (m_identifier.isEmpty()) {
+        throw NoValueException("Missing identifier.");
+    }
+    info.identifier = m_identifier;
+
     if (m_name.hasValue()) {
         info.name = m_name.value();
     } else {

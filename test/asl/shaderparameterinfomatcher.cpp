@@ -7,7 +7,8 @@ using namespace asl;
 bool ShaderParameterInfoMatcher::matches(const ShaderParameterInfo &matchWith)
         const
 {
-    return matchValueIfSpecified(m_name, matchWith.name)
+    return matchValueIfSpecified(m_identifier, matchWith.identifier)
+        && matchValueIfSpecified(m_name, matchWith.name)
         && matchValueIfSpecified(m_description, matchWith.description)
         && matchValueIfSpecified(m_type, matchWith.type);
 }

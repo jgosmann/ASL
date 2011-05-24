@@ -11,6 +11,7 @@ namespace asl
 {
 struct ShaderParameterInfo
 {
+    QString identifier;
     QString name;
     QString description;
     const asl::GLTypeInfo * type;

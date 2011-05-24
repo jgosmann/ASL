@@ -360,6 +360,19 @@ public:
         CPPUNIT_ASSERT_EQUAL(QString("name"), compiled->name());
     }
 
+    void parsesIdentifier()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/***/\n"
+                    "uniform int nameOfIdentifier;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withIdentifier("nameOfIdentifier"));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -390,6 +403,7 @@ public:
     CPPUNIT_TEST(
             warnsAboutAndDoesNotInterpretUniformAnnotationsinStartAslComment);
     CPPUNIT_TEST(allowsNonAnnotatingTextInAslComments);
+    CPPUNIT_TEST(parsesIdentifier);
     CPPUNIT_TEST_SUITE_END();
 
 private:

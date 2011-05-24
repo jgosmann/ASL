@@ -9,6 +9,13 @@ namespace asl
 class ShaderParameterInfoMatcher
 {
     public:
+        inline ShaderParameterInfoMatcher & withIdentifier(
+                const QString &identifier)
+        {
+            m_identifier = identifier;
+            return *this;
+        }
+
         inline ShaderParameterInfoMatcher & withName(const QString &name)
         {
             m_name = name;
@@ -37,6 +44,7 @@ class ShaderParameterInfoMatcher
                 const common::Nullable<const T *> &expected, const T *actual)
                 const;
 
+        common::Nullable<QString> m_identifier;
         common::Nullable<QString> m_name;
         common::Nullable<QString> m_description;
         common::Nullable<const asl::GLTypeInfo *> m_type;
