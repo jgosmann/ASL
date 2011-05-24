@@ -16,7 +16,7 @@ namespace parserinternal
     AnnotatedGLShaderProgram * parse(const QString &sourcecode,
             const QString &pathOfSource = QString());
     void setInput(const QString &sourcecode);
-    void resetAndClean();
+    void reset();
 } /* namespace parserinternal */
 } /* namespace asl */
 

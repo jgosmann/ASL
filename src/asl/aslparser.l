@@ -33,8 +33,6 @@ integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
     {
         bool readFirstAslComment;
 
-        void clean();
-
         unsigned int calcIndentationDepth(const char *str, unsigned int len);
 
         unsigned int currentIdentation;
@@ -135,7 +133,6 @@ integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
 
 int yywrap(void)
 {
-    resetAndClean();
     return 1;
 }
 
@@ -143,10 +140,6 @@ namespace asl
 {
 namespace parserinternal
 {
-
-void clean()
-{
-}
 
 unsigned int calcIndentationDepth(const char *str, unsigned int len)
 {
@@ -161,8 +154,7 @@ unsigned int calcIndentationDepth(const char *str, unsigned int len)
     return identation;
 }
 
-void resetAndClean() {
-    clean();
+void reset() {
     yylineno = 1;
     sourceStringNo = 0;
     readFirstAslComment = false;
@@ -171,6 +163,7 @@ void resetAndClean() {
 
 void setInput(const QString &sourcecode)
 {
+    reset();
     yy_scan_string(sourcecode.toAscii().constData());
 }
 

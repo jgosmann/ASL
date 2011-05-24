@@ -317,7 +317,21 @@ public:
                     + trivialShader));
         assertLogContains(shaderCompiler.log(),
                 LogEntry().withType(LOG_WARNING).occuringAt(0, 3)
-                    .withMessageMatching(QRegExp(".*not preceding uniform.*")));
+                    .withMessageMatching(QRegExp(
+                            ".*not preceding valid uniform.*")));
+    }
+
+    void warnsAboutAndDoesNotInterpretGeneralAnnotationsInUniformAslComment()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/** ShaderName: real-name */\n"
+                    "/** ShaderName: do-not-use-this-name */\n"
+                    "uniform int param;\n"
+                    + trivialShader));
+        CPPUNIT_ASSERT_EQUAL(QString("real-name"), compiled->name());
+        assertLogContains(shaderCompiler.log(),
+                LogEntry().withType(LOG_WARNING).occuringAt(0, 2));
     }
 
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
@@ -345,6 +359,8 @@ public:
     CPPUNIT_TEST(linePreprocessorDirectiveSetsLine);
     CPPUNIT_TEST(linePreprocessorDirectiveSetsLineAndSourcestringNo);
     CPPUNIT_TEST(warnsAboutAslCommontNotPrecedingUniform);
+    CPPUNIT_TEST(
+            warnsAboutAndDoesNotInterpretGeneralAnnotationsInUniformAslComment);
     CPPUNIT_TEST_SUITE_END();
 
 private:

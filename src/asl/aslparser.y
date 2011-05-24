@@ -26,6 +26,7 @@
     {
         QString log;
         unsigned int sourceStringNo;
+        bool parsedFirstAslComment;
         AnnotatedGLShaderProgramBuilder programBuilder;
         ShaderParameterInfoBuilder parameterInfoBuilder;
 
@@ -56,11 +57,15 @@
 
 program:
     leadingChars
-    | pplines annotationComment remainingProgram
-    | leadingChars annotationComment remainingProgram {
+    | pplines aslStartComment remainingProgram
+    | leadingChars aslStartComment remainingProgram {
             warn("ASL program is not starting with ASL comment.");
         }
     | ;
+
+aslStartComment: annotationComment {
+        asl::parserinternal::parsedFirstAslComment = true;
+    }
 
 leadingChars:
     leadingChars UNEXPECTED_CHAR pplines
@@ -92,7 +97,7 @@ parameter: annotationComment UNIFORM datatype IDENTIFIER ';' {
             delete $4;
         }
     | annotationComment error {
-            warn("ASL comment is not preceding uniform declaration.");
+            warn("ASL comment is not preceding valid uniform declaration.");
         }
 
 datatype: IDENTIFIER {
@@ -161,14 +166,23 @@ void handleKeyStringValuePair(QString *key, QString *value)
     } else {
         definedKeys.insert(*key);
     }
-    if ("ShaderName" == *key) {
-        programBuilder.setName(*value);
-    } else if ("ShaderDescription" == *key) {
-        programBuilder.setDescription(*value);
-    } else if ("Name" == *key) {
-        parameterInfoBuilder.withName(*value);
+
+    if (parsedFirstAslComment) {
+        if ("Name" == *key) {
+            parameterInfoBuilder.withName(*value);
+        } else {
+            warn("unknown key: " + *key);
+        }
+
     } else {
-        warn("unknown key: " + *key);
+        if ("ShaderName" == *key) {
+            programBuilder.setName(*value);
+        } else if ("ShaderDescription" == *key) {
+            programBuilder.setDescription(*value);
+        } else {
+            warn("unknown key: " + *key);
+        }
+
     }
 
     delete key;
@@ -180,6 +194,7 @@ AnnotatedGLShaderProgram * parse(const QString &sourcecode,
 {
     programBuilder = AnnotatedGLShaderProgramBuilder();
     programBuilder.setName(QFileInfo(pathOfSource).fileName());
+    parsedFirstAslComment = false;
     setInput(sourcecode);
     yyparse();
     return programBuilder.build();
