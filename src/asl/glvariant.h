@@ -1,6 +1,8 @@
 #ifndef GLVARIANT_H
 #define GLVARIANT_H
 
+#include <cassert>
+
 #include <GL/gl.h>
 
 namespace asl
@@ -28,12 +30,14 @@ namespace asl
         }
 
         inline void set(const GLsizei count, const GLfloat *value) {
+            assert(count <= MAX_GL_VECTOR_DIMENSION * MAX_GL_VECTOR_DIMENSION);
             for (unsigned short int i = 0; i < count; ++i) {
                 asFloats[i] = value[i];
             }
         }
 
         inline void set(const GLsizei count, const GLint *value) {
+            assert(count <= MAX_GL_VECTOR_DIMENSION * MAX_GL_VECTOR_DIMENSION);
             for (unsigned short int i = 0; i < count; ++i) {
                 asInts[i] = value[i];
             }
