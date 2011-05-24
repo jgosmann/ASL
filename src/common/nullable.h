@@ -23,6 +23,11 @@ public:
         return m_value;
     }
 
+    const T & valueOrDefault(const T &def) const
+    {
+        return hasValue() ? value() : def;
+    }
+
     operator T() const throw(NoValueException) { return value(); }
 
 private:

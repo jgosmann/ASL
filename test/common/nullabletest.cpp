@@ -73,6 +73,19 @@ public:
         CPPUNIT_FAIL("Expected NoValueException.");
     }
 
+    void valueOrDefaultReturnsDefaultIfNotSet()
+    {
+        Nullable<int> t;
+        CPPUNIT_ASSERT_EQUAL(42, t.valueOrDefault(42));
+    }
+
+    void valueOrDefaultReturnsValueIfSet()
+    {
+        Nullable<int> t;
+        t = 23;
+        CPPUNIT_ASSERT_EQUAL(23, t.valueOrDefault(42));
+    }
+
     CPPUNIT_TEST_SUITE(NullableTest);
     CPPUNIT_TEST(throwsNoValueExceptionIfNotSet);
     CPPUNIT_TEST(returnsSetValue);
@@ -82,6 +95,8 @@ public:
     CPPUNIT_TEST(assignmentOperatorSetsValue);
     CPPUNIT_TEST(castToTypeReturnsValue);
     CPPUNIT_TEST(castToTypeThrowsNoValueExceptionIfNotSet);
+    CPPUNIT_TEST(valueOrDefaultReturnsDefaultIfNotSet);
+    CPPUNIT_TEST(valueOrDefaultReturnsValueIfSet);
     CPPUNIT_TEST_SUITE_END();
 
 private:
