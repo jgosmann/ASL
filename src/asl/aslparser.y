@@ -132,7 +132,7 @@ using namespace asl::parserinternal;
 
 void yyerror(const char *msg)
 {
-    addToLog("ERROR", msg);
+    warn(msg);
 }
 
 namespace asl
