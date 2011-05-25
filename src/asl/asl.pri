@@ -1,5 +1,5 @@
 HEADERS += asl/shaderparameterinfo.h \
-    asl/glvariant.h \
+    asl/glvalue.h \
     asl/gltypeinfo.h \
     asl/annotatedglshaderprogram.h \
     asl/aslcompiler.h \

@@ -5,7 +5,7 @@
 #include <QStringList>
 
 #include "gltypeinfo.h"
-#include "glvariant.h"
+#include "glvalue.h"
 
 namespace asl
 {
@@ -15,9 +15,9 @@ struct ShaderParameterInfo
     QString name;
     QString description;
     const asl::GLTypeInfo * type;
-    asl::GLVariant defaultValue;
-    asl::GLVariant minimum;
-    asl::GLVariant maximum;
+    asl::GLValue defaultValue;
+    asl::GLValue minimum;
+    asl::GLValue maximum;
     QStringList preferredUIControls;
 };
 }

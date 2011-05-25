@@ -9,7 +9,7 @@ namespace asl
 {
     const GLsizei MAX_GL_VECTOR_DIMENSION = 4;
 
-    union GLVariant
+    union GLValue
     {
     public:
         GLfloat asFloats[MAX_GL_VECTOR_DIMENSION * MAX_GL_VECTOR_DIMENSION];
@@ -43,20 +43,20 @@ namespace asl
             }
         }
 
-        inline GLVariant(GLfloat v0 = 0.0, GLfloat v1 = 0.0,
+        inline GLValue(GLfloat v0 = 0.0, GLfloat v1 = 0.0,
                          GLfloat v2 = 0.0, GLfloat v3 = 0.0) {
             set(v0, v1, v2, v3);
         }
 
-        inline GLVariant(GLint v0, GLint v1 = 0, GLint v2 = 0, GLint v3 = 0) {
+        inline GLValue(GLint v0, GLint v1 = 0, GLint v2 = 0, GLint v3 = 0) {
             set(v0, v1, v2, v3);
         }
 
-        inline GLVariant(const GLsizei count, const GLfloat *value) {
+        inline GLValue(const GLsizei count, const GLfloat *value) {
             set(count, value);
         }
 
-        inline GLVariant(const GLsizei count, const GLint *value) {
+        inline GLValue(const GLsizei count, const GLint *value) {
             set(count, value);
         }
     };
