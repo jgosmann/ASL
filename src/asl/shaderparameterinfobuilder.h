@@ -27,7 +27,7 @@ public:
         m_description = description;
     }
 
-    inline void withType(const GLTypeInfo *type) { m_type = type; }
+    inline void withType(const GLTypeInfo &type) { m_type = &type; }
 
     asl::ShaderParameterInfo build() const throw(common::NoValueException);
 

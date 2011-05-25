@@ -8,14 +8,14 @@ using namespace std;
 
 const GLTypeInfo::KnownTypesTable GLTypeInfo::knownTypes;
 
-const GLTypeInfo * GLTypeInfo::getFor(const QString &glslName)
+const GLTypeInfo & GLTypeInfo::getFor(const QString &glslName)
         throw(invalid_argument)
 {
     if (!knownTypes.isTypeKnown(glslName)) {
         throw invalid_argument(
                 "Not a valid GLSL type supported by GLTypeInfo.");
     }
-    return knownTypes.getType(glslName);
+    return *knownTypes.getType(glslName);
 }
 
 GLTypeInfo::GLTypeInfo(const QString &glslName, GLTypeInfo::Structure structure,

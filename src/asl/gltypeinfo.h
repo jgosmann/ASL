@@ -16,7 +16,7 @@ namespace asl
 class GLTypeInfo
 {
 public:
-    static const GLTypeInfo * getFor(const QString &glslName)
+    static const GLTypeInfo & getFor(const QString &glslName)
             throw(std::invalid_argument);
 
     enum Structure
@@ -42,8 +42,6 @@ public:
     {
         return m_columnDimensionality;
     }
-
-    inline bool isEqualTo(const GLTypeInfo *type) { return *this == *type; }
 
     inline bool isScalar() const {
         return structure() == SCALAR;

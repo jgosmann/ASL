@@ -1,5 +1,5 @@
-#ifndef GLVARIANT_H
-#define GLVARIANT_H
+#ifndef GLVALUE_H
+#define GLVALUE_H
 
 #include <cassert>
 
@@ -62,4 +62,4 @@ namespace asl
     };
 }
 
-#endif // GLVARIANT_H
+#endif // GLVALUE_H
