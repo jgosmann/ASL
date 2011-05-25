@@ -7,7 +7,7 @@
 
 namespace asl
 {
-    const unsigned int MAX_GL_VECTOR_DIMENSION = 4;
+    const GLsizei MAX_GL_VECTOR_DIMENSION = 4;
 
     union GLVariant
     {
