@@ -29,6 +29,7 @@ public:
     inline const GLfloat * asFloat() const { return m_values.asFloat; }
     inline const GLint * asInt() const { return m_values.asInt; }
     inline const GLuint * asUInt() const { return m_values.asUInt; }
+    inline const GLint * asBool() const { return m_values.asInt; }
     const GLsizei count() const;
 
     GLVariant & operator=(const GLVariant &rhs);

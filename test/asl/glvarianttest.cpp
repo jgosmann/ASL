@@ -35,8 +35,7 @@ public:
     {
         const InType values[] = { inValue };
         GLVariant variant(gltypenames::BOOL, 1, values);
-        CPPUNIT_ASSERT_EQUAL(static_cast<GLint>(outValue),
-                getResults<GLint>(variant)[0]);
+        CPPUNIT_ASSERT_EQUAL(static_cast<GLint>(outValue), variant.asBool()[0]);
     }
 
     CPPUNIT_TEST_SUITE(GLVariantTest);

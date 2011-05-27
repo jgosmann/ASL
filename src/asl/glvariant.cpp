@@ -1,7 +1,13 @@
 
 #include "glvariant.h"
 
+#include <stdexcept>
+
+#include "../src/common/invalidcastexception.h"
+
 using namespace asl;
+using namespace common;
+using namespace std;
 
 template GLVariant::GLVariant(const GLTypeInfo &type, GLsizei count,
         const GLfloat *value);
@@ -43,7 +49,7 @@ GLVariant::~GLVariant() {
             delete[] m_values.asUInt;
             break;
         default:
-            // FIXME: handle forgotten destructor
+            throw logic_error("Missing memory cleanup.");
             break;
     }
 }
@@ -65,7 +71,7 @@ template<class T> void GLVariant::set(GLsizei count, const T *value)
             set(&m_values.asUInt, count, value);
             break;
         default:
-            // FIXME throw exception;
+            throw invalid_argument("Type not supported.");
             break;
     }
 }
@@ -89,7 +95,7 @@ void GLVariant::allocateMemory()
             m_values.asUInt = new GLuint[count()];
             break;
         default:
-            // FIXME: throw exception;
+            throw invalid_argument("Type not supported.");
             break;
     }
 }
