@@ -17,25 +17,14 @@ public:
     GLVariant(const GLVariant &other);
 
     template<class T> GLVariant(const GLTypeInfo &type, GLsizei count,
-            T *value);
+            const T *value);
 
     template<class T> GLVariant(const QString &glslTypename, GLsizei count,
-            T *value);
+            const T *value);
 
-    inline void set(GLsizei count, const GLfloat *value)
-    {
-        set(&m_values.asFloat, count, value);
-    }
+    ~GLVariant();
 
-    inline void set(GLsizei count, const GLint *value)
-    {
-        set(&m_values.asInt, count, value);
-    }
-
-    inline void set(GLsizei count, const GLuint *value)
-    {
-        set(&m_values.asUInt, count, value);
-    }
+    template<class T> void set(GLsizei count, const T *value);
 
     inline const GLfloat * asFloat() const { return m_values.asFloat; }
     inline const GLint * asInt() const { return m_values.asInt; }
@@ -45,7 +34,10 @@ public:
     GLVariant & operator=(const GLVariant &rhs);
 
 private:
-    template<class T> void set(T **storage, GLsizei count, const T *value);
+    void allocateMemory();
+
+    template<class StoreT, class InitT> void set(StoreT **storage,
+            GLsizei count, const InitT *value);
 
     const GLTypeInfo &m_type;
     union {

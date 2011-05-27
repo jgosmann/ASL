@@ -1,5 +1,6 @@
 
 #include "gltypeinfo.h"
+#include "gltypenames.h"
 
 #include <QStringBuilder>
 
@@ -49,7 +50,8 @@ GLTypeInfo::KnownTypesTable::KnownTypesTable()
 
     /* Vectors, Open GL Shading Language, 3rd Edition, p. 69 */
     for (unsigned short int i = 2; i <= 4; ++i) {
-        QString basename = "vec" % QString::number(i);
+        QString basename = QString(gltypenames::VEC_BASE_NAME)
+            % QString::number(i);
         registerType(new GLTypeInfo(
             basename, GLTypeInfo::VECTOR, GLTypeInfo::FLOAT, 1, i));
         registerType(new GLTypeInfo(
@@ -64,7 +66,8 @@ GLTypeInfo::KnownTypesTable::KnownTypesTable()
     for (unsigned short int i = 2; i <= 4; ++i) {
         for (unsigned short int j = 2; j <= 4; ++j) {
             registerType(new GLTypeInfo(
-                "mat" % QString::number(i) % "x" % QString::number(j),
+                QString(gltypenames::MAT_BASE_NAME) % QString::number(i) % "x"
+                    % QString::number(j),
                 GLTypeInfo::MATRIX, GLTypeInfo::FLOAT, i, j));
             if (i == j) {
                 registerType(new GLTypeInfo(
