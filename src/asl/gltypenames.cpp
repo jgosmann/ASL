@@ -37,15 +37,15 @@ const char asl::gltypenames::MAT2[] = "mat2";
 const char asl::gltypenames::MAT3[] = "mat3";
 const char asl::gltypenames::MAT4[] = "mat4";
 
-const char asl::gltypenames::MAT2X2[] = "mat2x2";
-const char asl::gltypenames::MAT2X3[] = "mat2x3";
-const char asl::gltypenames::MAT2X4[] = "mat2x4";
+const char asl::gltypenames::MAT2x2[] = "mat2x2";
+const char asl::gltypenames::MAT2x3[] = "mat2x3";
+const char asl::gltypenames::MAT2x4[] = "mat2x4";
 
-const char asl::gltypenames::MAT3X2[] = "mat3x2";
-const char asl::gltypenames::MAT3X3[] = "mat3x3";
-const char asl::gltypenames::MAT3X4[] = "mat3x4";
+const char asl::gltypenames::MAT3x2[] = "mat3x2";
+const char asl::gltypenames::MAT3x3[] = "mat3x3";
+const char asl::gltypenames::MAT3x4[] = "mat3x4";
 
-const char asl::gltypenames::MAT4X2[] = "mat4x2";
-const char asl::gltypenames::MAT4X3[] = "mat4x3";
-const char asl::gltypenames::MAT4X4[] = "mat4x4";
+const char asl::gltypenames::MAT4x2[] = "mat4x2";
+const char asl::gltypenames::MAT4x3[] = "mat4x3";
+const char asl::gltypenames::MAT4x4[] = "mat4x4";
 

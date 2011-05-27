@@ -100,10 +100,12 @@ void GLVariant::allocateMemory()
 template<class StoreT, class InitT> void GLVariant::set(StoreT **storage,
         GLsizei count, const InitT *value)
 {
-    if (m_type.type() == GLTypeInfo::BOOL) {
-        (*storage)[0] = (0 != value[0]);
-    } else {
-        (*storage)[0] = static_cast<StoreT>(value[0]);
+    for (GLsizei i = 0; i < count; ++i) {
+        if (m_type.type() == GLTypeInfo::BOOL) {
+            (*storage)[i] = (0 != value[i]);
+        } else {
+            (*storage)[i] = static_cast<StoreT>(value[i]);
+        }
     }
 }
 

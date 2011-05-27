@@ -8,6 +8,7 @@
 
 #define IN ,
 #define OUT ,
+#define DIM ,
 
 namespace asl
 {
@@ -38,6 +39,15 @@ public:
         CPPUNIT_ASSERT_EQUAL(static_cast<GLint>(outValue), variant.asBool()[0]);
     }
 
+    template<const char *glslName> void testNonScalar()
+    {
+        const GLTypeInfo &type = GLTypeInfo::getFor(glslName);
+        const GLsizei count = type.rowDimensionality()
+            * type.columnDimensionality();
+        GLVariant variant(type, count, testValues);
+        assertEqualArrayOfLengthN(count, testValues, variant.asFloat());
+    }
+
     CPPUNIT_TEST_SUITE(GLVariantTest);
     CPPUNIT_TEST(testScalar<gltypenames::FLOAT IN GLfloat>);
     CPPUNIT_TEST(testScalar<gltypenames::INT IN GLint>);
@@ -52,6 +62,21 @@ public:
     CPPUNIT_TEST(testBooleanScalar<GLint IN 0 OUT false>);
     CPPUNIT_TEST(testBooleanScalar<GLuint IN 0 OUT false>);
     CPPUNIT_TEST(testBooleanScalar<GLfloat IN 0 OUT false>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::VEC2>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::VEC3>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::VEC4>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::MAT2>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::MAT3>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::MAT4>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::MAT2x2>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::MAT2x3>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::MAT2x4>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::MAT3x2>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::MAT3x3>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::MAT3x4>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::MAT4x2>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::MAT4x3>);
+    CPPUNIT_TEST(testNonScalar<gltypenames::MAT4x4>);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -69,11 +94,20 @@ private:
     static const GLfloat floatScalarValue[];
     static const GLint intScalarValue[];
     static const GLuint uintScalarValue[];
+
+    static const GLfloat testValues[];
 };
 
 const GLfloat GLVariantTest::floatScalarValue[] = { -2.3 };
 const GLint GLVariantTest::intScalarValue[] = { -3 };
 const GLuint GLVariantTest::uintScalarValue[] = { 4 };
+
+const GLfloat GLVariantTest::testValues[] = {
+    /* more or less random values */
+    -2.3,  4.2,  5.6, -1.2,
+     4.5,  0.0, -0.0, -1.0,
+     1.0, -34.,  56.,  0.1,
+     3.0,  1.2, -5.5, -0.2 };
 
 template<> const GLfloat * GLVariantTest::getScalarValue() {
     return floatScalarValue;

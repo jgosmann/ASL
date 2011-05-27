@@ -40,17 +40,17 @@ namespace gltypenames {
     extern const char MAT3[];
     extern const char MAT4[];
 
-    extern const char MAT2X2[];
-    extern const char MAT2X3[];
-    extern const char MAT2X4[];
+    extern const char MAT2x2[];
+    extern const char MAT2x3[];
+    extern const char MAT2x4[];
 
-    extern const char MAT3X2[];
-    extern const char MAT3X3[];
-    extern const char MAT3X4[];
+    extern const char MAT3x2[];
+    extern const char MAT3x3[];
+    extern const char MAT3x4[];
 
-    extern const char MAT4X2[];
-    extern const char MAT4X3[];
-    extern const char MAT4X4[];
+    extern const char MAT4x2[];
+    extern const char MAT4x3[];
+    extern const char MAT4x4[];
 } /* namespace gltypenames */
 } /* namespace asl */
 
