@@ -9,7 +9,11 @@
 namespace asl
 {
 /**
- * \note Matrices will be stored as column major.
+ * Class able to hold different types which can passed to a shader program.
+ *
+ * \note Matrices will be stored and returned in the way you pass them. This
+ * means when passing a column major matrix it will be stored and returned
+ * as column major.
  */
 class GLVariant
 {
@@ -24,6 +28,10 @@ public:
 
     ~GLVariant();
 
+    /**
+     * Sets the value of the GLVariant. This function will try to cast the
+     * passed values to the type matching this GLVariant.
+     */
     template<class T> void set(GLsizei count, const T *value);
 
     inline const GLfloat * asFloat() const { return m_values.asFloat; }
