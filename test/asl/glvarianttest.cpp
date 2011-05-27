@@ -16,7 +16,7 @@ class GLVariantTest : public TestFixture
 public:
     template<const char *glslName, class InitType> void testScalar()
     {
-        const InitType *values = getValues<InitType>();
+        const InitType *values = getScalarValue<InitType>();
         GLVariant variant(glslName, 1, values);
         CPPUNIT_ASSERT_EQUAL(values[0], getResults<InitType>(variant)[0]);
     }
@@ -24,7 +24,7 @@ public:
     template<const char *glslName, class InType, class OutType>
     void testCast()
     {
-        const InType *values = getValues<InType>();
+        const InType *values = getScalarValue<InType>();
         GLVariant variant(glslName, 1, values);
         CPPUNIT_ASSERT_EQUAL(static_cast<OutType>(values[0]),
                 getResults<OutType>(variant)[0]);
@@ -55,7 +55,7 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
 private:
-    template<class T> static const T * getValues();
+    template<class T> static const T * getScalarValue();
     template<class T> static const T * getResults(const GLVariant &variant);
 
     template<class T> void assertEqualArrayOfLengthN(unsigned int n,
@@ -66,25 +66,25 @@ private:
         }
     }
 
-    static const GLfloat floatValues[];
-    static const GLint intValues[];
-    static const GLuint uintValues[];
+    static const GLfloat floatScalarValue[];
+    static const GLint intScalarValue[];
+    static const GLuint uintScalarValue[];
 };
 
-const GLfloat GLVariantTest::floatValues[] = { -2.3, 4.2, 1.3, -3.76 };
-const GLint GLVariantTest::intValues[] = { -3, 42, 13, -376 };
-const GLuint GLVariantTest::uintValues[] = { 4, 43, 10, 376 };
+const GLfloat GLVariantTest::floatScalarValue[] = { -2.3 };
+const GLint GLVariantTest::intScalarValue[] = { -3 };
+const GLuint GLVariantTest::uintScalarValue[] = { 4 };
 
-template<> const GLfloat * GLVariantTest::getValues() {
-    return floatValues;
+template<> const GLfloat * GLVariantTest::getScalarValue() {
+    return floatScalarValue;
 }
 
-template<> const GLuint * GLVariantTest::getValues() {
-    return uintValues;
+template<> const GLuint * GLVariantTest::getScalarValue() {
+    return uintScalarValue;
 }
 
-template<> const GLint * GLVariantTest::getValues() {
-    return intValues;
+template<> const GLint * GLVariantTest::getScalarValue() {
+    return intScalarValue;
 }
 
 template<> const GLfloat * GLVariantTest::getResults(const GLVariant &variant)

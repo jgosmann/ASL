@@ -3,10 +3,7 @@
 
 #include <stdexcept>
 
-#include "../src/common/invalidcastexception.h"
-
 using namespace asl;
-using namespace common;
 using namespace std;
 
 template GLVariant::GLVariant(const GLTypeInfo &type, GLsizei count,
