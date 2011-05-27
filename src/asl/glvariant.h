@@ -39,6 +39,7 @@ public:
     inline const GLuint * asUInt() const { return m_values.asUInt; }
     inline const GLint * asBool() const { return m_values.asInt; }
     const GLsizei count() const;
+    inline const GLTypeInfo & type() const { return m_type; }
 
     GLVariant & operator=(const GLVariant &rhs);
 
