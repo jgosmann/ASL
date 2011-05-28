@@ -113,7 +113,9 @@ public:
 
     void testCopyConstructor()
     {
-        // TODO
+        GLVariant v1("mat4", 16, testValues);
+        GLVariant v2(v1);
+        CPPUNIT_ASSERT_EQUAL(v1, v2);
     }
 
     CPPUNIT_TEST_SUITE(GLVariantTest);
@@ -152,6 +154,7 @@ public:
     CPPUNIT_TEST(testEqualityOperatorReturnsTrueIfEqual);
     CPPUNIT_TEST(testEqualityOperatorReturnsFalseIfTypesNotMatching);
     CPPUNIT_TEST(testEqualityOperatorReturnsFalseIfUnequal);
+    CPPUNIT_TEST(testCopyConstructor);
     CPPUNIT_TEST_SUITE_END();
 
 private:

@@ -44,6 +44,7 @@ public:
      * \param value Array to set the value. Must have at least \a count values.
      */
     template<class T> void set(GLsizei count, const T *value);
+    void set(const GLVariant &value);
 
     inline const GLfloat * asFloat() const { return m_data.asFloat; }
     inline const GLint * asInt() const { return m_data.asInt; }

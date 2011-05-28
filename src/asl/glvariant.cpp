@@ -6,6 +6,12 @@
 using namespace asl;
 using namespace std;
 
+GLVariant::GLVariant(const GLVariant &other) : m_type(other.m_type)
+{
+    allocateMemory();
+    set(other);
+}
+
 template GLVariant::GLVariant(const GLTypeInfo &type, GLsizei count,
         const GLfloat *value);
 template GLVariant::GLVariant(const GLTypeInfo &type, GLsizei count,
@@ -70,6 +76,24 @@ template<class T> void GLVariant::set(GLsizei count, const T *value)
         default:
             throw invalid_argument("Type not supported.");
             break;
+    }
+}
+
+void GLVariant::set(const GLVariant &value)
+{
+    switch (value.type().type()) {
+        case GLTypeInfo::FLOAT:
+            set(value.count(), value.asFloat());
+            break;
+        case GLTypeInfo::BOOL: /* fall through */
+        case GLTypeInfo::INT:
+            set(value.count(), value.asInt());
+            break;
+        case GLTypeInfo::UINT:
+            set(value.count(), value.asUInt());
+            break;
+        default:
+            throw invalid_argument("Copy from GLVariant's type not supported.");
     }
 }
 
