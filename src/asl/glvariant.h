@@ -10,19 +10,17 @@ namespace asl
 {
 /**
  * Class able to hold different types which can passed to a shader program.
- *
- * \note Matrices will be stored and returned in the way you pass them. This
- * means when passing a column major matrix it will be stored and returned
- * as column major.
  */
 class GLVariant
 {
 public:
     GLVariant(const GLVariant &other);
 
+    /** \see #set */
     template<class T> GLVariant(const GLTypeInfo &type, GLsizei count,
             const T *value);
 
+    /** \see #set */
     template<class T> GLVariant(const QString &glslTypename, GLsizei count,
             const T *value);
 
@@ -31,6 +29,17 @@ public:
     /**
      * Sets the value of the GLVariant. This function will try to cast the
      * passed values to the type matching this GLVariant.
+     *
+     * You have to pass an array with either (rows * columns) of this
+     * GLVariant's type or 1. In the former case a matrix will be stored (and
+     * returned) in the way that you pass it, i.e. a column major matrix will be
+     * stored and returned as column major matrix. In the later case the first
+     * entry of the \a value array will be used for each vector component or
+     * will initialize the diagonal of a column major matrix with 0 at all other
+     * positions.
+     *
+     * \param count The length of the passed array to set the value.
+     * \param value Array to set the value. Must have at least \a count values.
      */
     template<class T> void set(GLsizei count, const T *value);
 
