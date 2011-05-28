@@ -76,13 +76,18 @@ public:
         }
     }
 
-    void testThrowsInvalidArgumentExceptionOnDimensionMismatch() {
+    void testThrowsInvalidArgumentExceptionIfNotEnoughValuesProvided() {
         try {
             GLVariant variant("vec4", 2, testValues);
         } catch (const invalid_argument &e) {
             return;
         }
         CPPUNIT_FAIL("Expected invalid_argument exception.");
+    }
+
+    void testSilentlyIgnoresExtraComponents() {
+        GLVariant variant("vec2", 4, testValues);
+        assertEqualArrayOfLengthN(2, testValues, variant.asFloat());
     }
 
     void testCopyConstructor()
@@ -121,7 +126,8 @@ public:
     CPPUNIT_TEST(testNonScalar<gltypenames::MAT4x4>);
     CPPUNIT_TEST(testSingleValueIsReplicatedToFillVector);
     CPPUNIT_TEST(testSingleValueInitsDiagnolOfColumnMajorMatrix);
-    CPPUNIT_TEST(testThrowsInvalidArgumentExceptionOnDimensionMismatch);
+    CPPUNIT_TEST(testThrowsInvalidArgumentExceptionIfNotEnoughValuesProvided);
+    CPPUNIT_TEST(testSilentlyIgnoresExtraComponents);
     CPPUNIT_TEST_SUITE_END();
 
 private:

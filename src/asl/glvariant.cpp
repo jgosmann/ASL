@@ -139,12 +139,14 @@ template<class StoreT, class InitT> void GLVariant::setDiagonalMat(
 template<class StoreT, class InitT> void GLVariant::setFromArray(
         StoreT **storage, GLsizei count, const InitT *value)
 {
-    if (count != m_type.rowDimensionality() * m_type.columnDimensionality()) {
+    const GLsizei neededCount = m_type.rowDimensionality()
+            * m_type.columnDimensionality();
+    if (count < neededCount) {
         throw invalid_argument("Count of array elements does not match the "
                 "GLVariant's dimensionality.");
     }
 
-    for (GLsizei i = 0; i < count; ++i) {
+    for (GLsizei i = 0; i < neededCount; ++i) {
         (*storage)[i] = castValue<StoreT, InitT>(value[i]);
     }
 }
