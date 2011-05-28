@@ -197,3 +197,32 @@ template<class StoreT> bool GLVariant::compareData(GLsizei count,
     return true;
 }
 
+ostream & operator<<(ostream &output, const GLVariant &v)
+{
+    output << qPrintable(v.type().glslName()) << "(";
+    for (GLsizei i = 0; i < v.count(); ++i) {
+        if (i > 0) {
+            output << ", ";
+        }
+
+        switch (v.type().type()) {
+            case GLTypeInfo::FLOAT:
+                output << v.asFloat()[i];
+                break;
+            case GLTypeInfo::BOOL: /* fall through */
+            case GLTypeInfo::INT:
+                output << v.asInt()[i];
+                break;
+            case GLTypeInfo::UINT:
+                output << v.asUInt()[i];
+                break;
+            default:
+                output << "<no output function defined>";
+                break;
+        }
+    }
+    output << ")";
+
+    return output;
+}
+

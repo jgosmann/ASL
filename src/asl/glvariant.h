@@ -1,6 +1,8 @@
 #ifndef GLVARIANT_H
 #define GLVARIANT_H
 
+#include <iostream>
+
 #include <GL/gl.h>
 
 #include "gltypeinfo.h"
@@ -81,6 +83,8 @@ private:
     } m_values;
 };
 } /* namespace asl */
+
+std::ostream & operator<<(std::ostream &output, const asl::GLVariant &v);
 
 #endif /* GLVARIANT_H */
 
