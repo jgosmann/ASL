@@ -100,12 +100,61 @@ void GLVariant::allocateMemory()
 template<class StoreT, class InitT> void GLVariant::set(StoreT **storage,
         GLsizei count, const InitT *value)
 {
-    for (GLsizei i = 0; i < count; ++i) {
-        if (m_type.type() == GLTypeInfo::BOOL) {
-            (*storage)[i] = (0 != value[i]);
-        } else {
-            (*storage)[i] = static_cast<StoreT>(value[i]);
+    if (m_type.structure() == GLTypeInfo::VECTOR && count == 1) {
+        setVecFromSingleValue(storage, value[0]);
+    } else if (m_type.structure() == GLTypeInfo::MATRIX && count == 1) {
+        setDiagonalMat(storage, value[0]);
+    } else {
+        setFromArray(storage, count, value);
+    }
+}
+
+template<class StoreT, class InitT> void GLVariant::setVecFromSingleValue(
+        StoreT **storage, InitT value)
+{
+    const unsigned short int count = m_type.rowDimensionality()
+            * m_type.columnDimensionality();
+    StoreT castedValue = castValue<StoreT, InitT>(value);
+    for (unsigned short int i = 0; i < count; ++i) {
+        (*storage)[i] = castedValue;
+    }
+}
+
+template<class StoreT, class InitT> void GLVariant::setDiagonalMat(
+        StoreT **storage, InitT value)
+{
+    StoreT castedValue = castValue<StoreT, InitT>(value);
+    for (unsigned short int i = 0; i < m_type.columnDimensionality(); ++i) {
+        for (unsigned short int j = 0; j < m_type.rowDimensionality(); ++j) {
+            const unsigned short int idx = i * m_type.rowDimensionality() + j;
+            if (i == j) {
+                (*storage)[idx] = castedValue;
+            } else {
+                (*storage)[idx] = 0;
+            }
         }
+    }
+}
+
+template<class StoreT, class InitT> void GLVariant::setFromArray(
+        StoreT **storage, GLsizei count, const InitT *value)
+{
+    if (count != m_type.rowDimensionality() * m_type.columnDimensionality()) {
+        throw invalid_argument("Count of array elements does not match the "
+                "GLVariant's dimensionality.");
+    }
+
+    for (GLsizei i = 0; i < count; ++i) {
+        (*storage)[i] = castValue<StoreT, InitT>(value[i]);
+    }
+}
+
+template<class StoreT, class InitT> StoreT GLVariant::castValue(InitT value)
+{
+    if (m_type.type() == GLTypeInfo::BOOL) {
+        return (0 != value);
+    } else {
+        return static_cast<StoreT>(value);
     }
 }
 

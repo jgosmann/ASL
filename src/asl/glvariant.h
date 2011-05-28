@@ -48,6 +48,13 @@ private:
 
     template<class StoreT, class InitT> void set(StoreT **storage,
             GLsizei count, const InitT *value);
+    template<class StoreT, class InitT> void setVecFromSingleValue(
+            StoreT **storage, InitT value);
+    template<class StoreT, class InitT> void setDiagonalMat(StoreT **storage,
+            InitT value);
+    template<class StoreT, class InitT> void setFromArray(StoreT **storage,
+            GLsizei count, const InitT *value);
+    template<class StoreT, class InitT> StoreT castValue(InitT value);
 
     const GLTypeInfo &m_type;
     union {

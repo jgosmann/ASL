@@ -1,4 +1,6 @@
 
+#include <stdexcept>
+
 #include <GL/gl.h>
 
 #include "../src/asl/gltypenames.h"
@@ -9,6 +11,8 @@
 #define IN ,
 #define OUT ,
 #define DIM ,
+
+using namespace std;
 
 namespace asl
 {
@@ -48,6 +52,44 @@ public:
         assertEqualArrayOfLengthN(count, testValues, variant.asFloat());
     }
 
+    void testSingleValueIsReplicatedToFillVector()
+    {
+        GLVariant variant("vec3", 1, floatScalarValue);
+        for (unsigned short int i = 0; i < 3; ++i) {
+            CPPUNIT_ASSERT_EQUAL(*floatScalarValue, variant.asFloat()[i]);
+        }
+    }
+
+    void testSingleValueInitsDiagnolOfColumnMajorMatrix()
+    {
+        /* Non quadratic matrix to verfiy column major ordering. */
+        GLVariant variant("mat3x4", 1, floatScalarValue);
+        for (unsigned short int i = 0; i < 3; ++i) {
+            for (unsigned short int j = 0; j < 4; ++j) {
+                const GLfloat actual = variant.asFloat()[4 * i + j];
+                if (i == j) {
+                    CPPUNIT_ASSERT_EQUAL(*floatScalarValue, actual);
+                } else {
+                    CPPUNIT_ASSERT_EQUAL(static_cast<GLfloat>(0.0), actual);
+                }
+            }
+        }
+    }
+
+    void testThrowsInvalidArgumentExceptionOnDimensionMismatch() {
+        try {
+            GLVariant variant("vec4", 2, testValues);
+        } catch (const invalid_argument &e) {
+            return;
+        }
+        CPPUNIT_FAIL("Expected invalid_argument exception.");
+    }
+
+    void testCopyConstructor()
+    {
+        // TODO
+    }
+
     CPPUNIT_TEST_SUITE(GLVariantTest);
     CPPUNIT_TEST(testScalar<gltypenames::FLOAT IN GLfloat>);
     CPPUNIT_TEST(testScalar<gltypenames::INT IN GLint>);
@@ -77,6 +119,9 @@ public:
     CPPUNIT_TEST(testNonScalar<gltypenames::MAT4x2>);
     CPPUNIT_TEST(testNonScalar<gltypenames::MAT4x3>);
     CPPUNIT_TEST(testNonScalar<gltypenames::MAT4x4>);
+    CPPUNIT_TEST(testSingleValueIsReplicatedToFillVector);
+    CPPUNIT_TEST(testSingleValueInitsDiagnolOfColumnMajorMatrix);
+    CPPUNIT_TEST(testThrowsInvalidArgumentExceptionOnDimensionMismatch);
     CPPUNIT_TEST_SUITE_END();
 
 private:
