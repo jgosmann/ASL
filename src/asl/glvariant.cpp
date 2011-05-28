@@ -58,14 +58,14 @@ template<class T> void GLVariant::set(GLsizei count, const T *value)
 {
     switch (m_type.type()) {
         case GLTypeInfo::FLOAT:
-            set(&m_values.asFloat, count, value);
+            set(m_values.asFloat, count, value);
             break;
         case GLTypeInfo::BOOL: /* fall through */
         case GLTypeInfo::INT:
-            set(&m_values.asInt, count, value);
+            set(m_values.asInt, count, value);
             break;
         case GLTypeInfo::UINT:
-            set(&m_values.asUInt, count, value);
+            set(m_values.asUInt, count, value);
             break;
         default:
             throw invalid_argument("Type not supported.");
@@ -97,7 +97,7 @@ void GLVariant::allocateMemory()
     }
 }
 
-template<class StoreT, class InitT> void GLVariant::set(StoreT **storage,
+template<class StoreT, class InitT> void GLVariant::set(StoreT *storage,
         GLsizei count, const InitT *value)
 {
     if (m_type.structure() == GLTypeInfo::VECTOR && count == 1) {
@@ -110,34 +110,34 @@ template<class StoreT, class InitT> void GLVariant::set(StoreT **storage,
 }
 
 template<class StoreT, class InitT> void GLVariant::setVecFromSingleValue(
-        StoreT **storage, InitT value)
+        StoreT *storage, InitT value)
 {
     const unsigned short int count = m_type.rowDimensionality()
             * m_type.columnDimensionality();
     StoreT castedValue = castValue<StoreT, InitT>(value);
     for (unsigned short int i = 0; i < count; ++i) {
-        (*storage)[i] = castedValue;
+        storage[i] = castedValue;
     }
 }
 
 template<class StoreT, class InitT> void GLVariant::setDiagonalMat(
-        StoreT **storage, InitT value)
+        StoreT *storage, InitT value)
 {
     StoreT castedValue = castValue<StoreT, InitT>(value);
     for (unsigned short int i = 0; i < m_type.columnDimensionality(); ++i) {
         for (unsigned short int j = 0; j < m_type.rowDimensionality(); ++j) {
             const unsigned short int idx = i * m_type.rowDimensionality() + j;
             if (i == j) {
-                (*storage)[idx] = castedValue;
+                storage[idx] = castedValue;
             } else {
-                (*storage)[idx] = 0;
+                storage[idx] = 0;
             }
         }
     }
 }
 
 template<class StoreT, class InitT> void GLVariant::setFromArray(
-        StoreT **storage, GLsizei count, const InitT *value)
+        StoreT *storage, GLsizei count, const InitT *value)
 {
     const GLsizei neededCount = m_type.rowDimensionality()
             * m_type.columnDimensionality();
@@ -147,7 +147,7 @@ template<class StoreT, class InitT> void GLVariant::setFromArray(
     }
 
     for (GLsizei i = 0; i < neededCount; ++i) {
-        (*storage)[i] = castValue<StoreT, InitT>(value[i]);
+        storage[i] = castValue<StoreT, InitT>(value[i]);
     }
 }
 
@@ -187,7 +187,7 @@ bool GLVariant::operator==(const GLVariant &compareTo) const
 }
 
 template<class StoreT> bool GLVariant::compareData(GLsizei count,
-        const StoreT *lhs, const StoreT *rhs) const
+        const StoreT *lhs, const StoreT *rhs)
 {
     for (GLsizei i = 0; i < count; ++i) {
         if (lhs[i] != rhs[i]) {
