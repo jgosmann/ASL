@@ -160,30 +160,40 @@ template<class StoreT, class InitT> StoreT GLVariant::castValue(InitT value)
     }
 }
 
-// TODO: delete or reuse this code
-//bool GLVariant::operator==(const GLValue &compareTo) const
-//{
-    //const unsigned short int &rows = m_type->rowDimensionality();
-    //const unsigned short int &cols = m_type->columnDimensionality();
-    //for (unsigned int i = 0; i < cols; ++i) {
-        //for (unsigned int j = 0; j < rows; ++j) {
-            //const unsigned short int idx = i * cols + rows;
-            //if (m_type->isFloat()) {
-                //if (m_value.asFloats[idx] != compareTo.asFloats[idx]) {
-                    //return false;
-                //}
-            //} else {
-                //if (m_value.asInts[idx] != compareTo.asInts[idx]) {
-                    //return false;
-                //}
-            //}
-        //}
-    //}
-    //return true;
-//}
+bool GLVariant::operator==(const GLVariant &compareTo) const
+{
+    if (m_type != compareTo.type()) {
+        return false;
+    }
 
-//bool operator==(const GLValue &lhs, const GLVariant &rhs)
-//{
-    //return rhs == lhs;
-//}
+    const GLsizei count = m_type.rowDimensionality()
+            * m_type.columnDimensionality();
+    switch (m_type.type())
+    {
+        case GLTypeInfo::FLOAT:
+            compareData(count, asFloat(), compareTo.asFloat());
+            break;
+        case GLTypeInfo::BOOL: /* fall through */
+        case GLTypeInfo::INT:
+            compareData(count, asInt(), compareTo.asInt());
+            break;
+        case GLTypeInfo::UINT:
+            compareData(count, asUInt(), compareTo.asUInt());
+            break;
+        default:
+            throw logic_error("Missing comparision for type.");
+            break;
+    }
+}
+
+template<class StoreT> bool GLVariant::compareData(GLsizei count,
+        const StoreT *lhs, const StoreT *rhs) const
+{
+    for (GLsizei i = 0; i < count; ++i) {
+        if (lhs[i] != rhs[i]) {
+            return false;
+        }
+    }
+    return true;
+}
 

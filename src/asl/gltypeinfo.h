@@ -2,6 +2,7 @@
 #define GLTYPEINFO_H
 
 #include <stdexcept>
+#include <utility>
 
 #include <QHash>
 #include <QString>
@@ -72,6 +73,10 @@ public:
     }
 
     bool operator==(const GLTypeInfo &rhs) const;
+    inline bool operator!=(const GLTypeInfo &rhs) const
+    {
+        return !(*this == rhs);
+    }
 
 private:
     GLTypeInfo(const QString &glslName, Structure structure, Type type,

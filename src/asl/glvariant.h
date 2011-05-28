@@ -51,6 +51,11 @@ public:
     inline const GLTypeInfo & type() const { return m_type; }
 
     GLVariant & operator=(const GLVariant &rhs);
+    bool operator==(const GLVariant &rhs) const;
+    inline bool operator!=(const GLVariant &rhs) const
+    {
+        return !(*this == rhs);
+    }
 
 private:
     void allocateMemory();
@@ -64,6 +69,9 @@ private:
     template<class StoreT, class InitT> void setFromArray(StoreT **storage,
             GLsizei count, const InitT *value);
     template<class StoreT, class InitT> StoreT castValue(InitT value);
+
+    template<class StoreT> bool compareData(GLsizei count, const StoreT *lhs,
+            const StoreT *rhs) const;
 
     const GLTypeInfo &m_type;
     union {

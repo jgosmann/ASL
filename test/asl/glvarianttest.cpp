@@ -90,6 +90,27 @@ public:
         assertEqualArrayOfLengthN(2, testValues, variant.asFloat());
     }
 
+    void testEqualityOperatorReturnsTrueIfEqual()
+    {
+        GLVariant v1("mat3", 9, testValues);
+        GLVariant v2("mat3x3", 9, testValues);
+        CPPUNIT_ASSERT(v1 == v2);
+    }
+
+    void testEqualityOperatorReturnsFalseIfTypesNotMatching()
+    {
+        GLVariant v1("vec3", 3, testValues);
+        GLVariant v2("vec4", 4, testValues);
+        CPPUNIT_ASSERT(v1 != v2);
+    }
+
+    void testEqualityOperatorReturnsFalseIfUnequal()
+    {
+        GLVariant v1("vec3", 3, testValues);
+        GLVariant v2("vec3", 1, floatScalarValue);
+        CPPUNIT_ASSERT(v1 != v2);
+    }
+
     void testCopyConstructor()
     {
         // TODO
@@ -128,6 +149,9 @@ public:
     CPPUNIT_TEST(testSingleValueInitsDiagnolOfColumnMajorMatrix);
     CPPUNIT_TEST(testThrowsInvalidArgumentExceptionIfNotEnoughValuesProvided);
     CPPUNIT_TEST(testSilentlyIgnoresExtraComponents);
+    CPPUNIT_TEST(testEqualityOperatorReturnsTrueIfEqual);
+    CPPUNIT_TEST(testEqualityOperatorReturnsFalseIfTypesNotMatching);
+    CPPUNIT_TEST(testEqualityOperatorReturnsFalseIfUnequal);
     CPPUNIT_TEST_SUITE_END();
 
 private:
