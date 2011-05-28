@@ -101,14 +101,14 @@ public:
     {
         GLVariant v1("vec3", 3, testValues);
         GLVariant v2("vec4", 4, testValues);
-        CPPUNIT_ASSERT(v1 != v2);
+        CPPUNIT_ASSERT(!(v1 == v2));
     }
 
     void testEqualityOperatorReturnsFalseIfUnequal()
     {
         GLVariant v1("vec3", 3, testValues);
         GLVariant v2("vec3", 1, floatScalarValue);
-        CPPUNIT_ASSERT(v1 != v2);
+        CPPUNIT_ASSERT(!(v1 == v2));
     }
 
     void testCopyConstructor()

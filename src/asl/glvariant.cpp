@@ -171,14 +171,14 @@ bool GLVariant::operator==(const GLVariant &compareTo) const
     switch (m_type.type())
     {
         case GLTypeInfo::FLOAT:
-            compareData(count, asFloat(), compareTo.asFloat());
+            return compareData(count, asFloat(), compareTo.asFloat());
             break;
         case GLTypeInfo::BOOL: /* fall through */
         case GLTypeInfo::INT:
-            compareData(count, asInt(), compareTo.asInt());
+            return compareData(count, asInt(), compareTo.asInt());
             break;
         case GLTypeInfo::UINT:
-            compareData(count, asUInt(), compareTo.asUInt());
+            return compareData(count, asUInt(), compareTo.asUInt());
             break;
         default:
             throw logic_error("Missing comparision for type.");
