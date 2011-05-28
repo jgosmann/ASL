@@ -45,10 +45,10 @@ public:
      */
     template<class T> void set(GLsizei count, const T *value);
 
-    inline const GLfloat * asFloat() const { return m_values.asFloat; }
-    inline const GLint * asInt() const { return m_values.asInt; }
-    inline const GLuint * asUInt() const { return m_values.asUInt; }
-    inline const GLint * asBool() const { return m_values.asInt; }
+    inline const GLfloat * asFloat() const { return m_data.asFloat; }
+    inline const GLint * asInt() const { return m_data.asInt; }
+    inline const GLuint * asUInt() const { return m_data.asUInt; }
+    inline const GLint * asBool() const { return m_data.asInt; }
     const GLsizei count() const;
     inline const GLTypeInfo & type() const { return m_type; }
 
@@ -80,11 +80,12 @@ private:
         GLfloat *asFloat;
         GLint *asInt;
         GLuint *asUInt;
-    } m_values;
+    } m_data;
 };
-} /* namespace asl */
 
-std::ostream & operator<<(std::ostream &output, const asl::GLVariant &v);
+std::ostream & operator<<(std::ostream &output, const GLVariant &v);
+
+} /* namespace asl */
 
 #endif /* GLVARIANT_H */
 

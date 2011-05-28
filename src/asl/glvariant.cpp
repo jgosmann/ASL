@@ -36,14 +36,14 @@ template<class T> GLVariant::GLVariant(const QString &glslTypename,
 GLVariant::~GLVariant() {
     switch (m_type.type()) {
         case GLTypeInfo::FLOAT:
-            delete[] m_values.asFloat;
+            delete[] m_data.asFloat;
             break;
         case GLTypeInfo::BOOL: /* fall through */
         case GLTypeInfo::INT:
-            delete[] m_values.asInt;
+            delete[] m_data.asInt;
             break;
         case GLTypeInfo::UINT:
-            delete[] m_values.asUInt;
+            delete[] m_data.asUInt;
             break;
         default:
             throw logic_error("Missing memory cleanup.");
@@ -58,14 +58,14 @@ template<class T> void GLVariant::set(GLsizei count, const T *value)
 {
     switch (m_type.type()) {
         case GLTypeInfo::FLOAT:
-            set(m_values.asFloat, count, value);
+            set(m_data.asFloat, count, value);
             break;
         case GLTypeInfo::BOOL: /* fall through */
         case GLTypeInfo::INT:
-            set(m_values.asInt, count, value);
+            set(m_data.asInt, count, value);
             break;
         case GLTypeInfo::UINT:
-            set(m_values.asUInt, count, value);
+            set(m_data.asUInt, count, value);
             break;
         default:
             throw invalid_argument("Type not supported.");
@@ -82,14 +82,14 @@ void GLVariant::allocateMemory()
 {
     switch (m_type.type()) {
         case GLTypeInfo::FLOAT:
-            m_values.asFloat = new GLfloat[count()];
+            m_data.asFloat = new GLfloat[count()];
             break;
         case GLTypeInfo::BOOL: /* fall through */
         case GLTypeInfo::INT:
-            m_values.asInt = new GLint[count()];
+            m_data.asInt = new GLint[count()];
             break;
         case GLTypeInfo::UINT:
-            m_values.asUInt = new GLuint[count()];
+            m_data.asUInt = new GLuint[count()];
             break;
         default:
             throw invalid_argument("Type not supported.");
@@ -197,7 +197,7 @@ template<class StoreT> bool GLVariant::compareData(GLsizei count,
     return true;
 }
 
-ostream & operator<<(ostream &output, const GLVariant &v)
+ostream & asl::operator<<(ostream &output, const GLVariant &v)
 {
     output << qPrintable(v.type().glslName()) << "(";
     for (GLsizei i = 0; i < v.count(); ++i) {
