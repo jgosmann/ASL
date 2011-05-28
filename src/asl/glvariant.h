@@ -17,6 +17,8 @@ class GLVariant
 {
 public:
     GLVariant(const GLVariant &other);
+    GLVariant(const GLTypeInfo &type, const GLVariant &other);
+    GLVariant(const QString &glslTypename, const GLVariant &other);
 
     /** \see #set */
     template<class T> GLVariant(const GLTypeInfo &type, GLsizei count,

@@ -118,6 +118,14 @@ public:
         CPPUNIT_ASSERT_EQUAL(v1, v2);
     }
 
+    void testCopyCastConstructor()
+    {
+        GLVariant src("int", 1, intScalarValue);
+        GLVariant v("float", src);
+        CPPUNIT_ASSERT_EQUAL(static_cast<GLfloat>(*intScalarValue),
+                v.asFloat()[0]);
+    }
+
     CPPUNIT_TEST_SUITE(GLVariantTest);
     CPPUNIT_TEST(testScalar<gltypenames::FLOAT IN GLfloat>);
     CPPUNIT_TEST(testScalar<gltypenames::INT IN GLint>);
@@ -155,6 +163,7 @@ public:
     CPPUNIT_TEST(testEqualityOperatorReturnsFalseIfTypesNotMatching);
     CPPUNIT_TEST(testEqualityOperatorReturnsFalseIfUnequal);
     CPPUNIT_TEST(testCopyConstructor);
+    CPPUNIT_TEST(testCopyCastConstructor);
     CPPUNIT_TEST_SUITE_END();
 
 private:

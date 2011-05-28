@@ -12,6 +12,20 @@ GLVariant::GLVariant(const GLVariant &other) : m_type(other.m_type)
     set(other);
 }
 
+GLVariant::GLVariant(const GLTypeInfo &type, const GLVariant &other)
+        : m_type(type)
+{
+    allocateMemory();
+    set(other);
+}
+
+GLVariant::GLVariant(const QString &glslTypename, const GLVariant &other)
+        : m_type(GLTypeInfo::getFor(glslTypename))
+{
+    allocateMemory();
+    set(other);
+}
+
 template GLVariant::GLVariant(const GLTypeInfo &type, GLsizei count,
         const GLfloat *value);
 template GLVariant::GLVariant(const GLTypeInfo &type, GLsizei count,
