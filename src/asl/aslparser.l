@@ -6,6 +6,7 @@ annotationWhitespace [ \t\r\n*]
 notAnnotationWhitespace [^ \t\r\n*]
 identifier [_a-zA-Z][_a-zA-Z0-9]*
 integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
+float [0-9]*"."[0-9]*([eE]-?[0-9]+)?
 
 %x ANNOTATION
 %x READ_ANNOTATION_STRING
@@ -101,6 +102,13 @@ integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
 <READ_LINE,READ_ANNOTATION_GLVARIANT>{integer} {
     aslparserlval.integer = strtoul(yytext, NULL, 0);
     return INTEGER;
+}
+
+<READ_ANNOTATION_GLVARIANT>{float} {
+    /* Do not use strtof() function as it interprets the locale and may treat
+     * other characters than the dot '.' as decimal dot. */
+    aslparserlval.flt = QString(yytext).toFloat();
+    return FLT;
 }
 
 <READ_ANNOTATION_GLVARIANT>"-" {

@@ -49,6 +49,7 @@
 
 %union {
     unsigned long int integer;
+    GLfloat flt;
     QString *string;
     asl::GLVariant *glvariant;
 }
@@ -59,6 +60,7 @@
 %destructor { delete $$; } string
 
 %token <integer> INTEGER
+%token <flt> FLT
 %token <string> KEY IDENTIFIER ANNOTATION_STRING
 %token ANNOTATION_START ANNOTATION_END UNIFORM LINE END NEGATE UNEXPECTED_CHAR
 
@@ -155,6 +157,14 @@ glvariant:
     | NEGATE INTEGER {
             const GLint value = -$2;
             $$ = new asl::GLVariant("uint", 1, &value);
+        }
+    | FLT {
+            const GLfloat value = $1;
+            $$ = new asl::GLVariant("float", 1, &value);
+        }
+    | NEGATE FLT {
+            const GLfloat value = -$2;
+            $$ = new asl::GLVariant("float", 1, &value);
         }
     ;
 

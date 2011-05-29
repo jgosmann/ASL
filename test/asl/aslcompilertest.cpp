@@ -398,17 +398,25 @@ public:
 
     void parsesScalarDefaultIntValue()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
-                shaderCompiler.compile(QGLShader::Fragment,
-                    "/***/\n"
-                    "/** Default: - 42 */\n"
-                    "uniform int param;\n"
-                    + trivialShader));
-        ShaderParameterInfoMatcher parameter;
-        const GLuint expected = - 42;
-        assertCleanCompilation(compiled.data());
-        assertHasExactlyOneParameterMatching(compiled.data(),
-                parameter.withDefaultValue(GLVariant("int", 1, &expected)));
+        testParsingOfDefaultWithScalar("int", "- 42", static_cast<GLint>(-42));
+    }
+
+    void parsesScalarDefaultFloatValue()
+    {
+        testParsingOfDefaultWithScalar("float", "42.25",
+                static_cast<GLfloat>(42.25));
+    }
+
+    void parsesScalarDefaultNegativeFloatValue()
+    {
+        testParsingOfDefaultWithScalar("float", "-42.25",
+                static_cast<GLfloat>(-42.25));
+    }
+
+    void parsesScalarDefaultFloatWithExponentValue()
+    {
+        testParsingOfDefaultWithScalar("float", "2.3e-3",
+                static_cast<GLfloat>(2.3e-3));
     }
 
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
@@ -445,6 +453,9 @@ public:
     CPPUNIT_TEST(defaultsParameterDescriptionToEmptyString);
     CPPUNIT_TEST(parsesParameterDescription);
     CPPUNIT_TEST(parsesScalarDefaultIntValue);
+    CPPUNIT_TEST(parsesScalarDefaultFloatValue);
+    CPPUNIT_TEST(parsesScalarDefaultNegativeFloatValue);
+    CPPUNIT_TEST(parsesScalarDefaultFloatWithExponentValue);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -471,6 +482,22 @@ private:
     {
         CPPUNIT_ASSERT_EQUAL(1, program->parameters().size());
         CPPUNIT_ASSERT(matcher.matches(program->parameters()[0]));
+    }
+
+    template<class T> void testParsingOfDefaultWithScalar(
+            const QString &glslTypename, const QString &srcValue, T expected)
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/** Default: " + srcValue + " */\n"
+                    "uniform " + glslTypename + " param;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        assertCleanCompilation(compiled.data());
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withDefaultValue(GLVariant(glslTypename, 1,
+                        &expected)));
     }
 
     static const QString trivialShader;
