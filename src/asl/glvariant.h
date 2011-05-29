@@ -6,7 +6,6 @@
 #include <GL/gl.h>
 
 #include "gltypeinfo.h"
-#include "glvalue.h"
 
 namespace asl
 {
@@ -16,6 +15,7 @@ namespace asl
 class GLVariant
 {
 public:
+    GLVariant();
     GLVariant(const GLVariant &other);
     GLVariant(const GLTypeInfo &type, const GLVariant &other);
     GLVariant(const QString &glslTypename, const GLVariant &other);

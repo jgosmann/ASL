@@ -2,7 +2,6 @@
 #define SHADERPARAMETERINFOMATCHER_H
 
 #include "../../src/common/nullable.h"
-#include "../../src/asl/glvalue.h"
 #include "../../src/asl/glvariant.h"
 #include "../../src/asl/shaderparameterinfo.h"
 
@@ -62,4 +61,5 @@ class ShaderParameterInfoMatcher
 } /* namespace asl */
 
 #endif /* SHADERPARAMETERINFOMATCHER_H */
+
 

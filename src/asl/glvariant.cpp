@@ -6,6 +6,12 @@
 using namespace asl;
 using namespace std;
 
+GLVariant::GLVariant() : m_type(GLTypeInfo::getFor("float"))
+{
+    allocateMemory();
+    m_data.asFloat[0] = 0;
+}
+
 GLVariant::GLVariant(const GLVariant &other) : m_type(other.m_type)
 {
     allocateMemory();
