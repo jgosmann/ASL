@@ -59,7 +59,7 @@
 
 %destructor { delete $$; } string
 
-%token <integer> INTEGER
+%token <integer> INTEGER BOOLEAN
 %token <flt> FLT
 %token <string> KEY IDENTIFIER ANNOTATION_STRING
 %token ANNOTATION_START ANNOTATION_END UNIFORM LINE END NEGATE UNEXPECTED_CHAR
@@ -165,6 +165,10 @@ glvariant:
     | NEGATE FLT {
             const GLfloat value = -$2;
             $$ = new asl::GLVariant("float", 1, &value);
+        }
+    | BOOLEAN {
+            const GLint value = $1;
+            $$ = new asl::GLVariant("bool", 1, &value);
         }
     ;
 

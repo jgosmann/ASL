@@ -7,6 +7,7 @@ notAnnotationWhitespace [^ \t\r\n*]
 identifier [_a-zA-Z][_a-zA-Z0-9]*
 integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
 float [0-9]*"."[0-9]*([eE]-?[0-9]+)?
+bool true|false
 
 %x ANNOTATION
 %x READ_ANNOTATION_STRING
@@ -109,6 +110,15 @@ float [0-9]*"."[0-9]*([eE]-?[0-9]+)?
      * other characters than the dot '.' as decimal dot. */
     aslparserlval.flt = QString(yytext).toFloat();
     return FLT;
+}
+
+<READ_ANNOTATION_GLVARIANT>{bool} {
+    if ("true" == QString(yytext)) {
+        aslparserlval.integer = 1;
+    } else {
+        aslparserlval.integer = 0;
+    }
+    return BOOLEAN;
 }
 
 <READ_ANNOTATION_GLVARIANT>"-" {

@@ -419,6 +419,16 @@ public:
                 static_cast<GLfloat>(2.3e-3));
     }
 
+    void parsesTrueBoolDefaultValue()
+    {
+        testParsingOfDefaultWithScalar("bool", "true", static_cast<GLint>(1));
+    }
+
+    void parsesfalseBoolDefaultValue()
+    {
+        testParsingOfDefaultWithScalar("bool", "false", static_cast<GLint>(0));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -456,6 +466,8 @@ public:
     CPPUNIT_TEST(parsesScalarDefaultFloatValue);
     CPPUNIT_TEST(parsesScalarDefaultNegativeFloatValue);
     CPPUNIT_TEST(parsesScalarDefaultFloatWithExponentValue);
+    CPPUNIT_TEST(parsesTrueBoolDefaultValue);
+    CPPUNIT_TEST(parsesfalseBoolDefaultValue);
     CPPUNIT_TEST_SUITE_END();
 
 private:
