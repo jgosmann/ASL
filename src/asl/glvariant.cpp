@@ -103,6 +103,24 @@ void GLVariant::set(const GLVariant &value)
     }
 }
 
+template GLfloat GLVariant::ithValueCasted(GLsizei i) const;
+template GLint GLVariant::ithValueCasted(GLsizei i) const;
+template GLuint GLVariant::ithValueCasted(GLsizei i) const;
+template<class CastToT> CastToT GLVariant::ithValueCasted(GLsizei i) const
+{
+    switch (m_type->type()) {
+        case GLTypeInfo::FLOAT:
+            return castValue<CastToT, GLfloat>(m_data.asFloat[i]);
+        case GLTypeInfo::BOOL: /* fall through */
+        case GLTypeInfo::INT:
+            return castValue<CastToT, GLint>(m_data.asInt[i]);
+        case GLTypeInfo::UINT:
+            return castValue<CastToT, GLuint>(m_data.asUInt[i]);
+        default:
+            throw logic_error("Cast implementation for type missing.");
+    }
+}
+
 const GLsizei GLVariant::count() const
 {
     return m_type->rowDimensionality() * m_type->columnDimensionality();
@@ -201,6 +219,7 @@ template<class StoreT, class InitT> void GLVariant::setFromArray(
 }
 
 template<class StoreT, class InitT> StoreT GLVariant::castValue(InitT value)
+        const
 {
     if (m_type->type() == GLTypeInfo::BOOL) {
         return (0 != value);

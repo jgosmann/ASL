@@ -126,6 +126,13 @@ public:
                 v.asFloat()[0]);
     }
 
+    void testIthValueCasted()
+    {
+        const GLfloat value = 2.3;
+        GLVariant v("float", 1, &value);
+        CPPUNIT_ASSERT_EQUAL(static_cast<GLint>(2), v.ithValueCasted<GLint>(0));
+    }
+
     CPPUNIT_TEST_SUITE(GLVariantTest);
     CPPUNIT_TEST(testScalar<gltypenames::FLOAT IN GLfloat>);
     CPPUNIT_TEST(testScalar<gltypenames::INT IN GLint>);
@@ -164,6 +171,7 @@ public:
     CPPUNIT_TEST(testEqualityOperatorReturnsFalseIfUnequal);
     CPPUNIT_TEST(testCopyConstructor);
     CPPUNIT_TEST(testCopyCastConstructor);
+    CPPUNIT_TEST(testIthValueCasted);
     CPPUNIT_TEST_SUITE_END();
 
 private:

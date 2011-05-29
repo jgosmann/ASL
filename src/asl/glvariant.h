@@ -52,6 +52,7 @@ public:
     inline const GLint * asInt() const { return m_data.asInt; }
     inline const GLuint * asUInt() const { return m_data.asUInt; }
     inline const GLint * asBool() const { return m_data.asInt; }
+    template<class CastToT> CastToT ithValueCasted(GLsizei i) const;
     const GLsizei count() const;
     inline const GLTypeInfo & type() const { return *m_type; }
 
@@ -74,7 +75,7 @@ private:
             InitT value);
     template<class StoreT, class InitT> void setFromArray(StoreT *storage,
             GLsizei count, const InitT *value);
-    template<class StoreT, class InitT> StoreT castValue(InitT value);
+    template<class StoreT, class InitT> StoreT castValue(InitT value) const;
 
     template<class StoreT> static bool compareData(GLsizei count,
             const StoreT *lhs, const StoreT *rhs);
