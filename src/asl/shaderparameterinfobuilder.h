@@ -4,6 +4,7 @@
 #include "../common/nullable.h"
 #include "../common/novalueexception.h"
 #include "gltypeinfo.h"
+#include "glvariant.h"
 #include "shaderparameterinfo.h"
 
 #include <QString>
@@ -29,6 +30,8 @@ public:
 
     inline void withType(const GLTypeInfo &type) { m_type = &type; }
 
+    inline void withDefaultValue(const GLVariant &def) { m_defaultValue = def; }
+
     asl::ShaderParameterInfo build() const throw(common::NoValueException);
 
     inline void reset() { *this = ShaderParameterInfoBuilder(); }
@@ -38,6 +41,7 @@ private:
     common::Nullable<QString> m_name;
     common::Nullable<QString> m_description;
     const GLTypeInfo *m_type;
+    GLVariant m_defaultValue;
 };
 } /* namespace asl */
 

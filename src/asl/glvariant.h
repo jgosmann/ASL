@@ -53,7 +53,7 @@ public:
     inline const GLuint * asUInt() const { return m_data.asUInt; }
     inline const GLint * asBool() const { return m_data.asInt; }
     const GLsizei count() const;
-    inline const GLTypeInfo & type() const { return m_type; }
+    inline const GLTypeInfo & type() const { return *m_type; }
 
     GLVariant & operator=(const GLVariant &rhs);
     bool operator==(const GLVariant &rhs) const;
@@ -64,6 +64,7 @@ public:
 
 private:
     void allocateMemory();
+    void freeMemory();
 
     template<class StoreT, class InitT> void set(StoreT *storage,
             GLsizei count, const InitT *value);
@@ -78,7 +79,7 @@ private:
     template<class StoreT> static bool compareData(GLsizei count,
             const StoreT *lhs, const StoreT *rhs);
 
-    const GLTypeInfo &m_type;
+    const GLTypeInfo *m_type;
     union {
         GLfloat *asFloat;
         GLint *asInt;

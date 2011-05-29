@@ -6,7 +6,7 @@
 using namespace asl;
 using namespace std;
 
-GLVariant::GLVariant() : m_type(GLTypeInfo::getFor("float"))
+GLVariant::GLVariant() : m_type(&GLTypeInfo::getFor("float"))
 {
     allocateMemory();
     m_data.asFloat[0] = 0;
@@ -19,14 +19,14 @@ GLVariant::GLVariant(const GLVariant &other) : m_type(other.m_type)
 }
 
 GLVariant::GLVariant(const GLTypeInfo &type, const GLVariant &other)
-        : m_type(type)
+        : m_type(&type)
 {
     allocateMemory();
     set(other);
 }
 
 GLVariant::GLVariant(const QString &glslTypename, const GLVariant &other)
-        : m_type(GLTypeInfo::getFor(glslTypename))
+        : m_type(&GLTypeInfo::getFor(glslTypename))
 {
     allocateMemory();
     set(other);
@@ -39,7 +39,7 @@ template GLVariant::GLVariant(const GLTypeInfo &type, GLsizei count,
 template GLVariant::GLVariant(const GLTypeInfo &type, GLsizei count,
         const GLuint *value);
 template<class T> GLVariant::GLVariant(const GLTypeInfo &type, GLsizei count,
-        const T *value) : m_type(type)
+        const T *value) : m_type(&type)
 {
     allocateMemory();
     set(count, value);
@@ -53,28 +53,14 @@ template GLVariant::GLVariant(const QString &glslTypename, GLsizei count,
         const GLuint *value);
 template<class T> GLVariant::GLVariant(const QString &glslTypename,
         GLsizei count, const T *value)
-    : m_type(GLTypeInfo::getFor(glslTypename))
+    : m_type(&GLTypeInfo::getFor(glslTypename))
 {
     allocateMemory();
     set(count, value);
 }
 
 GLVariant::~GLVariant() {
-    switch (m_type.type()) {
-        case GLTypeInfo::FLOAT:
-            delete[] m_data.asFloat;
-            break;
-        case GLTypeInfo::BOOL: /* fall through */
-        case GLTypeInfo::INT:
-            delete[] m_data.asInt;
-            break;
-        case GLTypeInfo::UINT:
-            delete[] m_data.asUInt;
-            break;
-        default:
-            throw logic_error("Missing memory cleanup.");
-            break;
-    }
+    freeMemory();
 }
 
 template void GLVariant::set(GLsizei count, const GLfloat *value);
@@ -82,7 +68,7 @@ template void GLVariant::set(GLsizei count, const GLint *value);
 template void GLVariant::set(GLsizei count, const GLuint *value);
 template<class T> void GLVariant::set(GLsizei count, const T *value)
 {
-    switch (m_type.type()) {
+    switch (m_type->type()) {
         case GLTypeInfo::FLOAT:
             set(m_data.asFloat, count, value);
             break;
@@ -119,12 +105,12 @@ void GLVariant::set(const GLVariant &value)
 
 const GLsizei GLVariant::count() const
 {
-    return m_type.rowDimensionality() * m_type.columnDimensionality();
+    return m_type->rowDimensionality() * m_type->columnDimensionality();
 }
 
 void GLVariant::allocateMemory()
 {
-    switch (m_type.type()) {
+    switch (m_type->type()) {
         case GLTypeInfo::FLOAT:
             m_data.asFloat = new GLfloat[count()];
             break;
@@ -141,12 +127,31 @@ void GLVariant::allocateMemory()
     }
 }
 
+void GLVariant::freeMemory()
+{
+    switch (m_type->type()) {
+        case GLTypeInfo::FLOAT:
+            delete[] m_data.asFloat;
+            break;
+        case GLTypeInfo::BOOL: /* fall through */
+        case GLTypeInfo::INT:
+            delete[] m_data.asInt;
+            break;
+        case GLTypeInfo::UINT:
+            delete[] m_data.asUInt;
+            break;
+        default:
+            throw logic_error("Missing memory cleanup.");
+            break;
+    }
+}
+
 template<class StoreT, class InitT> void GLVariant::set(StoreT *storage,
         GLsizei count, const InitT *value)
 {
-    if (m_type.structure() == GLTypeInfo::VECTOR && count == 1) {
+    if (m_type->structure() == GLTypeInfo::VECTOR && count == 1) {
         setVecFromSingleValue(storage, value[0]);
-    } else if (m_type.structure() == GLTypeInfo::MATRIX && count == 1) {
+    } else if (m_type->structure() == GLTypeInfo::MATRIX && count == 1) {
         setDiagonalMat(storage, value[0]);
     } else {
         setFromArray(storage, count, value);
@@ -156,8 +161,8 @@ template<class StoreT, class InitT> void GLVariant::set(StoreT *storage,
 template<class StoreT, class InitT> void GLVariant::setVecFromSingleValue(
         StoreT *storage, InitT value)
 {
-    const unsigned short int count = m_type.rowDimensionality()
-            * m_type.columnDimensionality();
+    const unsigned short int count = m_type->rowDimensionality()
+            * m_type->columnDimensionality();
     StoreT castedValue = castValue<StoreT, InitT>(value);
     for (unsigned short int i = 0; i < count; ++i) {
         storage[i] = castedValue;
@@ -168,9 +173,9 @@ template<class StoreT, class InitT> void GLVariant::setDiagonalMat(
         StoreT *storage, InitT value)
 {
     StoreT castedValue = castValue<StoreT, InitT>(value);
-    for (unsigned short int i = 0; i < m_type.columnDimensionality(); ++i) {
-        for (unsigned short int j = 0; j < m_type.rowDimensionality(); ++j) {
-            const unsigned short int idx = i * m_type.rowDimensionality() + j;
+    for (unsigned short int i = 0; i < m_type->columnDimensionality(); ++i) {
+        for (unsigned short int j = 0; j < m_type->rowDimensionality(); ++j) {
+            const unsigned short int idx = i * m_type->rowDimensionality() + j;
             if (i == j) {
                 storage[idx] = castedValue;
             } else {
@@ -183,8 +188,8 @@ template<class StoreT, class InitT> void GLVariant::setDiagonalMat(
 template<class StoreT, class InitT> void GLVariant::setFromArray(
         StoreT *storage, GLsizei count, const InitT *value)
 {
-    const GLsizei neededCount = m_type.rowDimensionality()
-            * m_type.columnDimensionality();
+    const GLsizei neededCount = m_type->rowDimensionality()
+            * m_type->columnDimensionality();
     if (count < neededCount) {
         throw invalid_argument("Count of array elements does not match the "
                 "GLVariant's dimensionality.");
@@ -197,22 +202,33 @@ template<class StoreT, class InitT> void GLVariant::setFromArray(
 
 template<class StoreT, class InitT> StoreT GLVariant::castValue(InitT value)
 {
-    if (m_type.type() == GLTypeInfo::BOOL) {
+    if (m_type->type() == GLTypeInfo::BOOL) {
         return (0 != value);
     } else {
         return static_cast<StoreT>(value);
     }
 }
 
+GLVariant & GLVariant::operator=(const GLVariant &rhs)
+{
+    if (this != &rhs) {
+        freeMemory();
+        m_type = rhs.m_type;
+        allocateMemory();
+        set(rhs);
+    }
+    return *this;
+}
+
 bool GLVariant::operator==(const GLVariant &compareTo) const
 {
-    if (m_type != compareTo.type()) {
+    if (*m_type != compareTo.type()) {
         return false;
     }
 
-    const GLsizei count = m_type.rowDimensionality()
-            * m_type.columnDimensionality();
-    switch (m_type.type())
+    const GLsizei count = m_type->rowDimensionality()
+            * m_type->columnDimensionality();
+    switch (m_type->type())
     {
         case GLTypeInfo::FLOAT:
             return compareData(count, asFloat(), compareTo.asFloat());

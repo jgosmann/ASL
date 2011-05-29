@@ -22,6 +22,8 @@ ShaderParameterInfo ShaderParameterInfoBuilder::build() const
     info.name = m_name.valueOrDefault(m_identifier);
     info.description = m_description.valueOrDefault("");
 
+    info.defaultValue = GLVariant(*m_type, m_defaultValue);
+
     return info;
 }
 

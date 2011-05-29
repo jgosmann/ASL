@@ -396,6 +396,21 @@ public:
                 parameter.withDescription("desc"));
     }
 
+    void parsesScalarDefaultIntValue()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/** Default: - 42 */\n"
+                    "uniform int param;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        const GLuint expected = - 42;
+        assertCleanCompilation(compiled.data());
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withDefaultValue(GLVariant("int", 1, &expected)));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -429,6 +444,7 @@ public:
     CPPUNIT_TEST(parsesIdentifier);
     CPPUNIT_TEST(defaultsParameterDescriptionToEmptyString);
     CPPUNIT_TEST(parsesParameterDescription);
+    CPPUNIT_TEST(parsesScalarDefaultIntValue);
     CPPUNIT_TEST_SUITE_END();
 
 private:
