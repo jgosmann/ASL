@@ -1,3 +1,4 @@
+cg
 bin
 moc
 obj
@@ -10,6 +11,9 @@ doc/api
 *.pdf
 *.toc
 *.user
+*.o
+moc_*.cpp
 *_lex.cpp
+ui_*.h
 *_yacc.h
 *_yacc.cpp
