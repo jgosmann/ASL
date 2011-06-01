@@ -50,7 +50,7 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="0" colspan="2">
+        <item row="4" column="0" colspan="2">
          <widget class="QGroupBox" name="groupBox_Options">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
@@ -73,22 +73,6 @@
             </widget>
            </item>
           </layout>
-         </widget>
-        </item>
-        <item row="2" column="2" rowspan="4" colspan="5">
-         <widget class="GLImageViewer" name="glDisplay" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="cursor">
-           <cursorShape>CrossCursor</cursorShape>
-          </property>
-          <property name="focusPolicy">
-           <enum>Qt::StrongFocus</enum>
-          </property>
          </widget>
         </item>
         <item row="1" column="6">
@@ -201,6 +185,9 @@
           </property>
          </widget>
         </item>
+        <item row="2" column="2" rowspan="3" colspan="5">
+         <widget class="gui::GLImageViewer" name="glDisplay" native="true"/>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_Code">
@@ -240,7 +227,7 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>GLImageViewer</class>
+   <class>gui::GLImageViewer</class>
    <extends>QWidget</extends>
    <header>gui/glimageviewer.h</header>
    <container>1</container>

@@ -17,3 +17,5 @@ moc_*.cpp
 ui_*.h
 *_yacc.h
 *_yacc.cpp
+Session_*.vim
+*.swp

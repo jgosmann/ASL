@@ -1,19 +1,108 @@
 #include "glimageviewer.h"
 
+using namespace gui;
+
 GLImageViewer::GLImageViewer(QWidget *parent, Qt::WindowFlags f) :
     QGLWidget(parent, NULL, f),
     m_textureLoaded(false),
     m_useShaderProgram(true),
-    m_imageRatio(4.f/3.f),
-    m_imageZoom(100),
-    m_imageSize(QSize(1, 1)),
-    m_originalSize(QSize(1, 1))
-{}
+    m_imageZoom(1.0f)
+{
+}
 
 GLImageViewer::~GLImageViewer()
 {
     clearImage();
+    delete m_image;
+    m_image = 0;
+    delete m_frameBuffer;
+    m_frameBuffer = 0;
 }
+
+// BEGIN // OpenGL - core functions =========================================//
+
+void GLImageViewer::initializeGL()
+{
+    glEnable(GL_TEXTURE_2D);
+
+    if (!m_image) {
+        std::cerr << "load failed" << std::endl;
+    } else {
+        setImage("/home/mkastrop/Desktop/newyork.jpg");
+    }
+
+    // set the viewpoint dependent to image size
+    glViewport(0, 0, m_image->width(), m_image->height());
+
+    QGLShader main(QGLShader::Fragment);
+    main.compileSourceCode(
+            "uniform sampler2D texture;\n"
+            "float lighting;\n"
+            "void main(void)\n"
+            "{\n"
+            "   gl_FragColor = texture2D(texture, gl_TexCoord[0].xy);\n"
+            "   lighting = length(gl_FragColor.rgb);\n"
+            "   gl_FragColor = lighting * vec4(1, 1, 1, 1.0/lighting);\n"
+            "   //lowKey();\n"
+            "   //highKey();\n"
+            "}"
+    );
+
+    m_shaderProgram.addShader(&main);
+
+    m_shaderProgram.link();
+
+    bindTexture(*m_image);
+    makeCurrent();
+    m_frameBuffer = new QGLFramebufferObject(m_image->size());
+    renderToFramebuffer();
+    m_frameBuffer->toImage().save("/home/mkastrop/Desktop/framebuffer.png");
+    bindTexture(m_frameBuffer->toImage());
+}
+
+void GLImageViewer::resizeGL(int w, int h)
+{
+    glViewport(0, 0, w, h);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    gluOrtho2D(-1.0, 1.0,-1.0, 1.0);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+
+
+void GLImageViewer::paintGL()
+{
+    glDisable(GL_DEPTH_TEST);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glScalef(m_imageZoom, m_imageZoom, m_imageZoom);
+
+    glBegin(GL_QUADS);
+        glNormal3f( 0.0f, 0.0f, 1.0f);
+
+        glTexCoord2f( 0.0f, 0.0f);
+        glVertex2f(-1.0f, m_imageRatio);
+
+        glTexCoord2f( 1.0f, 0.0f);
+        glVertex2f( 1.0f, m_imageRatio);
+
+        glTexCoord2f( 1.0f, 1.0f);
+        glVertex2f( 1.0f,-m_imageRatio);
+
+        glTexCoord2f( 0.0f, 1.0f);
+        glVertex2f(-1.0f,-m_imageRatio);
+    glEnd();
+
+    glEnable(GL_DEPTH_TEST);
+}
+
+// END // OpenGL - core functions ===========================================//
 
 void GLImageViewer::clearImage()
 {
@@ -23,166 +112,59 @@ void GLImageViewer::clearImage()
     }
 }
 
-void GLImageViewer::setImage(const QImage &image)
+void GLImageViewer::setImage(const QString &filename)
 {
-    m_image = image;
-    m_textureID = bindTexture(image);
+    m_image = new QImage(filename);
+    m_textureID = bindTexture(*m_image);
     m_textureLoaded = true;
 
-    m_imageRatio = (float) image.height() / image.width();
-    m_imageSize = m_originalSize = image.size();
+    m_imageRatio = (float) m_image->height() / m_image->width();
+    m_imageSize = m_originalSize = m_image->size();
 }
 
-void GLImageViewer::zoomImage(int zoom)
-{
-    m_imageSize = m_originalSize * 0.01f * zoom;
-    m_imageZoom = zoom;
-    updateGL();
-}
-
-void GLImageViewer::initializeGL()
-{
-    glClearColor(0, 0, 0, 1);
-
-    m_image = QImage("/home/mkastrop/Desktop/newyork.jpg");
-
-    if (m_image.isNull()) {
-        std::cerr << "load failed" << std::endl;
-    } else {
-        setImage(m_image);
-    }
-
-//    QGLShader lowKey(QGLShader::Fragment);
-//    lowKey.compileSourceCode(
-//            "uniform sampler2D texture;\n"
-//            "float len;\n"
-//            "void lowKey(void)\n"
-//            "{\n"
-//            "   len = length(texture2D(texture, gl_TexCoord[0].xy).rgb);\n"
-//            "   if (len < 0.1) {\n"
-//            "       gl_FragColor = vec4(1, 0, 0, 1);\n"
-//            "   }\n"
-//            "}");
-
-//    QGLShader highKey(QGLShader::Fragment);
-//    highKey.compileSourceCode(
-//            "uniform sampler2D texture;\n"
-//            "float len;\n"
-//            "void highKey(void)\n"
-//            "{\n"
-//            "   len = length(texture2D(texture, gl_TexCoord[0].xy).rgb);\n"
-//            "   if (len > 0.9) {\n"
-//            "       gl_FragColor = vec4(0, 1, 0, 1);\n"
-//            "   }\n"
-//            "}");
-
-    QGLShader main(QGLShader::Fragment);
-    main.compileSourceCode(
-            "uniform sampler2D texture;\n"
-            "//void lowKey(void);\n"
-            "//void highKey(void);\n"
-            "float lighting;\n"
-            "void main(void)\n"
-            "{\n"
-            "   gl_FragColor = texture2D(texture, gl_TexCoord[0].xy);\n"
-            "   lighting = length(gl_FragColor.rgb);\n"
-            "   gl_FragColor = lighting * vec4(1, 1, 1, 1.0/lighting);\n"
-            "   //lowKey();\n"
-            "   //highKey();\n"
-            "}");
-
-    m_shaderProgram.addShader(&main);
-    //shaderProgram.addShader(&lowKey);
-    //shaderProgram.addShader(&highKey);
-
-    m_shaderProgram.link();
-}
-
-void GLImageViewer::resizeGL(int w, int h)
-{
-    calculateImageSize(w, h);
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    gluPerspective(45.0f, (GLfloat) w / h, 0.1f, 100.f);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-}
-
-void GLImageViewer::calculateImageSize(int w, int h)
-{
-    float diff_x = w - m_imageSize.width();
-    float diff_y = h - m_imageSize.height();
-
-    if (diff_x < 0 && diff_y < 0) glViewport(0, diff_y, m_imageSize.width(), m_imageSize.height());
-    if (diff_x >= 0 && diff_y < 0) glViewport(diff_x / 2, diff_y, m_imageSize.width(), m_imageSize.height());
-    if (diff_x < 0 && diff_y >= 0) glViewport(0, diff_y / 2, m_imageSize.width(), m_imageSize.height());
-    if (diff_x >= 0 && diff_y >= 0) glViewport(diff_x / 2, diff_y / 2, m_imageSize.width(), m_imageSize.height());
-}
-
-void GLImageViewer::paintGL()
+void GLImageViewer::renderToFramebuffer()
 {
     glDisable(GL_DEPTH_TEST);
-    glEnable(GL_TEXTURE_2D);
 
-    glClear(GL_COLOR_BUFFER_BIT);
+    bindTexture(*m_image);
 
-    calculateImageSize(width(), height());
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // switch to ortho
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    glOrtho(0, width(), 0, m_imageRatio * width(), 0.f, 1000.f);
-    // ---------------
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    if (m_useShaderProgram) m_shaderProgram.bind();
-
-    bindTexture(m_image);
+    m_frameBuffer->bind();
 
     glBegin(GL_QUADS);
-        glNormal3f(0, 0, 1);
+        glNormal3f( 0.0f, 0.0f, 1.0f);
 
-        glTexCoord2f(0.0f, 0.0f);
-        glVertex3f(0.0f,  0.0f, -1.0f);
+        glTexCoord2f( 0.0f, 0.0f);
+        glVertex2f(-1.0f, 1.0f);
 
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex3f(width(),  0.0f, -1.0f);
+        glTexCoord2f( 1.0f, 0.0f);
+        glVertex2f( 1.0f, 1.0f);
 
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex3f(width(), m_imageRatio * width(), -1.0f);
+        glTexCoord2f( 1.0f, 1.0f);
+        glVertex2f( 1.0f,-1.0f);
 
-        glTexCoord2f(0.0f, 1.0f);
-        glVertex3f(0.0f, m_imageRatio * width(), -1.0f);
+        glTexCoord2f( 0.0f, 1.0f);
+        glVertex2f(-1.0f,-1.0f);
     glEnd();
 
-    if (m_useShaderProgram) m_shaderProgram.release();
-
-    // switch to frustum
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    glFrustum(0.f, width(), 0.f, m_imageRatio * width(), 0.f, 1000.f);
-    // ---------------
+    m_frameBuffer->release();
 
     glEnable(GL_DEPTH_TEST);
 }
 
-void GLImageViewer::enableShaders(const int _state)
+
+
+void GLImageViewer::enableShaders(const int state)
 {
-    if((_state == Qt::Checked) || (_state == Qt::PartiallyChecked)) {
+    if((state == Qt::Checked) || (state == Qt::PartiallyChecked)) {
         m_useShaderProgram = true;
     } else {
         m_useShaderProgram = false;
     }
     updateGL();
 }
-
 
 void GLImageViewer::keyPressEvent(QKeyEvent *event)
 {
@@ -209,19 +191,21 @@ void GLImageViewer::keyPressEvent(QKeyEvent *event)
 
 void GLImageViewer::wheelEvent(QWheelEvent *event)
 {
-    int value = m_imageZoom + (int) (event->delta() * .042f);
+    float value = m_imageZoom + event->delta()*.00042f;
 
-    if (value >= 5) {
-        zoomImage(value);
-        emit zoomChanged(value);
+    if (value >= 0.05) {
+        m_imageZoom = value;
+        emit zoomChanged((int) (100 * value));
     }
+
+    updateGL();
 }
 
 void GLImageViewer::loadImageFile()
 {
     QString filename = QFileDialog::getOpenFileName();
 
-    setImage(QImage(filename));
+    setImage(filename);
 
     updateGL();
 }
@@ -233,5 +217,11 @@ void GLImageViewer::saveImageFile()
     float diff_x = width() - m_imageSize.width();
     float diff_y = height() - m_imageSize.height();
 
-    grabFrameBuffer().copy(diff_x, diff_y, width()-2*diff_x, height()-2*diff_y).save(filename);
+    m_frameBuffer->toImage().save(filename);
+    //grabFrameBuffer().copy(diff_x, diff_y, width()-2*diff_x, height()-2*diff_y).save(filename);
+}
+
+void GLImageViewer::setImageZoom(int &value)
+{
+    m_imageZoom = (float) value / 100;
 }

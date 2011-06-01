@@ -14,6 +14,8 @@
 #include <QGLFramebufferObject>
 #include <iostream>
 
+namespace gui {
+
 class GLImageViewer : public QGLWidget
 {
     Q_OBJECT
@@ -26,11 +28,12 @@ public:
 
 public slots:
     void clearImage();
-    void setImage(const QImage &image);
+    void setImage(const QString &filename);
 
-    void zoomImage(int value);
     void loadImageFile();
     void saveImageFile();
+
+    void setImageZoom(int &value);
 
 signals:
     void zoomChanged(int value);
@@ -44,21 +47,23 @@ protected:
     void virtual wheelEvent(QWheelEvent *event);
 
 private:
+    void renderToFramebuffer();
+
     bool m_textureLoaded;
     GLuint m_textureID;
 
     bool m_useShaderProgram;
 
-    QImage m_image;
+    QImage *m_image;
     float m_imageRatio;
     float m_imageZoom;
     QSize m_imageSize;
     QSize m_originalSize;
-    QVector<QGLFramebufferObject*> m_frameBufferObjects;
+    QGLFramebufferObject *m_frameBuffer;
 
     QGLShaderProgram m_shaderProgram;
-
-    void calculateImageSize(int w, int h);
 };
+
+}
 
 #endif // GLIMAGEVIEWER_H
