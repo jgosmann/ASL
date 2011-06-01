@@ -10,11 +10,15 @@
         #include "asl/shaderparameterinfobuilder.h"
     #endif
 
+    #include <exception>
+
     #include <GL/gl.h>
 
     #include <QFileInfo>
+    #include <QList>
     #include <QSet>
     #include <QStringBuilder>
+    #include <QVector>
 
     extern int aslparserlineno;
     void yyerror(const char *msg);
@@ -40,6 +44,12 @@
         void handleKeyStringValuePair(QString *key, QString *value);
         void handleKeyGLVariantValuePair(const QString &key,
             const GLVariant &value);
+        template<class T> GLVariant * glvariantFromValueList(
+            const GLTypeInfo &type, const QList<GLVariant *> *values);
+        template<class CastToT> QVector<CastToT> glvariantListToCastedQVector(
+            const QList<GLVariant *> *values);
+        template<class T> GLVariant * savelyCreateGLVariant(
+            const GLTypeInfo &type, GLsizei count, const T *value);
         void warnIfKeyDefinedAndDefineKey(const QString &key);
         void warn(const QString &msg);
     } /* namespace parserinternal */
@@ -52,10 +62,12 @@
     GLfloat flt;
     QString *string;
     asl::GLVariant *glvariant;
+    QList<asl::GLVariant *> *glvariantList;
 }
 
 %type <string> string
 %type <glvariant> glvariant
+%type <glvariantList> glvariantList
 
 %destructor { delete $$; } string
 
@@ -63,6 +75,7 @@
 %token <flt> FLT
 %token <string> KEY IDENTIFIER ANNOTATION_STRING
 %token ANNOTATION_START ANNOTATION_END UNIFORM LINE END NEGATE UNEXPECTED_CHAR
+%token '(' ')' ','
 
 %%
 
@@ -150,7 +163,38 @@ string:
     ;
 
 glvariant:
-    INTEGER {
+    IDENTIFIER '(' glvariantList ')' {
+            try {
+                const asl::GLTypeInfo &type = asl::GLTypeInfo::getFor(*$1);
+
+                switch (type.type()) {
+                    case asl::GLTypeInfo::FLOAT:
+                        $$ = glvariantFromValueList<GLfloat>(type, $3);
+                        break;
+                    case asl::GLTypeInfo::BOOL: /* fall through */
+                    case asl::GLTypeInfo::INT:
+                        $$ = glvariantFromValueList<GLint>(type, $3);
+                        break;
+                    case asl::GLTypeInfo::UINT:
+                        $$ = glvariantFromValueList<GLuint>(type, $3);
+                        break;
+                    default:
+                        warn("Type not supported.");
+                        break;
+                }
+            } catch (const std::exception &e) {
+                warn("Could not instantiate GLSL type: " + *$1);
+                warn(e.what());
+                $$ = new asl::GLVariant();
+            }
+
+            delete $1;
+            foreach (asl::GLVariant *value, *$3) {
+                delete value;
+            }
+            delete $3;
+        }
+    | INTEGER {
             const GLuint value = $1;
             $$ = new asl::GLVariant("uint", 1, &value);
         }
@@ -172,8 +216,20 @@ glvariant:
         }
     ;
 
+glvariantList:
+    glvariantList ',' glvariant {
+            $$ = $1;
+            $$->append($3);
+        }
+    | glvariant {
+            $$ = new QList<asl::GLVariant *>();
+            $$->append($1);
+        }
+    ;
+
 %%
 
+using namespace std;
 using namespace asl::parserinternal;
 
 void yyerror(const char *msg)
@@ -248,6 +304,39 @@ void warnIfKeyDefinedAndDefineKey(const QString &key)
         ++aslparserlineno;
     } else {
         definedKeys.insert(key);
+    }
+}
+
+template<class T> GLVariant * glvariantFromValueList(const GLTypeInfo &type,
+        const QList<GLVariant *> *values)
+{
+    QVector<T> castedValues = glvariantListToCastedQVector<T>(values);
+    return savelyCreateGLVariant(type, castedValues.size(),
+            castedValues.constData());
+}
+
+template<class CastToT> QVector<CastToT> glvariantListToCastedQVector(
+        const QList<GLVariant *> *values)
+{
+    QVector<CastToT> castedValues;
+    foreach (GLVariant *value, *values) {
+        for (GLsizei i = 0; i < value->count(); ++i) {
+            castedValues.append(value->ithValueCasted<CastToT>(i));
+        }
+    }
+
+    return castedValues;
+}
+
+template<class T> GLVariant * savelyCreateGLVariant(const GLTypeInfo &type,
+        GLsizei count, const T *value)
+{
+    try {
+        return new GLVariant(type, count, value);
+    } catch (const exception &e) {
+        warn("Could not instantiate GLSL type: " + type.glslName());
+        warn(e.what());
+        return new GLVariant();
     }
 }
 

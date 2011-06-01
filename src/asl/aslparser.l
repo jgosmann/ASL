@@ -90,13 +90,26 @@ bool true|false
     return UNIFORM;
 }
 
-<READ_UNIFORM>{identifier} {
+<READ_ANNOTATION_GLVARIANT>{bool} {
+    if ("true" == QString(yytext)) {
+        aslparserlval.integer = 1;
+    } else {
+        aslparserlval.integer = 0;
+    }
+    return BOOLEAN;
+}
+
+<READ_UNIFORM,READ_ANNOTATION_GLVARIANT>{identifier} {
     aslparserlval.string = new QString(yytext);
     return IDENTIFIER;
 }
 
 <READ_UNIFORM>";" {
     BEGIN INITIAL;
+    return yytext[0];
+}
+
+<READ_ANNOTATION_GLVARIANT>[(),] {
     return yytext[0];
 }
 
@@ -110,15 +123,6 @@ bool true|false
      * other characters than the dot '.' as decimal dot. */
     aslparserlval.flt = QString(yytext).toFloat();
     return FLT;
-}
-
-<READ_ANNOTATION_GLVARIANT>{bool} {
-    if ("true" == QString(yytext)) {
-        aslparserlval.integer = 1;
-    } else {
-        aslparserlval.integer = 0;
-    }
-    return BOOLEAN;
 }
 
 <READ_ANNOTATION_GLVARIANT>"-" {

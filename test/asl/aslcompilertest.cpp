@@ -429,6 +429,39 @@ public:
         testParsingOfDefaultWithScalar("bool", "false", static_cast<GLint>(0));
     }
 
+    void parsesScalarWithCastConstructor()
+    {
+        testParsingOfDefaultWithScalar("int", "int(2.3)",
+                static_cast<GLint>(2));
+    }
+
+    void parsesVectorWithReplicationConstructor()
+    {
+        GLfloat values[] = { 2.3, 2.3, 2.3 };
+        testParsingOfDefault("vec3", "vec3(2.3)", GLVariant("vec3", 3, values));
+    }
+
+    void parsesVectorWithInitializerList()
+    {
+        GLfloat values[] = { 3.0, -1.2, 3.4 };
+        testParsingOfDefault("vec3", "vec3(3, -1.2, 3.4)",
+                GLVariant("vec3", 3, values));
+    }
+
+    void warnsIfDefaultIsInitializedWithInvalidType()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/** Default: foo(3, 42, 1) */\n"
+                    "uniform int param;\n"
+                    + trivialShader));
+        assertLogContains(shaderCompiler.log(),
+            LogEntry().withType(LOG_WARNING).occuringAt(0, 2)
+                .withMessageMatching(QRegExp(
+                    ".*Could not instantiate.*foo.*")));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -468,6 +501,10 @@ public:
     CPPUNIT_TEST(parsesScalarDefaultFloatWithExponentValue);
     CPPUNIT_TEST(parsesTrueBoolDefaultValue);
     CPPUNIT_TEST(parsesfalseBoolDefaultValue);
+    CPPUNIT_TEST(parsesScalarWithCastConstructor);
+    CPPUNIT_TEST(parsesVectorWithReplicationConstructor);
+    CPPUNIT_TEST(parsesVectorWithInitializerList);
+    CPPUNIT_TEST(warnsIfDefaultIsInitializedWithInvalidType);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -499,6 +536,13 @@ private:
     template<class T> void testParsingOfDefaultWithScalar(
             const QString &glslTypename, const QString &srcValue, T expected)
     {
+        testParsingOfDefault(glslTypename, srcValue,
+                GLVariant(glslTypename, 1, &expected));
+    }
+
+    void testParsingOfDefault(const QString &glslTypename,
+            const QString &srcValue, const GLVariant &expected)
+    {
         QScopedPointer<AnnotatedGLShaderProgram> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
@@ -508,8 +552,7 @@ private:
         ShaderParameterInfoMatcher parameter;
         assertCleanCompilation(compiled.data());
         assertHasExactlyOneParameterMatching(compiled.data(),
-                parameter.withDefaultValue(GLVariant(glslTypename, 1,
-                        &expected)));
+                parameter.withDefaultValue(expected));
     }
 
     static const QString trivialShader;
