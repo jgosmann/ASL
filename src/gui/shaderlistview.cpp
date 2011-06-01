@@ -8,14 +8,24 @@ ShaderListView::ShaderListView(QWidget *parent) :
 }
 
 void ShaderListView::init(){
-    QStringList list;
-    list.append("erstens");
-    list.append("zweitens");
-    list.append("drittens");
-    model = new QStringListModel(list);
-    this->setModel(model);
 
-    model->insertRow(2);
+    itemModel = new ShaderListModel();
+    this->setModel(itemModel);
 
 
+}
+
+void ShaderListView::addShader(QSharedPointer<Shader> shader){
+//    shaderList.append(shader);
+//    QStandardItem* item = new QStandardItem(shader->name());
+//    item->setCheckable(true);
+
+//    itemModel->appendRow(item);
+    itemModel->addShader(shader);
+}
+
+void ShaderListView::moveSelShaderDown(int shaderPos){
+//    QStandardItem* tmp = itemModel->item(shaderPos);
+//    itemModel->removeRow(shaderPos);
+//    itemModel->insertRow(shaderPos+1,tmp);
 }
