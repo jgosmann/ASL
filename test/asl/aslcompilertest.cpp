@@ -462,6 +462,48 @@ public:
                     ".*Could not instantiate.*foo.*")));
     }
 
+    void warnsIfPassedIncompatibleNumberOfArgumentsToTypeConstructor()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/** Default: vec3(1, 1) */\n"
+                    "uniform vec3 param;\n"
+                    + trivialShader));
+        assertLogContains(shaderCompiler.log(),
+            LogEntry().withType(LOG_WARNING).occuringAt(0, 2)
+                .withMessageMatching(QRegExp(
+                    ".*Could not instantiate.*vec3.*")));
+    }
+
+    void castsDefaultValueToCorrectType()
+    {
+        GLfloat values[] = { 42.0, -2.0, 0.0 };
+        testParsingOfDefault("vec3", "ivec3(42, -2, 0)",
+                GLVariant("vec3", 3, values));
+    }
+
+    void warnsOnSyntaxErrorInDefaultAnnotation()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/** Default: vec3(1, ) */\n"
+                    "uniform vec3 param;\n"
+                    + trivialShader));
+        assertLogContains(shaderCompiler.log(),
+            LogEntry().withType(LOG_WARNING).occuringAt(0, 2)
+                .withMessageMatching(QRegExp(
+                    ".*syntax error.*")));
+    }
+
+    void parsesMultilineDefaultAnnotation()
+    {
+        GLfloat values[] = { 1.3, -3.5, 2.4 };
+        testParsingOfDefault("vec3", "vec3(1.3,\n *     -3.5, 2.4)",
+                GLVariant("vec3", 3, values));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -505,6 +547,10 @@ public:
     CPPUNIT_TEST(parsesVectorWithReplicationConstructor);
     CPPUNIT_TEST(parsesVectorWithInitializerList);
     CPPUNIT_TEST(warnsIfDefaultIsInitializedWithInvalidType);
+    CPPUNIT_TEST(warnsIfPassedIncompatibleNumberOfArgumentsToTypeConstructor);
+    CPPUNIT_TEST(castsDefaultValueToCorrectType);
+    CPPUNIT_TEST(warnsOnSyntaxErrorInDefaultAnnotation);
+    CPPUNIT_TEST(parsesMultilineDefaultAnnotation);
     CPPUNIT_TEST_SUITE_END();
 
 private:
