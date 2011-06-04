@@ -1,6 +1,8 @@
 
 #include "glvariant.h"
 
+#include <cfloat>
+#include <climits>
 #include <stdexcept>
 
 using namespace asl;
@@ -61,6 +63,64 @@ template<class T> GLVariant::GLVariant(const QString &glslTypename,
 
 GLVariant::~GLVariant() {
     freeMemory();
+}
+
+const GLVariant GLVariant::minOfType(const GLTypeInfo &type)
+{
+    switch (type.type()) {
+        case GLTypeInfo::FLOAT: {
+            const GLfloat value = FLT_MIN;
+            return GLVariant(type, 1, &value);
+        }
+        case GLTypeInfo::INT: {
+            const GLint value = INT_MIN;
+            return GLVariant(type, 1, &value);
+        }
+        case GLTypeInfo::BOOL: {
+            const GLint value = GL_FALSE;
+            return GLVariant(type, 1, &value);
+        }
+        case GLTypeInfo::UINT: {
+            const GLuint value = 0;
+            return GLVariant(type, 1, &value);
+        }
+        default:
+            throw invalid_argument("Minimum of type unknown.");
+    }
+}
+
+const GLVariant GLVariant::minOfType(const QString &glslTypename)
+{
+    return minOfType(GLTypeInfo::getFor(glslTypename));
+}
+
+const GLVariant GLVariant::maxOfType(const GLTypeInfo &type)
+{
+    switch (type.type()) {
+        case GLTypeInfo::FLOAT: {
+            const GLfloat value = FLT_MAX;
+            return GLVariant(type, 1, &value);
+        }
+        case GLTypeInfo::INT: {
+            const GLint value = INT_MAX;
+            return GLVariant(type, 1, &value);
+        }
+        case GLTypeInfo::BOOL: {
+            const GLint value = GL_TRUE;
+            return GLVariant(type, 1, &value);
+        }
+        case GLTypeInfo::UINT: {
+            const GLuint value = UINT_MAX;
+            return GLVariant(type, 1, &value);
+        }
+        default:
+            throw invalid_argument("Maximum of type unknown.");
+    }
+}
+
+const GLVariant GLVariant::maxOfType(const QString &glslTypename)
+{
+    return maxOfType(GLTypeInfo::getFor(glslTypename));
 }
 
 template void GLVariant::set(GLsizei count, const GLfloat *value);

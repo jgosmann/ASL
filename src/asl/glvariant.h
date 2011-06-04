@@ -20,6 +20,11 @@ public:
     GLVariant(const GLTypeInfo &type, const GLVariant &other);
     GLVariant(const QString &glslTypename, const GLVariant &other);
 
+    static const GLVariant minOfType(const GLTypeInfo &type);
+    static const GLVariant minOfType(const QString &glslTypename);
+    static const GLVariant maxOfType(const GLTypeInfo &type);
+    static const GLVariant maxOfType(const QString &glslTypename);
+
     /** \see #set */
     template<class T> GLVariant(const GLTypeInfo &type, GLsizei count,
             const T *value);
