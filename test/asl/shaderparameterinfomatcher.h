@@ -43,6 +43,20 @@ class ShaderParameterInfoMatcher
             return *this;
         }
 
+        inline ShaderParameterInfoMatcher & withMinimum(
+                const asl::GLVariant &minValue)
+        {
+            m_minValue = minValue;
+            return *this;
+        }
+
+        inline ShaderParameterInfoMatcher & withMaximum(
+                const asl::GLVariant &maxValue)
+        {
+            m_maxValue = maxValue;
+            return *this;
+        }
+
         bool matches(const ShaderParameterInfo &matchWith) const;
 
     private:
@@ -57,6 +71,8 @@ class ShaderParameterInfoMatcher
         common::Nullable<QString> m_description;
         common::Nullable<const asl::GLTypeInfo *> m_type;
         common::Nullable<asl::GLVariant> m_defaultValue;
+        common::Nullable<asl::GLVariant> m_minValue;
+        common::Nullable<asl::GLVariant> m_maxValue;
 };
 } /* namespace asl */
 

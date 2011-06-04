@@ -42,6 +42,8 @@ private:
     common::Nullable<QString> m_description;
     const GLTypeInfo *m_type;
     GLVariant m_defaultValue;
+    common::Nullable<GLVariant> m_minimum;
+    common::Nullable<GLVariant> m_maximum;
 };
 } /* namespace asl */
 

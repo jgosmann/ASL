@@ -67,6 +67,9 @@ GLVariant::~GLVariant() {
 
 const GLVariant GLVariant::minOfType(const GLTypeInfo &type)
 {
+    /* We'll use the standard limits from climits as our best guess for the
+     * limits as there are no such constants for the OpenGL types.
+     */
     switch (type.type()) {
         case GLTypeInfo::FLOAT: {
             const GLfloat value = FLT_MIN;

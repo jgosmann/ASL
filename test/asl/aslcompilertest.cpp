@@ -4,6 +4,7 @@
 #include <QtOpenGL/QGLPixelBuffer>
 
 #include "../src/asl/aslcompiler.h"
+#include "../src/asl/gltypenames.h"
 
 #include "../testenv.h"
 
@@ -13,6 +14,11 @@
 
 namespace asl
 {
+/**
+ * \note \c uint value parameters will not be tested as they need a recent GLSL
+ * version and we want to be able to run the tests on as many systems as
+ * possible.
+ */
 class ASLCompilerTest : public TestFixture
 {
 public:
@@ -475,8 +481,7 @@ public:
                 .withMessageMatching(QRegExp(
                     ".*Could not instantiate.*vec3.*")));
     }
-
-    void castsDefaultValueToCorrectType()
+void castsDefaultValueToCorrectType()
     {
         GLfloat values[] = { 42.0, -2.0, 0.0 };
         testParsingOfDefault("vec3", "ivec3(42, -2, 0)",
@@ -502,6 +507,21 @@ public:
         GLfloat values[] = { 1.3, -3.5, 2.4 };
         testParsingOfDefault("vec3", "vec3(1.3,\n *     -3.5, 2.4)",
                 GLVariant("vec3", 3, values));
+    }
+
+    template<const char *glslName> void testRangeDefaultsToMinAndMaxOfType()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/***/\n"
+                    "uniform " + QString(glslName) + " param;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        assertCleanCompilation(compiled.data());
+        assertHasExactlyOneParameterMatching(compiled.data(),
+            parameter.withMinimum(GLVariant::minOfType(glslName))
+                .withMaximum(GLVariant::maxOfType(glslName)));
     }
 
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
@@ -551,6 +571,9 @@ public:
     CPPUNIT_TEST(castsDefaultValueToCorrectType);
     CPPUNIT_TEST(warnsOnSyntaxErrorInDefaultAnnotation);
     CPPUNIT_TEST(parsesMultilineDefaultAnnotation);
+    CPPUNIT_TEST(testRangeDefaultsToMinAndMaxOfType<gltypenames::FLOAT>);
+    CPPUNIT_TEST(testRangeDefaultsToMinAndMaxOfType<gltypenames::INT>);
+    CPPUNIT_TEST(testRangeDefaultsToMinAndMaxOfType<gltypenames::BOOL>);
     CPPUNIT_TEST_SUITE_END();
 
 private:
