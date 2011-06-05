@@ -347,6 +347,8 @@ void handleKeyStringValuePair(const QString &key, const QString &value,
 void handleKeyGLVariantValuePair(const QString &key, const GLVariant &value,
         unsigned int argNumber)
 {
+    warnIfKeyDefinedAndDefineKey(key, argNumber);
+
     if (!parsedFirstAslComment) {
         warn(UNKNOWN_KEY_WARNING + key);
         return;
@@ -365,10 +367,14 @@ void handleKeyGLVariantValuePair(const QString &key, const GLVariant &value,
 
 void warnIfKeyDefinedAndDefineKey(const QString &key, unsigned int argNumber)
 {
-    if (definedKeys.contains(key) && definedKeys[key] == argNumber) {
-        --aslparserlineno;
-        warn("duplicate key: " + key);
-        ++aslparserlineno;
+    if (definedKeys.contains(key)) {
+        const bool isProcessingAnUnprocessedArgument =
+                definedKeys[key] != 0 && definedKeys[key] < argNumber;
+        if (!isProcessingAnUnprocessedArgument) {
+            --aslparserlineno;
+            warn("duplicate key: " + key);
+            ++aslparserlineno;
+        }
     } else {
         definedKeys.insert(key, argNumber);
     }

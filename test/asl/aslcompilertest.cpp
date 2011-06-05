@@ -605,6 +605,22 @@ void castsDefaultValueToCorrectType()
                 GLVariant::maxOfType("float"));
     }
 
+    void warnsOnDoubleRangeSpecification()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/**\n"
+                    " * Range: 0, 3\n"
+                    " * Range: percent\n"
+                    " */\n"
+                    "uniform int param;\n"
+                    + trivialShader));
+        assertLogContains(shaderCompiler.log(),
+            LogEntry().withType(LOG_WARNING).occuringAt(0, 4)
+                .withMessageMatching(QRegExp(".*duplicate.*Range.*")));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -660,6 +676,7 @@ void castsDefaultValueToCorrectType()
     CPPUNIT_TEST(testRangeSetsMinAndMaxWithMinMaxIdentifier);
     CPPUNIT_TEST(testRangeSetsMinAndMaxWithMinMaxIdentifierAndValueMixed);
     CPPUNIT_TEST(testSingleWordRangeSpecifiers);
+    CPPUNIT_TEST(warnsOnDoubleRangeSpecification);
     CPPUNIT_TEST_SUITE_END();
 
 private:
