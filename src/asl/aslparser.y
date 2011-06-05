@@ -41,9 +41,9 @@
         const QString UNKNOWN_KEY_WARNING("unknown key: ");
 
         void addToLog(const QString &type, const QString &msg);
-        void handleKeyStringValuePair(QString *key, QString *value);
+        void handleKeyStringValuePair(const QString &key, const QString &value);
         void handleKeyGLVariantValuePair(const QString &key,
-            const GLVariant &value);
+            const GLVariant &value, unsigned int argNumber = 0);
         template<class T> GLVariant * glvariantFromValueList(
             const GLTypeInfo &type, const QList<GLVariant *> *values);
         template<class CastToT> QVector<CastToT> glvariantListToCastedQVector(
@@ -144,13 +144,23 @@ annotations:
 
 keyValuePair:
     KEY string {
-            handleKeyStringValuePair($1, $2);
+            handleKeyStringValuePair(*$1, *$2);
+            delete $1;
+            delete $2;
         }
     | KEY glvariant {
             handleKeyGLVariantValuePair(*$1, *$2);
             delete $1;
             delete $2;
         }
+    | KEY glvariant ',' glvariant {
+            handleKeyGLVariantValuePair(*$1, *$2, 1);
+            handleKeyGLVariantValuePair(*$1, *$4, 2);
+            delete $1;
+            delete $2;
+            delete $4;
+        }
+    ;
 
 string:
     string ANNOTATION_STRING {
@@ -254,35 +264,33 @@ void clearLog()
     log.clear();
 }
 
-void handleKeyStringValuePair(QString *key, QString *value)
+void handleKeyStringValuePair(const QString &key, const QString &value)
 {
-    warnIfKeyDefinedAndDefineKey(*key);
+    warnIfKeyDefinedAndDefineKey(key);
 
     if (parsedFirstAslComment) {
-        if ("Name" == *key) {
-            parameterInfoBuilder.withName(*value);
-        } else if ("Description" == *key) {
-            parameterInfoBuilder.withDescription(*value);
+        if ("Name" == key) {
+            parameterInfoBuilder.withName(value);
+        } else if ("Description" == key) {
+            parameterInfoBuilder.withDescription(value);
         } else {
-            warn(UNKNOWN_KEY_WARNING + *key);
+            warn(UNKNOWN_KEY_WARNING + key);
         }
 
     } else {
-        if ("ShaderName" == *key) {
-            programBuilder.setName(*value);
-        } else if ("ShaderDescription" == *key) {
-            programBuilder.setDescription(*value);
+        if ("ShaderName" == key) {
+            programBuilder.setName(value);
+        } else if ("ShaderDescription" == key) {
+            programBuilder.setDescription(value);
         } else {
-            warn(UNKNOWN_KEY_WARNING + *key);
+            warn(UNKNOWN_KEY_WARNING + key);
         }
 
     }
-
-    delete key;
-    delete value;
 }
 
-void handleKeyGLVariantValuePair(const QString &key, const GLVariant &value)
+void handleKeyGLVariantValuePair(const QString &key, const GLVariant &value,
+        unsigned int argNumber)
 {
     if (!parsedFirstAslComment) {
         warn(UNKNOWN_KEY_WARNING + key);
@@ -291,6 +299,10 @@ void handleKeyGLVariantValuePair(const QString &key, const GLVariant &value)
 
     if ("Default" == key) {
         parameterInfoBuilder.withDefaultValue(value);
+    } else if ("Range" == key && argNumber == 1) {
+        parameterInfoBuilder.withMinimum(value);
+    } else if ("Range" == key && argNumber == 2) {
+        parameterInfoBuilder.withMaximum(value);
     } else {
         warn(UNKNOWN_KEY_WARNING + key);
     }

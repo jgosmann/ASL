@@ -524,6 +524,23 @@ void castsDefaultValueToCorrectType()
                 .withMaximum(GLVariant::maxOfType(glslName)));
     }
 
+    void testRangeSetsMinAndMaxValue()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/** Range: vec3(1, 2, 3), vec3(4, 5, 6) */\n"
+                    "uniform vec3 param;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        GLfloat minValues[] = { 1, 2, 3 };
+        GLfloat maxValues[] = { 4, 5, 6 };
+        assertCleanCompilation(compiled.data());
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withMinimum(GLVariant("vec3", 3, minValues))
+                    .withMaximum(GLVariant("vec3", 3, maxValues)));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -574,6 +591,7 @@ void castsDefaultValueToCorrectType()
     CPPUNIT_TEST(testRangeDefaultsToMinAndMaxOfType<gltypenames::FLOAT>);
     CPPUNIT_TEST(testRangeDefaultsToMinAndMaxOfType<gltypenames::INT>);
     CPPUNIT_TEST(testRangeDefaultsToMinAndMaxOfType<gltypenames::BOOL>);
+    CPPUNIT_TEST(testRangeSetsMinAndMaxValue);
     CPPUNIT_TEST_SUITE_END();
 
 private:

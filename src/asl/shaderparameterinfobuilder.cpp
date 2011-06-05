@@ -23,8 +23,8 @@ ShaderParameterInfo ShaderParameterInfoBuilder::build() const
     info.description = m_description.valueOrDefault("");
 
     info.defaultValue = GLVariant(*m_type, m_defaultValue);
-    info.minimum = GLVariant::minOfType(*m_type);
-    info.maximum = GLVariant::maxOfType(*m_type);
+    info.minimum = m_minimum.valueOrDefault(GLVariant::minOfType(*m_type));
+    info.maximum = m_maximum.valueOrDefault(GLVariant::maxOfType(*m_type));
 
     return info;
 }

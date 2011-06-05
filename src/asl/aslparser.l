@@ -183,7 +183,7 @@ unsigned int calcIndentationDepth(const char *str, unsigned int len)
 }
 
 void setStateFromKey(const QString &key) {
-    if ("Default" == key) {
+    if ("Default" == key || "Range" == key) {
         BEGIN READ_ANNOTATION_GLVARIANT;
     } else {
         BEGIN READ_ANNOTATION_STRING;

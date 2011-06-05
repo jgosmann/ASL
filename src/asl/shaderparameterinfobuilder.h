@@ -31,6 +31,8 @@ public:
     inline void withType(const GLTypeInfo &type) { m_type = &type; }
 
     inline void withDefaultValue(const GLVariant &def) { m_defaultValue = def; }
+    inline void withMinimum(const GLVariant &min) { m_minimum = min; }
+    inline void withMaximum(const GLVariant &max) { m_maximum = max; }
 
     asl::ShaderParameterInfo build() const throw(common::NoValueException);
 
