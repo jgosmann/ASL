@@ -36,12 +36,13 @@
         AnnotatedGLShaderProgramBuilder programBuilder;
         ShaderParameterInfoBuilder parameterInfoBuilder;
 
-        QSet<QString> definedKeys;
+        QHash<QString, unsigned int> definedKeys;
 
         const QString UNKNOWN_KEY_WARNING("unknown key: ");
 
         void addToLog(const QString &type, const QString &msg);
-        void handleKeyStringValuePair(const QString &key, const QString &value);
+        void handleKeyStringValuePair(const QString &key, const QString &value,
+            unsigned int argNumber = 0);
         void handleKeyGLVariantValuePair(const QString &key,
             const GLVariant &value, unsigned int argNumber = 0);
         template<class T> GLVariant * glvariantFromValueList(
@@ -50,7 +51,8 @@
             const QList<GLVariant *> *values);
         template<class T> GLVariant * savelyCreateGLVariant(
             const GLTypeInfo &type, GLsizei count, const T *value);
-        void warnIfKeyDefinedAndDefineKey(const QString &key);
+        void warnIfKeyDefinedAndDefineKey(const QString &key,
+            unsigned int argNumber);
         void warn(const QString &msg);
     } /* namespace parserinternal */
     } /* namespace asl */
@@ -145,6 +147,24 @@ annotations:
 keyValuePair:
     KEY string {
             handleKeyStringValuePair(*$1, *$2);
+            delete $1;
+            delete $2;
+        }
+    | KEY IDENTIFIER ',' IDENTIFIER {
+            handleKeyStringValuePair(*$1, *$2, 1);
+            handleKeyStringValuePair(*$1, *$4, 2);
+            delete $1;
+            delete $2;
+        }
+    | KEY glvariant ',' IDENTIFIER {
+            handleKeyGLVariantValuePair(*$1, *$2, 1);
+            handleKeyStringValuePair(*$1, *$4, 2);
+            delete $1;
+            delete $2;
+        }
+    | KEY IDENTIFIER ',' glvariant {
+            handleKeyStringValuePair(*$1, *$2, 1);
+            handleKeyGLVariantValuePair(*$1, *$4, 2);
             delete $1;
             delete $2;
         }
@@ -264,15 +284,20 @@ void clearLog()
     log.clear();
 }
 
-void handleKeyStringValuePair(const QString &key, const QString &value)
+void handleKeyStringValuePair(const QString &key, const QString &value,
+        unsigned int argNumber)
 {
-    warnIfKeyDefinedAndDefineKey(key);
+    warnIfKeyDefinedAndDefineKey(key, argNumber);
 
     if (parsedFirstAslComment) {
         if ("Name" == key) {
             parameterInfoBuilder.withName(value);
         } else if ("Description" == key) {
             parameterInfoBuilder.withDescription(value);
+        } else if ("Range" == key && argNumber == 1) {
+            parameterInfoBuilder.withNoMinimum();
+        } else if ("Range" == key && argNumber == 2) {
+            parameterInfoBuilder.withNoMaximum();
         } else {
             warn(UNKNOWN_KEY_WARNING + key);
         }
@@ -308,14 +333,14 @@ void handleKeyGLVariantValuePair(const QString &key, const GLVariant &value,
     }
 }
 
-void warnIfKeyDefinedAndDefineKey(const QString &key)
+void warnIfKeyDefinedAndDefineKey(const QString &key, unsigned int argNumber)
 {
-    if (definedKeys.contains(key)) {
+    if (definedKeys.contains(key) && definedKeys[key] == argNumber) {
         --aslparserlineno;
         warn("duplicate key: " + key);
         ++aslparserlineno;
     } else {
-        definedKeys.insert(key);
+        definedKeys.insert(key, argNumber);
     }
 }
 

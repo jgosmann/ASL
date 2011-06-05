@@ -33,6 +33,8 @@ public:
     inline void withDefaultValue(const GLVariant &def) { m_defaultValue = def; }
     inline void withMinimum(const GLVariant &min) { m_minimum = min; }
     inline void withMaximum(const GLVariant &max) { m_maximum = max; }
+    inline void withNoMinimum() { m_minimum.unset(); }
+    inline void withNoMaximum() { m_maximum.unset(); }
 
     asl::ShaderParameterInfo build() const throw(common::NoValueException);
 

@@ -558,6 +558,37 @@ void castsDefaultValueToCorrectType()
                     .withMaximum(GLVariant("vec3", 3, maxValues)));
     }
 
+    void testRangeSetsMinAndMaxWithMinMaxIdentifier()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/** Range: min, max */\n"
+                    "uniform vec3 param;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        assertCleanCompilation(compiled.data());
+        assertHasExactlyOneParameterMatching(compiled.data(),
+            parameter.withMinimum(GLVariant::minOfType("vec3"))
+                .withMaximum(GLVariant::maxOfType("vec3")));
+    }
+
+    void testRangeSetsMinAndMaxWithMinMaxIdentifierAndValueMixed()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/** Range: min, 3 */\n"
+                    "uniform int param;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        GLint value = 3;
+        assertCleanCompilation(compiled.data());
+        assertHasExactlyOneParameterMatching(compiled.data(),
+            parameter.withMinimum(GLVariant::minOfType("int"))
+                .withMaximum(GLVariant("int", 1, &value)));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -610,6 +641,8 @@ void castsDefaultValueToCorrectType()
     CPPUNIT_TEST(testRangeDefaultsToMinAndMaxOfType<gltypenames::BOOL>);
     CPPUNIT_TEST(testRangeSetsMinAndMaxValue);
     CPPUNIT_TEST(testRangeCastsMinAndMaxValue);
+    CPPUNIT_TEST(testRangeSetsMinAndMaxWithMinMaxIdentifier);
+    CPPUNIT_TEST(testRangeSetsMinAndMaxWithMinMaxIdentifierAndValueMixed);
     CPPUNIT_TEST_SUITE_END();
 
 private:
