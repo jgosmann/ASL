@@ -589,6 +589,22 @@ void castsDefaultValueToCorrectType()
                 .withMaximum(GLVariant("int", 1, &value)));
     }
 
+    void testSingleWordRangeSpecifiers()
+    {
+        GLfloat zero = 0;
+        GLfloat one = 1;
+        GLfloat byteMax = 255;
+        GLVariant zeroV("float", 1, &zero);
+        GLVariant oneV("float", 1, &one);
+        GLVariant byteMaxV("float", 1, &byteMax);
+        testSingleWordRangeSpecifier("percent", zeroV, oneV);
+        testSingleWordRangeSpecifier("byte", zeroV, byteMaxV);
+        testSingleWordRangeSpecifier("unsigned", zeroV,
+                GLVariant::maxOfType("float"));
+        testSingleWordRangeSpecifier("positive", oneV,
+                GLVariant::maxOfType("float"));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -643,6 +659,7 @@ void castsDefaultValueToCorrectType()
     CPPUNIT_TEST(testRangeCastsMinAndMaxValue);
     CPPUNIT_TEST(testRangeSetsMinAndMaxWithMinMaxIdentifier);
     CPPUNIT_TEST(testRangeSetsMinAndMaxWithMinMaxIdentifierAndValueMixed);
+    CPPUNIT_TEST(testSingleWordRangeSpecifiers);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -691,6 +708,21 @@ private:
         assertCleanCompilation(compiled.data());
         assertHasExactlyOneParameterMatching(compiled.data(),
                 parameter.withDefaultValue(expected));
+    }
+
+    void testSingleWordRangeSpecifier(const QString &specifier,
+            const GLVariant &min, const GLVariant &max)
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/** Range: " + specifier + " */\n"
+                    "uniform float param;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        assertCleanCompilation(compiled.data());
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withMinimum(min).withMaximum(max));
     }
 
     static const QString trivialShader;

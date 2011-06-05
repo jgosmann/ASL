@@ -150,6 +150,11 @@ keyValuePair:
             delete $1;
             delete $2;
         }
+    | KEY IDENTIFIER {
+            handleKeyStringValuePair(*$1, *$2);
+            delete $1;
+            delete $2;
+        }
     | KEY IDENTIFIER ',' IDENTIFIER {
             handleKeyStringValuePair(*$1, *$2, 1);
             handleKeyStringValuePair(*$1, *$4, 2);
@@ -292,12 +297,37 @@ void handleKeyStringValuePair(const QString &key, const QString &value,
     if (parsedFirstAslComment) {
         if ("Name" == key) {
             parameterInfoBuilder.withName(value);
+
         } else if ("Description" == key) {
             parameterInfoBuilder.withDescription(value);
+
+        } else if ("Range" == key && argNumber == 0) {
+            GLuint min;
+            if ("percent" == value || "byte" == value || "unsigned" == value) {
+                min = 0;
+            } else if ("positive" == value) {
+                min = 1;
+            } else {
+                warn("Invalid value: " + value);
+                return;
+            }
+            parameterInfoBuilder.withMinimum(GLVariant("uint", 1, &min));
+            if ("percent" == value) {
+                GLuint value = 1;
+                parameterInfoBuilder.withMaximum(GLVariant("uint", 1, &value));
+            } else if("byte" == value) {
+                GLuint value = 255;
+                parameterInfoBuilder.withMaximum(GLVariant("uint", 1, &value));
+            } else if("unsigned" == value || "positive" == value) {
+                parameterInfoBuilder.withNoMaximum();
+            }
+
         } else if ("Range" == key && argNumber == 1) {
             parameterInfoBuilder.withNoMinimum();
+
         } else if ("Range" == key && argNumber == 2) {
             parameterInfoBuilder.withNoMaximum();
+
         } else {
             warn(UNKNOWN_KEY_WARNING + key);
         }
