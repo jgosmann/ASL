@@ -10,7 +10,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connect(ui->spinBox_Zoom, SIGNAL(valueChanged(int)), ui->glDisplay, SLOT(zoomImage(int)));
+    // set working directory to execution directory
+    QDir::setCurrent(QCoreApplication::applicationDirPath());
+
+    connect(ui->spinBox_Zoom, SIGNAL(valueChanged(int)), ui->glDisplay, SLOT(setImageZoom(int)));
     connect(ui->glDisplay, SIGNAL(zoomChanged(int)), ui->spinBox_Zoom, SLOT(setValue(int)));
     connect(ui->pushButton_loadImage, SIGNAL(clicked()), ui->glDisplay, SLOT(loadImageFile()));
     connect(ui->pushButton_saveImage, SIGNAL(clicked()), ui->glDisplay, SLOT(saveImageFile()));

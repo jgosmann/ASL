@@ -5,6 +5,7 @@ obj
 ui
 Makefile
 doc/api
+tags
 *.aux
 *.log
 *.out

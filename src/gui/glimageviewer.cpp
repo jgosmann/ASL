@@ -19,17 +19,13 @@ GLImageViewer::~GLImageViewer()
     m_frameBuffer = 0;
 }
 
-// BEGIN // OpenGL - core functions =========================================//
-
 void GLImageViewer::initializeGL()
 {
     glEnable(GL_TEXTURE_2D);
 
-    if (!m_image) {
-        std::cerr << "load failed" << std::endl;
-    } else {
-        setImage("/home/mkastrop/Desktop/newyork.jpg");
-    }
+    // load & set initial default image
+    m_image = new QImage("./data/intro.jpg");
+    setImage(*m_image);
 
     // set the viewpoint dependent to image size
     glViewport(0, 0, m_image->width(), m_image->height());
@@ -73,7 +69,6 @@ void GLImageViewer::resizeGL(int w, int h)
     glLoadIdentity();
 }
 
-
 void GLImageViewer::paintGL()
 {
     glDisable(GL_DEPTH_TEST);
@@ -81,7 +76,9 @@ void GLImageViewer::paintGL()
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glScalef(m_imageZoom, m_imageZoom, m_imageZoom);
+    glLoadIdentity();
+
+    glScalef(m_imageZoom, m_imageZoom, 1.0f);
 
     glBegin(GL_QUADS);
         glNormal3f( 0.0f, 0.0f, 1.0f);
@@ -102,8 +99,6 @@ void GLImageViewer::paintGL()
     glEnable(GL_DEPTH_TEST);
 }
 
-// END // OpenGL - core functions ===========================================//
-
 void GLImageViewer::clearImage()
 {
     if (m_textureLoaded) {
@@ -112,9 +107,9 @@ void GLImageViewer::clearImage()
     }
 }
 
-void GLImageViewer::setImage(const QString &filename)
+void GLImageViewer::setImage(const QImage &image)
 {
-    m_image = new QImage(filename);
+    *m_image = image;
     m_textureID = bindTexture(*m_image);
     m_textureLoaded = true;
 
@@ -154,8 +149,6 @@ void GLImageViewer::renderToFramebuffer()
     glEnable(GL_DEPTH_TEST);
 }
 
-
-
 void GLImageViewer::enableShaders(const int state)
 {
     if((state == Qt::Checked) || (state == Qt::PartiallyChecked)) {
@@ -191,12 +184,12 @@ void GLImageViewer::keyPressEvent(QKeyEvent *event)
 
 void GLImageViewer::wheelEvent(QWheelEvent *event)
 {
-    float value = m_imageZoom + event->delta()*.00042f;
+    if (event->delta() > 0)
+      m_imageZoom += 0.05;
+    else if (m_imageZoom >= 0.10)
+      m_imageZoom -= 0.05;
 
-    if (value >= 0.05) {
-        m_imageZoom = value;
-        emit zoomChanged((int) (100 * value));
-    }
+    emit zoomChanged((int) (100 * m_imageZoom));
 
     updateGL();
 }
@@ -205,7 +198,7 @@ void GLImageViewer::loadImageFile()
 {
     QString filename = QFileDialog::getOpenFileName();
 
-    setImage(filename);
+    setImage(QImage(filename));
 
     updateGL();
 }
@@ -221,7 +214,8 @@ void GLImageViewer::saveImageFile()
     //grabFrameBuffer().copy(diff_x, diff_y, width()-2*diff_x, height()-2*diff_y).save(filename);
 }
 
-void GLImageViewer::setImageZoom(int &value)
+void GLImageViewer::setImageZoom(int value)
 {
     m_imageZoom = (float) value / 100;
+    updateGL();
 }

@@ -28,12 +28,12 @@ public:
 
 public slots:
     void clearImage();
-    void setImage(const QString &filename);
+    void setImage(const QImage &image);
 
     void loadImageFile();
     void saveImageFile();
 
-    void setImageZoom(int &value);
+    void setImageZoom(int value);
 
 signals:
     void zoomChanged(int value);
