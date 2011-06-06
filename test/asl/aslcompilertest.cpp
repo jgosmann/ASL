@@ -481,7 +481,8 @@ public:
                 .withMessageMatching(QRegExp(
                     ".*Could not instantiate.*vec3.*")));
     }
-void castsDefaultValueToCorrectType()
+
+    void castsDefaultValueToCorrectType()
     {
         GLfloat values[] = { 42.0, -2.0, 0.0 };
         testParsingOfDefault("vec3", "ivec3(42, -2, 0)",
@@ -621,6 +622,37 @@ void castsDefaultValueToCorrectType()
                 .withMessageMatching(QRegExp(".*duplicate.*Range.*")));
     }
 
+    void defaultsControlAnnotationToEmptyList()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/***/\n"
+                    "uniform float param;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        assertCleanCompilation(compiled.data());
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withPreferredUIControls(QStringList()));
+    }
+
+    void parsesControlAnnotation()
+    {
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/** Control: color\t, default */\n"
+                    "uniform vec3 param;\n"
+                    + trivialShader));
+        QStringList controls;
+        controls.append("color");
+        controls.append("default");
+        ShaderParameterInfoMatcher parameter;
+        assertCleanCompilation(compiled.data());
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withPreferredUIControls(controls));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -677,6 +709,8 @@ void castsDefaultValueToCorrectType()
     CPPUNIT_TEST(testRangeSetsMinAndMaxWithMinMaxIdentifierAndValueMixed);
     CPPUNIT_TEST(testSingleWordRangeSpecifiers);
     CPPUNIT_TEST(warnsOnDoubleRangeSpecification);
+    CPPUNIT_TEST(defaultsControlAnnotationToEmptyList);
+    CPPUNIT_TEST(parsesControlAnnotation);
     CPPUNIT_TEST_SUITE_END();
 
 private:

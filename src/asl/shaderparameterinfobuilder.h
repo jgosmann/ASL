@@ -35,6 +35,10 @@ public:
     inline void withMaximum(const GLVariant &max) { m_maximum = max; }
     inline void withNoMinimum() { m_minimum.unset(); }
     inline void withNoMaximum() { m_maximum.unset(); }
+    inline void withPreferredUIControls(const QStringList &controls)
+    {
+        m_preferredUIControls = controls;
+    }
 
     asl::ShaderParameterInfo build() const throw(common::NoValueException);
 
@@ -48,6 +52,7 @@ private:
     GLVariant m_defaultValue;
     common::Nullable<GLVariant> m_minimum;
     common::Nullable<GLVariant> m_maximum;
+    QStringList m_preferredUIControls;
 };
 } /* namespace asl */
 

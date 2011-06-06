@@ -57,6 +57,13 @@ class ShaderParameterInfoMatcher
             return *this;
         }
 
+        inline ShaderParameterInfoMatcher & withPreferredUIControls(
+                const QStringList &controls)
+        {
+            m_preferredUIControls = controls;
+            return *this;
+        }
+
         bool matches(const ShaderParameterInfo &matchWith) const;
 
     private:
@@ -73,6 +80,7 @@ class ShaderParameterInfoMatcher
         common::Nullable<asl::GLVariant> m_defaultValue;
         common::Nullable<asl::GLVariant> m_minValue;
         common::Nullable<asl::GLVariant> m_maxValue;
+        common::Nullable<QStringList> m_preferredUIControls;
 };
 } /* namespace asl */
 

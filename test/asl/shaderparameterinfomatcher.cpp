@@ -13,7 +13,9 @@ bool ShaderParameterInfoMatcher::matches(const ShaderParameterInfo &matchWith)
         && matchValueIfSpecified(m_type, matchWith.type)
         && matchValueIfSpecified(m_defaultValue, matchWith.defaultValue)
         && matchValueIfSpecified(m_minValue, matchWith.minimum)
-        && matchValueIfSpecified(m_maxValue, matchWith.maximum);
+        && matchValueIfSpecified(m_maxValue, matchWith.maximum)
+        && matchValueIfSpecified(m_preferredUIControls,
+                matchWith.preferredUIControls);
 }
 
 template<class T> bool ShaderParameterInfoMatcher::matchValueIfSpecified(

@@ -28,6 +28,8 @@ ShaderParameterInfo ShaderParameterInfoBuilder::build() const
     info.maximum = GLVariant(*m_type,
             m_maximum.valueOrDefault(GLVariant::maxOfType(*m_type)));
 
+    info.preferredUIControls = m_preferredUIControls;
+
     return info;
 }
 

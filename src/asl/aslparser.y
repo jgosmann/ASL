@@ -328,6 +328,10 @@ void handleKeyStringValuePair(const QString &key, const QString &value,
         } else if ("Range" == key && argNumber == 2) {
             parameterInfoBuilder.withNoMaximum();
 
+        } else if ("Control" == key) {
+            parameterInfoBuilder.withPreferredUIControls(
+                value.split(QRegExp("\\s*,\\s*")));
+
         } else {
             warn(UNKNOWN_KEY_WARNING + key);
         }
