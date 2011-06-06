@@ -32,7 +32,7 @@ for(file, FORMS) {
     FORMS += $$correctPath
 }
 
-LIBS += -lcppunit
+LIBS += -lcppunit -lgmock -lgtest
 
 TARGET = cg_test
 
@@ -53,4 +53,4 @@ HEADERS += testenv.h
 SOURCES += testmain.cpp \
     testenv.cpp
 
-DEFINES += TEST
+DEFINES += COMPILES_TEST

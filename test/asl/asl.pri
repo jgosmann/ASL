@@ -7,5 +7,6 @@ SOURCES += asl/aslcompilertest.cpp \
 
 HEADERS += asl/logentry.h \
     asl/logassertions.h \
-    asl/shaderparameterinfomatcher.h
+    asl/shaderparameterinfomatcher.h \
+    asl/dependencyreadermock.h
 

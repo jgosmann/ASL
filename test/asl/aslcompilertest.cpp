@@ -8,6 +8,7 @@
 
 #include "../testenv.h"
 
+#include "dependencyreadermock.h"
 #include "logassertions.h"
 #include "logentry.h"
 #include "shaderparameterinfomatcher.h"
@@ -22,7 +23,9 @@ namespace asl
 class ASLCompilerTest : public TestFixture
 {
 public:
-    ASLCompilerTest() : pixelBufferForGLContext(1, 1) { }
+    ASLCompilerTest() : pixelBufferForGLContext(1, 1),
+            shaderCompiler(QSharedPointer<DependencyReader>(
+                new DependencyReaderMock())) { }
 
     void setUp()
     {

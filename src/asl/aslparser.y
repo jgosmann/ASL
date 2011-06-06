@@ -1,6 +1,6 @@
 
 %{
-    #ifdef TEST
+    #ifdef COMPILES_TEST
         #include "../src/asl/aslparser_internal.h"
         #include "../src/asl/annotatedglshaderprogrambuilder.h"
         #include "../src/asl/shaderparameterinfobuilder.h"

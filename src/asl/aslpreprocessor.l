@@ -16,7 +16,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     #include <QStack>
     #include <QTextStream>
 
-    #ifdef TEST
+    #ifdef COMPILES_TEST
         #include "../src/asl/aslpreprocessor_parserinternal.h"
     #else
         #include "asl/aslpreprocessor_parserinternal.h"

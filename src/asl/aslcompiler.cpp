@@ -5,7 +5,9 @@
 
 using namespace asl;
 
-ASLCompiler::ASLCompiler(QObject *parent) : QObject(parent)
+ASLCompiler::ASLCompiler(QSharedPointer<DependencyReader> dependencyReader,
+             QObject *parent)
+        : QObject(parent), m_dependencyReader(dependencyReader)
 {
 }
 

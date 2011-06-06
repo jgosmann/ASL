@@ -16,7 +16,7 @@ bool true|false
 %x READ_LINE
 
 %{
-    #ifdef TEST
+    #ifdef COMPILES_TEST
         #include "../src/asl/aslparser_internal.h"
     #else
         #include "asl/aslparser_internal.h"
