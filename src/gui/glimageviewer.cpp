@@ -30,23 +30,21 @@ void GLImageViewer::initializeGL()
     // set the viewpoint dependent to image size
     glViewport(0, 0, m_image->width(), m_image->height());
 
-    QGLShader main(QGLShader::Fragment);
-    main.compileSourceCode(
-            "uniform sampler2D texture;\n"
-            "float lighting;\n"
-            "void main(void)\n"
-            "{\n"
-            "   gl_FragColor = texture2D(texture, gl_TexCoord[0].xy);\n"
-            "   lighting = length(gl_FragColor.rgb);\n"
-            "   gl_FragColor = lighting * vec4(1, 1, 1, 1.0/lighting);\n"
-            "   //lowKey();\n"
-            "   //highKey();\n"
-            "}"
-    );
+    // use pass through shader if list of shaders is empty
+    if(m_shaderProgram.shaders().empty()) {
 
-    m_shaderProgram.addShader(&main);
+      QGLShader main(QGLShader::Fragment);
+      main.compileSourceCode(
+              "uniform sampler2D texture;\n"
+              "void main(void)\n"
+              "{\n"
+              "   gl_FragColor = vec4(0.5, 0.5, 0.5, 1.0) * texture2D(texture, gl_TexCoord[0].xy);\n"
+              "}"
+      );
 
-    m_shaderProgram.link();
+      m_shaderProgram.addShader(&main);
+      m_shaderProgram.link();
+    }
 
     bindTexture(*m_image);
     makeCurrent();
@@ -76,6 +74,9 @@ void GLImageViewer::paintGL()
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    if(m_useShaderProgram)
+      m_shaderProgram.bind();
+
     glLoadIdentity();
 
     glScalef(m_imageZoom, m_imageZoom, 1.0f);
@@ -95,6 +96,9 @@ void GLImageViewer::paintGL()
         glTexCoord2f( 0.0f, 1.0f);
         glVertex2f(-1.0f,-m_imageRatio);
     glEnd();
+
+    if(m_useShaderProgram)
+      m_shaderProgram.release();
 
     glEnable(GL_DEPTH_TEST);
 }
@@ -151,9 +155,12 @@ void GLImageViewer::renderToFramebuffer()
 
 void GLImageViewer::enableShaders(const int state)
 {
-    if((state == Qt::Checked) || (state == Qt::PartiallyChecked)) {
+    if(((state == Qt::Checked) || (state == Qt::PartiallyChecked)) 
+       && m_shaderProgram.isLinked()) {
+
         m_useShaderProgram = true;
     } else {
+
         m_useShaderProgram = false;
     }
     updateGL();
