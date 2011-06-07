@@ -11,7 +11,6 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
     Q_UNUSED(app);
 
-    ::testing::GTEST_FLAG(throw_on_failure) = true;
     ::testing::InitGoogleMock(&argc, argv);
 
     CppUnit::TextUi::TestRunner runner;

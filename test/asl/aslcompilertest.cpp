@@ -24,12 +24,16 @@ class ASLCompilerTest : public TestFixture
 {
 public:
     ASLCompilerTest() : pixelBufferForGLContext(1, 1),
-            shaderCompiler(QSharedPointer<DependencyReader>(
-                new DependencyReaderMock())) { }
+            shaderCompiler(dependencyReader) { }
 
     void setUp()
     {
         pixelBufferForGLContext.makeCurrent();
+    }
+
+    void tearDown()
+    {
+        CPPUNIT_ASSERT(Mock::VerifyAndClearExpectations(&dependencyReader));
     }
 
     void logsErrorWhenCompilingInvalidShader()
@@ -786,6 +790,7 @@ private:
     static const QString LOG_WARNING;
 
     QGLPixelBuffer pixelBufferForGLContext;
+    DependencyReaderMock dependencyReader;
     asl::ASLCompiler shaderCompiler;
 };
 }
