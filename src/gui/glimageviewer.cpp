@@ -1,5 +1,7 @@
 #include "glimageviewer.h"
 
+#include <assert.h>
+
 using namespace gui;
 
 GLImageViewer::GLImageViewer(QWidget *parent, Qt::WindowFlags f) :
@@ -31,7 +33,7 @@ void GLImageViewer::initializeGL()
     glViewport(0, 0, m_image->width(), m_image->height());
 
     // use pass through shader if list of shaders is empty
-    if(m_shaderProgram.shaders().empty()) {
+    if(m_shaderProgram->shaders().empty()) {
 
       QGLShader main(QGLShader::Fragment);
       main.compileSourceCode(
@@ -42,8 +44,8 @@ void GLImageViewer::initializeGL()
               "}"
       );
 
-      m_shaderProgram.addShader(&main);
-      m_shaderProgram.link();
+      m_shaderProgram->addShader(&main);
+      m_shaderProgram->link();
     }
 
     bindTexture(*m_image);
@@ -75,7 +77,7 @@ void GLImageViewer::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if(m_useShaderProgram)
-      m_shaderProgram.bind();
+      m_shaderProgram->bind();
 
     glLoadIdentity();
 
@@ -98,7 +100,7 @@ void GLImageViewer::paintGL()
     glEnd();
 
     if(m_useShaderProgram)
-      m_shaderProgram.release();
+      m_shaderProgram->release();
 
     glEnable(GL_DEPTH_TEST);
 }
@@ -156,7 +158,7 @@ void GLImageViewer::renderToFramebuffer()
 void GLImageViewer::enableShaders(const int state)
 {
     if(((state == Qt::Checked) || (state == Qt::PartiallyChecked)) 
-       && m_shaderProgram.isLinked()) {
+       && m_shaderProgram->isLinked()) {
 
         m_useShaderProgram = true;
     } else {
@@ -225,4 +227,111 @@ void GLImageViewer::setImageZoom(int value)
 {
     m_imageZoom = (float) value / 100;
     updateGL();
+}
+
+void GLImageViewer::addShader(QGLShader& shader)
+{
+  m_shaderProgram->addShader(&shader);
+}
+
+void GLImageViewer::applyUniform(const QString& glslName, const void* value)
+{
+  const asl::GLTypeInfo* typeInfo = asl::GLTypeInfo::getFor(glslName);
+  
+  int rows = typeInfo->rowDimensionality();
+  int cols = typeInfo->columnDimensionality();
+
+  switch( typeInfo->structure() )
+  {
+    assert(rows == 1);
+    assert(cols == 1);
+
+    case asl::GLTypeInfo::Structure.SCALAR:
+    {
+      switch( typeInfo->type() )
+      {
+        case asl::GLTypeInfo::Type.FLOAT:
+        {
+          //m_shaderProgram->setUniformValue(glslName.toStdString().c_str(), static_cast<const GLfloat>(value));
+          break;
+        }
+        case asl::GLTypeInfo::Type.INT:
+        {
+          //m_shaderProgram->setUniformValue(glslName.toStdString().c_str(), static_cast<const GLint>(value));
+          break;
+        }
+        case asl::GLTypeInfo::Type.UINT:
+        {
+          //m_shaderProgram->setUniformValue(glslName.toStdString().c_str(), static_cast<const GLuint>(value));
+          break;
+        }
+        case asl::GLTypeInfo::Type.BOOL:
+        {
+          //m_shaderProgram->setUniformValue(glslName.toStdString().c_str(), static_cast<const GLint>(value));
+          break;
+        }
+      }
+      break;
+    }
+    case asl::GLTypeInfo::Structure.VECTOR:
+    {
+      assert(rows > 1);
+      assert(cols == 1);
+
+      switch( typeInfo->type() )
+      {
+        case asl::GLTypeInfo::Type.FLOAT:
+        {
+          //m_shaderProgram->setUniformValueArray(glslName.toStdString().c_str(), static_cast<const GLfloat*>(value), rows);
+        }
+        case asl::GLTypeInfo::Type.INT:
+        {
+          //m_shaderProgram->setUniformValueArray(glslName.toStdString().c_str(), static_cast<const GLint*>(value), rows);
+          break;
+        }
+        case asl::GLTypeInfo::Type.UINT:
+        {
+          //m_shaderProgram->setUniformValueArray(glslName.toStdString().c_str(), static_cast<const GLuint*>(value), rows);
+          break;
+        }
+        case asl::GLTypeInfo::Type.BOOL:
+        {
+          //m_shaderProgram->setUniformValueArray(glslName.toStdString().c_str(), static_cast<const GLint*>(value), rows);
+          break;
+        }
+      }
+      break;
+    }
+
+    case asl::GLTypeInfo::Structure.MATRIX:
+    {
+      assert(rows > 1);
+      assert(cols > 1);
+
+      switch( typeInfo->type() )
+      {
+        case asl::GLTypeInfo::Type.FLOAT:
+        {
+          //m_shaderProgram->setUniformValueArray(glslName.toStdString().c_str(), static_cast<const GLfloat*>(value), rows, cols);
+          break;
+        }
+        case asl::GLTypeInfo::Type.INT:
+        {
+          //m_shaderProgram->setUniformValueArray(glslName.toStdString().c_str(), static_cast<const GLint*>(value), rows, cols);
+          break;
+        }
+        case asl::GLTypeInfo::Type.UINT:
+        {
+          //m_shaderProgram->setUniformValueArray(glslName.toStdString().c_str(), static_cast<const GLuint*>(value), rows, cols);
+          break;
+        }
+        case asl::GLTypeInfo::Type.BOOL:
+        {
+          //m_shaderProgram->setUniformValueArray(glslName.toStdString().c_str(), static_cast<const GLint*>(value), rows, cols);
+          break;
+        }
+      }
+      break;
+    }
+  }
 }

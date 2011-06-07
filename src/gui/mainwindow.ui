@@ -50,31 +50,6 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="0" colspan="2">
-         <widget class="QGroupBox" name="groupBox_Options">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="title">
-           <string>Options:</string>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
-           </item>
-           <item>
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>TextLabel</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
         <item row="1" column="6">
          <widget class="QSpinBox" name="spinBox_Zoom">
           <property name="sizePolicy">
@@ -188,6 +163,19 @@
         <item row="2" column="2" rowspan="3" colspan="5">
          <widget class="gui::GLImageViewer" name="glDisplay" native="true"/>
         </item>
+        <item row="4" column="0" colspan="2">
+         <widget class="gui::UniformOptionBox" name="groupBox_Options">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="title">
+           <string>Options:</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_Code">
@@ -210,7 +198,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>27</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
@@ -230,6 +218,12 @@
    <class>gui::GLImageViewer</class>
    <extends>QWidget</extends>
    <header>gui/glimageviewer.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>gui::UniformOptionBox</class>
+   <extends>QGroupBox</extends>
+   <header>gui/uniformoptionbox.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
