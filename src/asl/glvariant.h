@@ -57,6 +57,8 @@ public:
     inline const GLint * asInt() const { return m_data.asInt; }
     inline const GLuint * asUInt() const { return m_data.asUInt; }
     inline const GLint * asBool() const { return m_data.asInt; }
+    template<class T> const T * as() const;
+
     template<class CastToT> CastToT ithValueCasted(GLsizei i) const;
     const GLsizei count() const;
     inline const GLTypeInfo & type() const { return *m_type; }

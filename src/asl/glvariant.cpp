@@ -166,6 +166,13 @@ void GLVariant::set(const GLVariant &value)
     }
 }
 
+namespace asl
+{
+template<> const GLfloat * GLVariant::as() const { return m_data.asFloat; }
+template<> const GLint * GLVariant::as() const { return m_data.asInt; }
+template<> const GLuint * GLVariant::as() const { return m_data.asUInt; }
+}
+
 template GLfloat GLVariant::ithValueCasted(GLsizei i) const;
 template GLint GLVariant::ithValueCasted(GLsizei i) const;
 template GLuint GLVariant::ithValueCasted(GLsizei i) const;
