@@ -4,6 +4,7 @@
 #include "../common/nullable.h"
 #include "../common/novalueexception.h"
 #include "gltypeinfo.h"
+#include "glvariant.h"
 #include "shaderparameterinfo.h"
 
 #include <QString>
@@ -27,7 +28,17 @@ public:
         m_description = description;
     }
 
-    inline void withType(const GLTypeInfo *type) { m_type = type; }
+    inline void withType(const GLTypeInfo &type) { m_type = &type; }
+
+    inline void withDefaultValue(const GLVariant &def) { m_defaultValue = def; }
+    inline void withMinimum(const GLVariant &min) { m_minimum = min; }
+    inline void withMaximum(const GLVariant &max) { m_maximum = max; }
+    inline void withNoMinimum() { m_minimum.unset(); }
+    inline void withNoMaximum() { m_maximum.unset(); }
+    inline void withPreferredUIControls(const QStringList &controls)
+    {
+        m_preferredUIControls = controls;
+    }
 
     asl::ShaderParameterInfo build() const throw(common::NoValueException);
 
@@ -38,6 +49,10 @@ private:
     common::Nullable<QString> m_name;
     common::Nullable<QString> m_description;
     const GLTypeInfo *m_type;
+    GLVariant m_defaultValue;
+    common::Nullable<GLVariant> m_minimum;
+    common::Nullable<GLVariant> m_maximum;
+    QStringList m_preferredUIControls;
 };
 } /* namespace asl */
 

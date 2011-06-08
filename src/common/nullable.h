@@ -8,33 +8,28 @@ namespace common
 template<class T> class Nullable
 {
 public:
-    Nullable() : m_hasValue(false) { }
-    Nullable(const T &value) : m_value(value), m_hasValue(true) { }
+    Nullable();
+    Nullable(const T &value);
+    Nullable(const Nullable<T> &other);
+    ~Nullable();
 
     inline bool hasValue() const { return m_hasValue; }
-    inline void set(const T &value) { m_value = value; m_hasValue = true; }
-    inline void unset() { m_hasValue = false; }
+    void set(const T &value);
+    void unset();
 
-    const T & value() const throw(NoValueException)
-    {
-        if (!m_hasValue) {
-            throw NoValueException();
-        }
-        return m_value;
-    }
+    const T & value() const throw(NoValueException);
+    const T & valueOrDefault(const T &def) const;
 
-    const T & valueOrDefault(const T &def) const
-    {
-        return hasValue() ? value() : def;
-    }
-
-    operator T() const throw(NoValueException) { return value(); }
+    Nullable<T> & operator=(const Nullable<T> &rhs);
+    inline operator T() const throw(NoValueException) { return value(); }
 
 private:
-    T m_value;
     bool m_hasValue;
+    T *m_value;
 };
 } /* namespace asl */
+
+#include "nullable.cpp"
 
 #endif /* NULLABLE_H */
 

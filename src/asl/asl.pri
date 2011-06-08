@@ -1,5 +1,4 @@
 HEADERS += asl/shaderparameterinfo.h \
-    asl/glvariant.h \
     asl/gltypeinfo.h \
     asl/annotatedglshaderprogram.h \
     asl/aslcompiler.h \
@@ -7,14 +6,18 @@ HEADERS += asl/shaderparameterinfo.h \
     asl/aslpreprocessor_parserinternal.h \
     asl/aslparser_internal.h \
     asl/annotatedglshaderprogrambuilder.h \
-    asl/shaderparameterinfobuilder.h
+    asl/shaderparameterinfobuilder.h \
+    asl/glvariant.h \
+    asl/gltypenames.h
 
 SOURCES += \
     asl/annotatedglshaderprogram.cpp \
     asl/aslcompiler.cpp \
     asl/aslpreprocessor.cpp \
     asl/shaderparameterinfobuilder.cpp \
-    asl/gltypeinfo.cpp
+    asl/gltypeinfo.cpp \
+    asl/glvariant.cpp \
+    asl/gltypenames.cpp
 
 LEXSOURCES += asl/aslpreprocessor.l \
     asl/aslparser.l

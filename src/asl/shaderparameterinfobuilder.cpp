@@ -22,6 +22,14 @@ ShaderParameterInfo ShaderParameterInfoBuilder::build() const
     info.name = m_name.valueOrDefault(m_identifier);
     info.description = m_description.valueOrDefault("");
 
+    info.defaultValue = GLVariant(*m_type, m_defaultValue);
+    info.minimum = GLVariant(*m_type,
+            m_minimum.valueOrDefault(GLVariant::minOfType(*m_type)));
+    info.maximum = GLVariant(*m_type,
+            m_maximum.valueOrDefault(GLVariant::maxOfType(*m_type)));
+
+    info.preferredUIControls = m_preferredUIControls;
+
     return info;
 }
 

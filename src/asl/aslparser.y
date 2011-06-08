@@ -10,9 +10,15 @@
         #include "asl/shaderparameterinfobuilder.h"
     #endif
 
+    #include <exception>
+
+    #include <GL/gl.h>
+
     #include <QFileInfo>
+    #include <QList>
     #include <QSet>
     #include <QStringBuilder>
+    #include <QVector>
 
     extern int aslparserlineno;
     void yyerror(const char *msg);
@@ -30,10 +36,23 @@
         AnnotatedGLShaderProgramBuilder programBuilder;
         ShaderParameterInfoBuilder parameterInfoBuilder;
 
-        QSet<QString> definedKeys;
+        QHash<QString, unsigned int> definedKeys;
+
+        const QString UNKNOWN_KEY_WARNING("unknown key: ");
 
         void addToLog(const QString &type, const QString &msg);
-        void handleKeyStringValuePair(QString *key, QString *value);
+        void handleKeyStringValuePair(const QString &key, const QString &value,
+            unsigned int argNumber = 0);
+        void handleKeyGLVariantValuePair(const QString &key,
+            const GLVariant &value, unsigned int argNumber = 0);
+        template<class T> GLVariant * glvariantFromValueList(
+            const GLTypeInfo &type, const QList<GLVariant *> *values);
+        template<class CastToT> QVector<CastToT> glvariantListToCastedQVector(
+            const QList<GLVariant *> *values);
+        template<class T> GLVariant * savelyCreateGLVariant(
+            const GLTypeInfo &type, GLsizei count, const T *value);
+        void warnIfKeyDefinedAndDefineKey(const QString &key,
+            unsigned int argNumber);
         void warn(const QString &msg);
     } /* namespace parserinternal */
     } /* namespace asl */
@@ -41,17 +60,24 @@
 %}
 
 %union {
-    long int integer;
+    unsigned long int integer;
+    GLfloat flt;
     QString *string;
+    asl::GLVariant *glvariant;
+    QList<asl::GLVariant *> *glvariantList;
 }
 
 %type <string> string
+%type <glvariant> glvariant
+%type <glvariantList> glvariantList
 
 %destructor { delete $$; } string
 
-%token <integer> INTEGER
+%token <integer> INTEGER BOOLEAN
+%token <flt> FLT
 %token <string> KEY IDENTIFIER ANNOTATION_STRING
-%token ANNOTATION_START ANNOTATION_END UNIFORM LINE END UNEXPECTED_CHAR 
+%token ANNOTATION_START ANNOTATION_END UNIFORM LINE END NEGATE UNEXPECTED_CHAR
+%token '(' ')' ','
 
 %%
 
@@ -118,7 +144,48 @@ annotations:
     annotations keyValuePair
     | ;
 
-keyValuePair: KEY string { handleKeyStringValuePair($1, $2); };
+keyValuePair:
+    KEY string {
+            handleKeyStringValuePair(*$1, *$2);
+            delete $1;
+            delete $2;
+        }
+    | KEY IDENTIFIER {
+            handleKeyStringValuePair(*$1, *$2);
+            delete $1;
+            delete $2;
+        }
+    | KEY IDENTIFIER ',' IDENTIFIER {
+            handleKeyStringValuePair(*$1, *$2, 1);
+            handleKeyStringValuePair(*$1, *$4, 2);
+            delete $1;
+            delete $2;
+        }
+    | KEY glvariant ',' IDENTIFIER {
+            handleKeyGLVariantValuePair(*$1, *$2, 1);
+            handleKeyStringValuePair(*$1, *$4, 2);
+            delete $1;
+            delete $2;
+        }
+    | KEY IDENTIFIER ',' glvariant {
+            handleKeyStringValuePair(*$1, *$2, 1);
+            handleKeyGLVariantValuePair(*$1, *$4, 2);
+            delete $1;
+            delete $2;
+        }
+    | KEY glvariant {
+            handleKeyGLVariantValuePair(*$1, *$2);
+            delete $1;
+            delete $2;
+        }
+    | KEY glvariant ',' glvariant {
+            handleKeyGLVariantValuePair(*$1, *$2, 1);
+            handleKeyGLVariantValuePair(*$1, *$4, 2);
+            delete $1;
+            delete $2;
+            delete $4;
+        }
+    ;
 
 string:
     string ANNOTATION_STRING {
@@ -130,9 +197,74 @@ string:
     | ANNOTATION_STRING { $$ = $1; }
     ;
 
+glvariant:
+    IDENTIFIER '(' glvariantList ')' {
+            try {
+                const asl::GLTypeInfo &type = asl::GLTypeInfo::getFor(*$1);
+
+                switch (type.type()) {
+                    case asl::GLTypeInfo::FLOAT:
+                        $$ = glvariantFromValueList<GLfloat>(type, $3);
+                        break;
+                    case asl::GLTypeInfo::BOOL: /* fall through */
+                    case asl::GLTypeInfo::INT:
+                        $$ = glvariantFromValueList<GLint>(type, $3);
+                        break;
+                    case asl::GLTypeInfo::UINT:
+                        $$ = glvariantFromValueList<GLuint>(type, $3);
+                        break;
+                    default:
+                        warn("Type not supported.");
+                        break;
+                }
+            } catch (const std::exception &e) {
+                warn("Could not instantiate GLSL type: " + *$1);
+                warn(e.what());
+                $$ = new asl::GLVariant();
+            }
+
+            delete $1;
+            foreach (asl::GLVariant *value, *$3) {
+                delete value;
+            }
+            delete $3;
+        }
+    | INTEGER {
+            const GLuint value = $1;
+            $$ = new asl::GLVariant("uint", 1, &value);
+        }
+    | NEGATE INTEGER {
+            const GLint value = -$2;
+            $$ = new asl::GLVariant("uint", 1, &value);
+        }
+    | FLT {
+            const GLfloat value = $1;
+            $$ = new asl::GLVariant("float", 1, &value);
+        }
+    | NEGATE FLT {
+            const GLfloat value = -$2;
+            $$ = new asl::GLVariant("float", 1, &value);
+        }
+    | BOOLEAN {
+            const GLint value = $1;
+            $$ = new asl::GLVariant("bool", 1, &value);
+        }
+    ;
+
+glvariantList:
+    glvariantList ',' glvariant {
+            $$ = $1;
+            $$->append($3);
+        }
+    | glvariant {
+            $$ = new QList<asl::GLVariant *>();
+            $$->append($1);
+        }
+    ;
 
 %%
 
+using namespace std;
 using namespace asl::parserinternal;
 
 void yyerror(const char *msg)
@@ -157,38 +289,132 @@ void clearLog()
     log.clear();
 }
 
-void handleKeyStringValuePair(QString *key, QString *value)
+void handleKeyStringValuePair(const QString &key, const QString &value,
+        unsigned int argNumber)
 {
-    if (definedKeys.contains(*key)) {
-        --aslparserlineno;
-        warn("duplicate key: " + *key);
-        ++aslparserlineno;
-    } else {
-        definedKeys.insert(*key);
-    }
+    warnIfKeyDefinedAndDefineKey(key, argNumber);
 
     if (parsedFirstAslComment) {
-        if ("Name" == *key) {
-            parameterInfoBuilder.withName(*value);
-        } else if ("Description" == *key) {
-            parameterInfoBuilder.withDescription(*value);
+        if ("Name" == key) {
+            parameterInfoBuilder.withName(value);
+
+        } else if ("Description" == key) {
+            parameterInfoBuilder.withDescription(value);
+
+        } else if ("Range" == key && argNumber == 0) {
+            GLuint min;
+            if ("percent" == value || "byte" == value || "unsigned" == value) {
+                min = 0;
+            } else if ("positive" == value) {
+                min = 1;
+            } else {
+                warn("Invalid value: " + value);
+                return;
+            }
+            parameterInfoBuilder.withMinimum(GLVariant("uint", 1, &min));
+            if ("percent" == value) {
+                GLuint value = 1;
+                parameterInfoBuilder.withMaximum(GLVariant("uint", 1, &value));
+            } else if("byte" == value) {
+                GLuint value = 255;
+                parameterInfoBuilder.withMaximum(GLVariant("uint", 1, &value));
+            } else if("unsigned" == value || "positive" == value) {
+                parameterInfoBuilder.withNoMaximum();
+            }
+
+        } else if ("Range" == key && argNumber == 1) {
+            parameterInfoBuilder.withNoMinimum();
+
+        } else if ("Range" == key && argNumber == 2) {
+            parameterInfoBuilder.withNoMaximum();
+
+        } else if ("Control" == key) {
+            parameterInfoBuilder.withPreferredUIControls(
+                value.split(QRegExp("\\s*,\\s*")));
+
         } else {
-            warn("unknown key: " + *key);
+            warn(UNKNOWN_KEY_WARNING + key);
         }
 
     } else {
-        if ("ShaderName" == *key) {
-            programBuilder.setName(*value);
-        } else if ("ShaderDescription" == *key) {
-            programBuilder.setDescription(*value);
+        if ("ShaderName" == key) {
+            programBuilder.setName(value);
+        } else if ("ShaderDescription" == key) {
+            programBuilder.setDescription(value);
         } else {
-            warn("unknown key: " + *key);
+            warn(UNKNOWN_KEY_WARNING + key);
         }
 
     }
+}
 
-    delete key;
-    delete value;
+void handleKeyGLVariantValuePair(const QString &key, const GLVariant &value,
+        unsigned int argNumber)
+{
+    warnIfKeyDefinedAndDefineKey(key, argNumber);
+
+    if (!parsedFirstAslComment) {
+        warn(UNKNOWN_KEY_WARNING + key);
+        return;
+    }
+
+    if ("Default" == key) {
+        parameterInfoBuilder.withDefaultValue(value);
+    } else if ("Range" == key && argNumber == 1) {
+        parameterInfoBuilder.withMinimum(value);
+    } else if ("Range" == key && argNumber == 2) {
+        parameterInfoBuilder.withMaximum(value);
+    } else {
+        warn(UNKNOWN_KEY_WARNING + key);
+    }
+}
+
+void warnIfKeyDefinedAndDefineKey(const QString &key, unsigned int argNumber)
+{
+    if (definedKeys.contains(key)) {
+        const bool isProcessingAnUnprocessedArgument =
+                definedKeys[key] != 0 && definedKeys[key] < argNumber;
+        if (!isProcessingAnUnprocessedArgument) {
+            --aslparserlineno;
+            warn("duplicate key: " + key);
+            ++aslparserlineno;
+        }
+    } else {
+        definedKeys.insert(key, argNumber);
+    }
+}
+
+template<class T> GLVariant * glvariantFromValueList(const GLTypeInfo &type,
+        const QList<GLVariant *> *values)
+{
+    QVector<T> castedValues = glvariantListToCastedQVector<T>(values);
+    return savelyCreateGLVariant(type, castedValues.size(),
+            castedValues.constData());
+}
+
+template<class CastToT> QVector<CastToT> glvariantListToCastedQVector(
+        const QList<GLVariant *> *values)
+{
+    QVector<CastToT> castedValues;
+    foreach (GLVariant *value, *values) {
+        for (GLsizei i = 0; i < value->count(); ++i) {
+            castedValues.append(value->ithValueCasted<CastToT>(i));
+        }
+    }
+
+    return castedValues;
+}
+
+template<class T> GLVariant * savelyCreateGLVariant(const GLTypeInfo &type,
+        GLsizei count, const T *value)
+{
+    try {
+        return new GLVariant(type, count, value);
+    } catch (const exception &e) {
+        warn("Could not instantiate GLSL type: " + type.glslName());
+        warn(e.what());
+        return new GLVariant();
+    }
 }
 
 AnnotatedGLShaderProgram * parse(const QString &sourcecode,

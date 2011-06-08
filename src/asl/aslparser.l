@@ -6,9 +6,12 @@ annotationWhitespace [ \t\r\n*]
 notAnnotationWhitespace [^ \t\r\n*]
 identifier [_a-zA-Z][_a-zA-Z0-9]*
 integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
+float [0-9]*"."[0-9]*([eE]-?[0-9]+)?
+bool true|false
 
 %x ANNOTATION
 %x READ_ANNOTATION_STRING
+%x READ_ANNOTATION_GLVARIANT
 %x READ_UNIFORM
 %x READ_LINE
 
@@ -34,6 +37,7 @@ integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
         bool readFirstAslComment;
 
         unsigned int calcIndentationDepth(const char *str, unsigned int len);
+        void setStateFromKey(const QString &key);
 
         unsigned int currentIdentation;
     } /* namespace ppinternal */
@@ -48,7 +52,7 @@ integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
     return ANNOTATION_START;
 }
 
-<ANNOTATION,READ_ANNOTATION_STRING>"*/" {
+<ANNOTATION,READ_ANNOTATION_STRING,READ_ANNOTATION_GLVARIANT>"*/" {
     if (readFirstAslComment) {
         BEGIN READ_UNIFORM;
     } else {
@@ -61,7 +65,7 @@ integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
 <ANNOTATION>[-_a-zA-Z0-9]+: {
     yytext[yyleng - 1] = '\0'; // We don't want to return the colon.
     aslparserlval.string = new QString(yytext);
-    BEGIN READ_ANNOTATION_STRING;
+    setStateFromKey(*aslparserlval.string);
     return KEY;
 }
 
@@ -74,7 +78,7 @@ integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
     currentIdentation = calcIndentationDepth(yytext, yyleng);
 }
 
-<READ_ANNOTATION_STRING>^({annotationWhitespace}*{whitespace})? {
+<READ_ANNOTATION_STRING,READ_ANNOTATION_GLVARIANT>^({annotationWhitespace}*{whitespace})? {
     const unsigned int identation = calcIndentationDepth(yytext, yyleng);
     if (identation <= currentIdentation) {
         currentIdentation = identation;
@@ -86,7 +90,16 @@ integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
     return UNIFORM;
 }
 
-<READ_UNIFORM>{identifier} {
+<READ_ANNOTATION_GLVARIANT>{bool} {
+    if ("true" == QString(yytext)) {
+        aslparserlval.integer = 1;
+    } else {
+        aslparserlval.integer = 0;
+    }
+    return BOOLEAN;
+}
+
+<READ_UNIFORM,READ_ANNOTATION_GLVARIANT>{identifier} {
     aslparserlval.string = new QString(yytext);
     return IDENTIFIER;
 }
@@ -96,9 +109,24 @@ integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
     return yytext[0];
 }
 
-<READ_LINE>{integer} {
+<READ_ANNOTATION_GLVARIANT>[(),] {
+    return yytext[0];
+}
+
+<READ_LINE,READ_ANNOTATION_GLVARIANT>{integer} {
     aslparserlval.integer = strtoul(yytext, NULL, 0);
     return INTEGER;
+}
+
+<READ_ANNOTATION_GLVARIANT>{float} {
+    /* Do not use strtof() function as it interprets the locale and may treat
+     * other characters than the dot '.' as decimal dot. */
+    aslparserlval.flt = QString(yytext).toFloat();
+    return FLT;
+}
+
+<READ_ANNOTATION_GLVARIANT>"-" {
+    return NEGATE;
 }
 
 <INITIAL,READ_UNIFORM>"/*"([^*]("/"?[^*/]*("*"[^/])?)+)?"*/" { }
@@ -127,7 +155,7 @@ integer ([0-9]+|0[0-7]+|0x[0-9a-fA-F]+)
     }
 }
 
-<INITIAL,READ_UNIFORM,ANNOTATION,READ_ANNOTATION_STRING>.|\n { }
+<INITIAL,READ_UNIFORM,ANNOTATION,READ_ANNOTATION_STRING,READ_ANNOTATION_GLVARIANT>.|\n { }
 
 %%
 
@@ -152,6 +180,14 @@ unsigned int calcIndentationDepth(const char *str, unsigned int len)
         }
     }
     return identation;
+}
+
+void setStateFromKey(const QString &key) {
+    if ("Default" == key || "Range" == key) {
+        BEGIN READ_ANNOTATION_GLVARIANT;
+    } else {
+        BEGIN READ_ANNOTATION_STRING;
+    }
 }
 
 void reset() {

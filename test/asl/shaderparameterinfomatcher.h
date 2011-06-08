@@ -2,6 +2,7 @@
 #define SHADERPARAMETERINFOMATCHER_H
 
 #include "../../src/common/nullable.h"
+#include "../../src/asl/glvariant.h"
 #include "../../src/asl/shaderparameterinfo.h"
 
 namespace asl
@@ -29,9 +30,37 @@ class ShaderParameterInfoMatcher
             return *this;
         }
 
-        inline ShaderParameterInfoMatcher & withType(const GLTypeInfo *type)
+        inline ShaderParameterInfoMatcher & withType(const GLTypeInfo &type)
         {
-            m_type = type;
+            m_type = &type;
+            return *this;
+        }
+
+        inline ShaderParameterInfoMatcher & withDefaultValue(
+                const asl::GLVariant &defaultValue)
+        {
+            m_defaultValue = defaultValue;
+            return *this;
+        }
+
+        inline ShaderParameterInfoMatcher & withMinimum(
+                const asl::GLVariant &minValue)
+        {
+            m_minValue = minValue;
+            return *this;
+        }
+
+        inline ShaderParameterInfoMatcher & withMaximum(
+                const asl::GLVariant &maxValue)
+        {
+            m_maxValue = maxValue;
+            return *this;
+        }
+
+        inline ShaderParameterInfoMatcher & withPreferredUIControls(
+                const QStringList &controls)
+        {
+            m_preferredUIControls = controls;
             return *this;
         }
 
@@ -48,8 +77,13 @@ class ShaderParameterInfoMatcher
         common::Nullable<QString> m_name;
         common::Nullable<QString> m_description;
         common::Nullable<const asl::GLTypeInfo *> m_type;
+        common::Nullable<asl::GLVariant> m_defaultValue;
+        common::Nullable<asl::GLVariant> m_minValue;
+        common::Nullable<asl::GLVariant> m_maxValue;
+        common::Nullable<QStringList> m_preferredUIControls;
 };
 } /* namespace asl */
 
 #endif /* SHADERPARAMETERINFOMATCHER_H */
+
 
