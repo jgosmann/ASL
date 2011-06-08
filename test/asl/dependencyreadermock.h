@@ -10,7 +10,8 @@ namespace asl
 class DependencyReaderMock : public DependencyReader
 {
     public:
-        MOCK_METHOD1(readDependency, QString(const QString &name));
+        MOCK_METHOD2(readDependency, QString(const QString &name,
+                    const QString &includingFile));
 };
 } /* namespace asl */
 

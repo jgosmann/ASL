@@ -9,7 +9,8 @@ HEADERS += asl/shaderparameterinfo.h \
     asl/shaderparameterinfobuilder.h \
     asl/glvariant.h \
     asl/gltypenames.h \
-    asl/dependencyreader.h
+    asl/dependencyreader.h \
+    asl/shaderinfo.h
 
 SOURCES += \
     asl/annotatedglshaderprogram.cpp \

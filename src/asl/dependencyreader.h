@@ -9,7 +9,8 @@ class DependencyReader
 {
     public:
         virtual ~DependencyReader() { }
-        virtual QString readDependency(const QString &name) = 0;
+        virtual QString readDependency(const QString &name,
+                const QString &includingFile = QString()) = 0;
 };
 } /* namespace asl */
 

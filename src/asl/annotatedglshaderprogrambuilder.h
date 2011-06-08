@@ -4,6 +4,7 @@
 #include "annotatedglshaderprogram.h"
 
 #include <QList>
+#include <QStringList>
 
 namespace asl
 {
@@ -25,21 +26,27 @@ public:
         m_description = description;
     }
 
+    inline void setDependencies(const QStringList &dependencies)
+    {
+        m_dependencies = dependencies;
+    }
+
     inline void addParameter(const ShaderParameterInfo &parameter)
     {
         m_parameters.append(parameter);
     }
 
-    inline AnnotatedGLShaderProgram * build()
-    {
-        return new AnnotatedGLShaderProgram(m_name, m_description,
-                m_parameters);
-    }
+    //inline AnnotatedGLShaderProgram * build()
+    //{
+        //return new AnnotatedGLShaderProgram(m_name, m_description,
+                //m_dependencies, m_parameters);
+    //}
 
 private:
     QString m_name;
     QString m_description;
     QList<asl::ShaderParameterInfo> m_parameters;
+    QStringList m_dependencies;
 };
 }
 

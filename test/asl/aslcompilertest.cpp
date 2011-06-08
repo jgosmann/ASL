@@ -660,6 +660,27 @@ public:
                 parameter.withPreferredUIControls(controls));
     }
 
+    void compilesDependencies()
+    {
+        QString includingFile("incFile");
+        EXPECT_CALL(dependencyReader,
+            readDependency(QString("file1"), includingFile)).WillRepeatedly(
+            Return("/***/ /***/ uniform float incParam1; void a() { }"));
+        EXPECT_CALL(dependencyReader,
+            readDependency(QString("file2"), includingFile)).WillRepeatedly(
+            Return("/***/ /***/ uniform float incParam2; void b() { }"));
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/** Depends: file1, file2 */\n"
+                    + trivialShader, includingFile));
+        ShaderParameterInfoMatcher parameter1, parameter2;
+        assertCleanCompilation(compiled.data());
+        assertHasParameterMatching(compiled.data(),
+                parameter1.withName("incParam1"));
+        assertHasParameterMatching(compiled.data(),
+                parameter2.withName("incParam2"));
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -718,6 +739,7 @@ public:
     CPPUNIT_TEST(warnsOnDoubleRangeSpecification);
     CPPUNIT_TEST(defaultsControlAnnotationToEmptyList);
     CPPUNIT_TEST(parsesControlAnnotation);
+    CPPUNIT_TEST(compilesDependencies);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -744,6 +766,18 @@ private:
     {
         CPPUNIT_ASSERT_EQUAL(1, program->parameters().size());
         CPPUNIT_ASSERT(matcher.matches(program->parameters()[0]));
+    }
+
+    void assertHasParameterMatching(
+            const AnnotatedGLShaderProgram *program,
+            const ShaderParameterInfoMatcher &matcher)
+    {
+        for (int i = 0; i < program->parameters().size(); ++i) {
+            if (matcher.matches(program->parameters()[i])) {
+                return;
+            }
+        }
+        CPPUNIT_FAIL("No matching parameter.");
     }
 
     template<class T> void testParsingOfDefaultWithScalar(

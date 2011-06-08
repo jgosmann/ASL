@@ -3,8 +3,8 @@
 
 #include <QGLShader>
 #include <QGLShaderProgram>
+#include <QSet>
 #include <QObject>
-#include <QSharedPointer>
 
 #include "annotatedglshaderprogram.h"
 #include "dependencyreader.h"
@@ -15,7 +15,7 @@ class ASLCompiler : public QObject
 {
     Q_OBJECT
 public:
-    explicit ASLCompiler(QSharedPointer<DependencyReader> dependencyReader,
+    explicit ASLCompiler(DependencyReader &dependencyReader,
             QObject *parent = 0);
 
     /**
@@ -49,10 +49,16 @@ signals:
 public slots:
 
 private:
+    void reset();
+    void parseDependencies(const QStringList dependencies,
+            const QString &includingFile);
+
     QString m_log;
     bool m_success;
 
-    QSharedPointer<DependencyReader> m_dependencyReader;
+    ShaderInfo m_shaderInfo;
+
+    DependencyReader &m_dependencyReader;
 
 };
 }

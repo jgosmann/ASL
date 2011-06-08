@@ -14,8 +14,7 @@
 
 using namespace CppUnit;
 
-using ::testing::Mock;
-using ::testing::Return;
+using namespace testing;
 
 std::ostream & operator<<(std::ostream &output, const QString &str);
 
