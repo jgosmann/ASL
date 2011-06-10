@@ -138,13 +138,49 @@ public:
         CPPUNIT_ASSERT(compiled->shaders().contains(depSubmain));
     }
 
+    void loadsDuplicatesOnlyOnce()
+    {
+        QString filename("filename");
+
+        QStringList depsMain, deps1, deps2;
+        depsMain.append(filename);
+        depsMain.append("deps1");
+        depsMain.append("deps1");
+
+        deps1.append(filename);
+        deps1.append("deps1");
+        deps1.append("deps2");
+
+        deps2.append("deps2");
+
+        AnnotatedGLShader *dummyShader = createDummyShader(
+                "void main() { }", depsMain);
+        AnnotatedGLShader *dep1 = createDummyShader("void a() { }", deps1);
+        AnnotatedGLShader *dep2 = createDummyShader("void b() { }", deps2);
+
+        EXPECT_CALL(dependencyLocatorMock, locate(_, _))
+            .WillRepeatedly(ReturnArg<0>());
+        EXPECT_CALL(shaderCompilerMock, compileFile(stdType, filename))
+            .Times(1).WillOnce(Return(dummyShader));
+        EXPECT_CALL(shaderCompilerMock, compileFile(stdType, QString("deps1")))
+            .Times(1).WillOnce(Return(dep1));
+        EXPECT_CALL(shaderCompilerMock, compileFile(stdType, QString("deps2")))
+            .Times(1).WillOnce(Return(dep2));
+
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderProgramCompiler->compileFile(stdType, filename));
+
+        assertCleanCompilationAndLinkage(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(3, compiled->shaders().size());
+    }
+
     CPPUNIT_TEST_SUITE(AnnotatedGLShaderCompilerTest);
     CPPUNIT_TEST(addsMainShaderToProgram);
     CPPUNIT_TEST(cachesCompiledShader);
     CPPUNIT_TEST(loadsDependencies);
     CPPUNIT_TEST(loadsRecursiveDependencies);
+    CPPUNIT_TEST(loadsDuplicatesOnlyOnce);
     CPPUNIT_TEST_SUITE_END();
-    // TODO loads dependency, duplicates just once
     // TODO top annotations match
     // TODO passes errors/warnings on
 

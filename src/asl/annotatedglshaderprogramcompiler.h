@@ -31,6 +31,7 @@ private:
 
     bool m_success;
     QGLShader::ShaderType m_shaderType;
+    QSet<QString> m_addedShaders;
     AnnotatedGLShaderProgram *m_programUnderConstruction;
     //AnnotatedGLShaderCompiler &m_compiler;
 };

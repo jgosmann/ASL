@@ -8,6 +8,7 @@ asl::AnnotatedGLShaderProgram * AnnotatedGLShaderProgramCompiler::compileFile(
 {
     m_success = true;
     m_shaderType = type;
+    m_addedShaders.clear();
     m_programUnderConstruction = new AnnotatedGLShaderProgram(ShaderInfo());
 
     compileAndAddShader(filename);
@@ -20,10 +21,15 @@ asl::AnnotatedGLShaderProgram * AnnotatedGLShaderProgramCompiler::compileFile(
 void AnnotatedGLShaderProgramCompiler::compileAndAddShader(
         const QString &filename)
 {
+    if (m_addedShaders.contains(filename)) {
+        return;
+    }
+
     QSharedPointer<AnnotatedGLShader> shader(
             m_shaderCache.compileFile(m_shaderType, filename));
     m_success &= m_programUnderConstruction->addSharedShader(
             qSharedPointerCast<QGLShader>(shader));
+    m_addedShaders.insert(filename);
     compileAndAddDependencies(shader->dependencies(), filename);
 }
 
