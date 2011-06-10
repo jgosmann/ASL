@@ -20,9 +20,6 @@ AnnotatedGLShader* ASLCompiler::compile(QGLShader::ShaderType type,
     m_success = shaderPrgm->compileSourceCode(source);
     m_log += shaderPrgm->log();
 
-    if (!shaderPrgm->log().isEmpty()) {
-        // TODO return false
-    }
     if (!m_success) {
         return NULL;
     }
