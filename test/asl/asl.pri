@@ -11,5 +11,4 @@ HEADERS += asl/annotatedglshadercompilermock.h \
     asl/logentry.h \
     asl/logassertions.h \
     asl/shaderparameterinfomatcher.h \
-    asl/dependencyreadermock.h
 

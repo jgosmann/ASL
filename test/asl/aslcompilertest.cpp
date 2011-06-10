@@ -8,7 +8,6 @@
 
 #include "../testenv.h"
 
-#include "dependencyreadermock.h"
 #include "logassertions.h"
 #include "logentry.h"
 #include "shaderparameterinfomatcher.h"
@@ -32,7 +31,6 @@ public:
 
     void tearDown()
     {
-        CPPUNIT_ASSERT(Mock::VerifyAndClearExpectations(&dependencyReader));
     }
 
     void logsErrorWhenCompilingInvalidShader()
@@ -800,7 +798,6 @@ private:
     static const QString LOG_WARNING;
 
     QGLPixelBuffer pixelBufferForGLContext;
-    DependencyReaderMock dependencyReader;
     asl::ASLCompiler shaderCompiler;
 };
 }
