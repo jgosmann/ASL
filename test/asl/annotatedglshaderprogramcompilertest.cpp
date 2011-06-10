@@ -49,10 +49,30 @@ public:
         CPPUNIT_ASSERT(compiled->shaders().contains(dummyShader));
     }
 
+    void cachesCompiledShader()
+    {
+        QString filename("filename");
+        AnnotatedGLShader *dummyShader = createDummyShader();
+
+        EXPECT_CALL(shaderCompilerMock, compileFile(stdType, filename))
+            .Times(1).WillOnce(Return(dummyShader));
+
+        QScopedPointer<AnnotatedGLShaderProgram> compiled1(
+                shaderProgramCompiler->compileFile(stdType, filename));
+        QScopedPointer<AnnotatedGLShaderProgram> compiled2(
+                shaderProgramCompiler->compileFile(stdType, filename));
+
+        assertCleanCompilationAndLinkage(compiled1.data());
+        assertCleanCompilationAndLinkage(compiled2.data());
+        CPPUNIT_ASSERT(compiled1->shaders().contains(dummyShader));
+        CPPUNIT_ASSERT(compiled2->shaders().contains(dummyShader));
+    }
+
 
 
     CPPUNIT_TEST_SUITE(AnnotatedGLShaderCompilerTest);
     CPPUNIT_TEST(addsMainShaderToProgram);
+    CPPUNIT_TEST(cachesCompiledShader);
     CPPUNIT_TEST_SUITE_END();
     // TODO loads dependency, duplicates just once
     // TODO top annotations match

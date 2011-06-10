@@ -10,7 +10,7 @@ asl::AnnotatedGLShaderProgram * AnnotatedGLShaderProgramCompiler::compileFile(
         new AnnotatedGLShaderProgram(ShaderInfo());
 
     QSharedPointer<AnnotatedGLShader> mainShader(
-        m_compiler.compileFile(type, filename));
+        m_shaderCache.compileFile(type, filename));
     bool success = program->addSharedShader(
         qSharedPointerCast<QGLShader>(mainShader));
 

@@ -3,6 +3,7 @@
 
 #include "annotatedglshadercompiler.h"
 #include "annotatedglshaderprogram.h"
+#include "cachedannotatedglshadercompiler.h"
 
 namespace asl
 {
@@ -10,7 +11,7 @@ class AnnotatedGLShaderProgramCompiler
 {
 public:
     AnnotatedGLShaderProgramCompiler(AnnotatedGLShaderCompiler &compiler)
-        : m_compiler(compiler) { }
+        : m_shaderCache(compiler) { }
 
     asl::AnnotatedGLShaderProgram * compileFile(QGLShader::ShaderType type,
             const QString &filename);
@@ -19,7 +20,8 @@ public:
     bool success() const { return true; }
 
 private:
-    AnnotatedGLShaderCompiler &m_compiler;
+    CachedAnnotatedGLShaderCompiler m_shaderCache;
+    //AnnotatedGLShaderCompiler &m_compiler;
 };
 
 } /* namespace asl */
