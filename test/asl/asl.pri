@@ -10,6 +10,7 @@ SOURCES += \
     asl/glvarianttest.cpp
 
 HEADERS += asl/annotatedglshadercompilermock.h \
+    asl/dependencylocatormock.h \
     asl/logentry.h \
     asl/logassertions.h \
     asl/shaderparameterinfomatcher.h \

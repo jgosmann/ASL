@@ -14,6 +14,15 @@ asl::AnnotatedGLShaderProgram * AnnotatedGLShaderProgramCompiler::compileFile(
     bool success = program->addSharedShader(
         qSharedPointerCast<QGLShader>(mainShader));
 
+    foreach (QString dependency, mainShader->dependencies()) {
+        const QString dependencyPath(
+                m_dependencyLocator.locate(dependency, filename));
+        QSharedPointer<AnnotatedGLShader> shader(
+                m_shaderCache.compileFile(type, dependencyPath));
+        success &= program->addSharedShader(
+                qSharedPointerCast<QGLShader>(shader));
+    }
+
     success &= program->link();
 
     return program;
