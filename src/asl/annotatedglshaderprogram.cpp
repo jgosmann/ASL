@@ -1,8 +1,16 @@
+
 #include "annotatedglshaderprogram.h"
 
 using namespace asl;
 
-AnnotatedGLShaderProgram::AnnotatedGLShaderProgram(const ShaderInfo &shaderInfo)
-    : QGLShaderProgram(static_cast<QObject *>(NULL)), m_shaderInfo(shaderInfo)
+bool AnnotatedGLShaderProgram::addSharedShader(
+        QSharedPointer<QGLShader> &shader)
 {
+    if (!addShader(shader.data())) {
+        return false;
+    }
+
+    m_shadersInUse.append(shader);
+    return true;
 }
+
