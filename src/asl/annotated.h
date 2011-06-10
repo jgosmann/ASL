@@ -2,22 +2,14 @@
 #define ANNOTATED_H
 
 #include <QList>
-#include <QObject>
 #include <QStringList>
 
 #include "shaderinfo.h"
 
 namespace asl
 {
-class Annotated : public QObject
+class Annotated
 {
-    Q_OBJECT
-
-    Q_PROPERTY(QString name READ name)
-    Q_PROPERTY(QString description READ description)
-    Q_PROPERTY(QStringList dependencies READ dependencies)
-    Q_PROPERTY(QList<asl::ShaderParameterInfo> parameters READ parameters)
-
 public:
     Annotated(const ShaderInfo &shaderInfo) : m_shaderInfo(shaderInfo) { }
     virtual ~Annotated() { }
@@ -38,13 +30,8 @@ public:
         return m_shaderInfo.parameters;
     }
 
-signals:
-
-public slots:
-
 private:
     const ShaderInfo m_shaderInfo;
-
 };
 }
 

@@ -7,7 +7,7 @@
 
 using namespace asl;
 
-AnnotatedGLShader* ASLCompiler::compile(QGLShader::ShaderType type,
+AnnotatedGLShader * ASLCompiler::compile(QGLShader::ShaderType type,
          const QString &source, const QString &pathOfSource)
 {
     reset();
