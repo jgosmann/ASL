@@ -69,7 +69,7 @@ bool true|false
     return KEY;
 }
 
-<READ_ANNOTATION_STRING>{notAnnotationWhitespace}([^\n*/\/]*{notAnnotationWhitespace})? {
+<READ_ANNOTATION_STRING>{notAnnotationWhitespace}(([^\n*/]|"*"[^\n/]|[^*]"/")*{notAnnotationWhitespace})? {
     aslparserlval.string = new QString(yytext);
     return ANNOTATION_STRING;
 }
