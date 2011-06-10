@@ -657,6 +657,31 @@ public:
                 parameter.withPreferredUIControls(controls));
     }
 
+    void defaultsDependciesToEmptyList()
+    {
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        assertCleanCompilation(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(QStringList(), compiled->dependencies());
+    }
+
+    void parsesDependencies()
+    {
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/** Depends: dep1, ../foo/bar */\n"
+                    + trivialShader));
+        QStringList dependencies;
+        dependencies.append("dep1");
+        dependencies.append("../foo/bar");
+        ShaderParameterInfoMatcher parameter;
+        assertCleanCompilation(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(dependencies, compiled->dependencies());
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -715,6 +740,8 @@ public:
     CPPUNIT_TEST(warnsOnDoubleRangeSpecification);
     CPPUNIT_TEST(defaultsControlAnnotationToEmptyList);
     CPPUNIT_TEST(parsesControlAnnotation);
+    CPPUNIT_TEST(defaultsDependciesToEmptyList);
+    CPPUNIT_TEST(parsesDependencies);
     CPPUNIT_TEST_SUITE_END();
 
 private:
