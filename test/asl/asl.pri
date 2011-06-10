@@ -3,6 +3,7 @@ SOURCES += asl/aslcompilertest.cpp \
     asl/cachedannotatedglshadercompilertest.cpp \
     asl/logentry.cpp \
     asl/logassertions.cpp \
+    asl/relativedependencylocatortest.cpp \
     asl/shaderparameterinfomatcher.cpp \
     asl/glvarianttest.cpp
 

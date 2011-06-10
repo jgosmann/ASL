@@ -1,18 +1,18 @@
-#ifndef DEPENDENCYREADER_H
-#define DEPENDENCYREADER_H
+#ifndef DEPENDENCYLOCATOR_H
+#define DEPENDENCYLOCATOR_H
 
 #include <QString>
 
 namespace asl
 {
-class DependencyReader
+class DependencyLocator
 {
     public:
-        virtual ~DependencyReader() { }
-        virtual QString readDependency(const QString &name,
+        virtual ~DependencyLocator() { }
+        virtual QString locate(const QString &name,
                 const QString &includingFile = QString()) = 0;
 };
 } /* namespace asl */
 
-#endif /* DEPENDENCYREADER_H */
+#endif /* DEPENDENCYLOCATOR_H */
 
