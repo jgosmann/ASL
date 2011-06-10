@@ -1,8 +1,9 @@
-#ifndef ANNOTATEDGLSHADER_H
-#define ANNOTATEDGLSHADER_H
+#ifndef ANNOTATEDGLSHADERPROGRAM_H
+#define ANNOTATEDGLSHADERPROGRAM_H
 
 #include <QGLShaderProgram>
 #include <QList>
+#include <QSharedPointer>
 #include <QStringList>
 
 #include "annotated.h"
@@ -18,13 +19,16 @@ public:
             : QGLShaderProgram(static_cast<QObject *>(NULL)),
             Annotated(shaderInfo) { }
 
+    bool addSharedShader(QSharedPointer<QGLShader> &shader);
+
 signals:
 
 public slots:
 
 private:
+    QList<QSharedPointer<QGLShader> > m_shadersInUse;
 
 };
 }
 
-#endif // ANNOTATEDGLSHADER_H
+#endif // ANNOTATEDGLSHADERPROGRAM_H

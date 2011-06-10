@@ -17,6 +17,7 @@ HEADERS += asl/shaderparameterinfo.h \
 SOURCES += \
     asl/aslcompiler.cpp \
     asl/aslpreprocessor.cpp \
+    asl/annotatedglshaderprogram.cpp \
     asl/shaderparameterinfobuilder.cpp \
     asl/gltypeinfo.cpp \
     asl/glvariant.cpp \

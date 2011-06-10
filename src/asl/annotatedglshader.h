@@ -13,7 +13,9 @@ namespace asl
 class AnnotatedGLShader : public QGLShader, public Annotated
 {
 public:
-    AnnotatedGLShader(const ShaderInfo &shaderInfo) : Annotated(shaderInfo) { };
+    AnnotatedGLShader(QGLShader::ShaderType type, const ShaderInfo &shaderInfo,
+            QObject *parent = NULL)
+        : QGLShader(type, parent), Annotated(shaderInfo) { };
 
 signals:
 

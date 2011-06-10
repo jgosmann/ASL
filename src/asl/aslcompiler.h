@@ -1,26 +1,19 @@
-#ifndef ANNOTATEDSHADERLOADER_H
-#define ANNOTATEDSHADERLOADER_H
+#ifndef ASLCOMPILER_H
+#define ASLCOMPILER_H
 
 #include <QGLShader>
 #include <QGLShaderProgram>
 #include <QSet>
-#include <QObject>
 
-#include "annotatedglshaderprogram.h"
-#include "dependencyreader.h"
+#include "annotatedglshader.h"
 
 namespace asl
 {
-class ASLCompiler : public QObject
+class ASLCompiler
 {
-    Q_OBJECT
 public:
-    explicit ASLCompiler(DependencyReader &dependencyReader,
-            QObject *parent = 0);
-
     /**
-     * Compiles and links an annotated shader program and returns a pointer to
-     * it.
+     * Compiles and links an annotated shader and returns a pointer to it.
      *
      * \note Use ASLCompiler#success() to test whether the last compilation was
      * successful. Please note that ASLCompiler#log() may return a string
@@ -33,8 +26,8 @@ public:
      * \attention You have to free the memory allocated for the shader when you
      * do not need it anymore. Use \c delete for that.
      */
-    asl::AnnotatedGLShaderProgram * compile(QGLShader::ShaderType type, const
-            QString &source, const QString &pathOfSource = "");
+    asl::AnnotatedGLShader * compile(QGLShader::ShaderType type,
+            const QString &source, const QString &pathOfSource = "");
 
     QString log() const { return m_log; }
 
@@ -44,23 +37,12 @@ public:
      */
     const bool success() const { return m_success; }
 
-signals:
-
-public slots:
-
 private:
     void reset();
-    void parseDependencies(const QStringList dependencies,
-            const QString &includingFile);
 
     QString m_log;
     bool m_success;
-
-    ShaderInfo m_shaderInfo;
-
-    DependencyReader &m_dependencyReader;
-
 };
 }
 
-#endif // ANNOTATEDSHADERLOADER_H
+#endif // ASLCOMPILER_H
