@@ -22,8 +22,16 @@ public:
     bool success() const { return true; }
 
 private:
+    void compileAndAddShader(const QString &filename);
+    void compileAndAddDependencies(const QStringList &dependencies,
+            const QString &includingFile);
+
     CachedAnnotatedGLShaderCompiler m_shaderCache;
     DependencyLocator &m_dependencyLocator;
+
+    bool m_success;
+    QGLShader::ShaderType m_shaderType;
+    AnnotatedGLShaderProgram *m_programUnderConstruction;
     //AnnotatedGLShaderCompiler &m_compiler;
 };
 
