@@ -19,7 +19,7 @@ public:
             : QGLShaderProgram(static_cast<QObject *>(NULL)),
             Annotated(shaderInfo) { }
 
-    bool addSharedShader(QSharedPointer<QGLShader> &shader);
+    bool addSharedShader(QSharedPointer<QGLShader> shader);
 
 signals:
 

@@ -3,7 +3,7 @@ HEADERS += \
     asl/annotatedglshader.h \
     asl/annotatedglshadercompiler.h \
     asl/annotatedglshaderprogram.h \
-    asl/annotatedglshaderprogrambuilder.h \
+    asl/annotatedglshaderprogramcompiler.h \
     asl/aslcompiler.h \
     asl/aslparser_internal.h \
     asl/aslpreprocessor.h \
@@ -20,6 +20,7 @@ HEADERS += \
 
 SOURCES += \
     asl/annotatedglshaderprogram.cpp \
+    asl/annotatedglshaderprogramcompiler.cpp \
     asl/aslcompiler.cpp \
     asl/aslpreprocessor.cpp \
     asl/cachedannotatedglshadercompiler.cpp \

@@ -1,4 +1,6 @@
-SOURCES += asl/aslcompilertest.cpp \
+SOURCES += \
+    asl/annotatedglshaderprogramcompilertest.cpp \
+    asl/aslcompilertest.cpp \
     asl/aslpreprocessortest.cpp \
     asl/cachedannotatedglshadercompilertest.cpp \
     asl/logentry.cpp \

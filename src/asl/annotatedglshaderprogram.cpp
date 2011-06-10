@@ -4,7 +4,7 @@
 using namespace asl;
 
 bool AnnotatedGLShaderProgram::addSharedShader(
-        QSharedPointer<QGLShader> &shader)
+        QSharedPointer<QGLShader> shader)
 {
     if (!addShader(shader.data())) {
         return false;
