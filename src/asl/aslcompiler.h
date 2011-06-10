@@ -29,6 +29,13 @@ public:
     asl::AnnotatedGLShader * compile(QGLShader::ShaderType type,
             const QString &source, const QString &pathOfSource = "");
 
+    /**
+     * Reads a file and compiles the source code. See #compile() for more
+     * information
+     */
+    asl::AnnotatedGLShader * compileFile(QGLShader::ShaderType type,
+            const QString &filename);
+
     QString log() const { return m_log; }
 
     /**
