@@ -9,9 +9,17 @@ asl::AnnotatedGLShaderProgram * AnnotatedGLShaderProgramCompiler::compileFile(
     m_success = true;
     m_shaderType = type;
     m_addedShaders.clear();
-    m_programUnderConstruction = new AnnotatedGLShaderProgram(ShaderInfo());
 
-    compileAndAddShader(filename);
+    QSharedPointer<AnnotatedGLShader> mainShader(
+            m_shaderCache.compileFile(m_shaderType, filename));
+    m_programUnderConstruction = new AnnotatedGLShaderProgram(
+            mainShader->shaderInfo());
+
+    m_success &= m_programUnderConstruction->addSharedShader(
+            qSharedPointerCast<QGLShader>(mainShader));
+    m_addedShaders.insert(filename);
+
+    compileAndAddDependencies(mainShader->dependencies(), filename);
 
     m_success &= m_programUnderConstruction->link();
 

@@ -1,15 +1,25 @@
 
 #include "../src/asl/annotatedglshaderprogramcompiler.h"
+#include "../src/asl/gltypeinfo.h"
+#include "../src/asl/shaderparameterinfobuilder.h"
 
 #include "../testenv.h"
 
 #include "annotatedglshadercompilermock.h"
 #include "dependencylocatormock.h"
+#include "shaderparameterinfomatcher.h"
 
 #include <QGLPixelBuffer>
 #include <QScopedPointer>
 
 ACTION_P(ReturnArgPrefixed, pre) { return pre + arg0; }
+
+std::ostream & operator<<(std::ostream &output,
+        const asl::ShaderParameterInfo &shaderParamInfo)
+{
+    return (output << "ShaderParameterInfo(" << shaderParamInfo.identifier
+            << ")");
+}
 
 namespace asl
 {
@@ -174,15 +184,52 @@ public:
         CPPUNIT_ASSERT_EQUAL(3, compiled->shaders().size());
     }
 
+    void shaderProgramInfoEqualsMainShaderInfo()
+    {
+        QString filename("filename");
+        ShaderInfo info;
+        info.name = "MainShader";
+        info.description = "Description";
+        info.dependencies.append("dependency");
+        ShaderParameterInfoBuilder paramBuilder;
+        paramBuilder.withIdentifier("param1");
+        paramBuilder.withType(GLTypeInfo::getFor("int"));
+        info.parameters.append(paramBuilder.build());
+
+        AnnotatedGLShader *mainShader = new AnnotatedGLShader(stdType, info);
+        mainShader->compileSourceCode("void main() { }");
+
+        AnnotatedGLShader *dependency = createDummyShader("void a() { }");
+
+        EXPECT_CALL(dependencyLocatorMock, locate(_, _))
+            .WillRepeatedly(ReturnArg<0>());
+        EXPECT_CALL(shaderCompilerMock, compileFile(stdType, filename))
+            .WillRepeatedly(Return(mainShader));
+        EXPECT_CALL(shaderCompilerMock,
+            compileFile(stdType, QString("dependency")))
+            .WillRepeatedly(Return(dependency));
+
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderProgramCompiler->compileFile(stdType, filename));
+
+        assertCleanCompilationAndLinkage(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(info.name, compiled->name());
+        CPPUNIT_ASSERT_EQUAL(info.description, compiled->description());
+        CPPUNIT_ASSERT_EQUAL(info.dependencies, compiled->dependencies());
+        CPPUNIT_ASSERT_EQUAL(info.parameters, compiled->parameters());
+    }
+
     CPPUNIT_TEST_SUITE(AnnotatedGLShaderCompilerTest);
     CPPUNIT_TEST(addsMainShaderToProgram);
     CPPUNIT_TEST(cachesCompiledShader);
     CPPUNIT_TEST(loadsDependencies);
     CPPUNIT_TEST(loadsRecursiveDependencies);
     CPPUNIT_TEST(loadsDuplicatesOnlyOnce);
+    CPPUNIT_TEST(shaderProgramInfoEqualsMainShaderInfo);
     CPPUNIT_TEST_SUITE_END();
-    // TODO top annotations match
+    
     // TODO passes errors/warnings on
+    // TODO asl main
 
 private:
     void assertCleanCompilationAndLinkage(AnnotatedGLShaderProgram *program)

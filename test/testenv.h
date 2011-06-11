@@ -18,7 +18,19 @@ using namespace CppUnit;
 using namespace testing;
 
 std::ostream & operator<<(std::ostream &output, const QString &str);
-std::ostream & operator<<(std::ostream &output, const QStringList &strList);
+template<class T> std::ostream & operator<<(std::ostream &output,
+        const QList<T> &list)
+{
+    bool first = true;
+    foreach (T elem, list) {
+        if (!first) {
+            output << ", ";
+        }
+        output << elem;
+    }
+
+    return output;
+}
 
 #endif
 

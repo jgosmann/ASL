@@ -30,6 +30,8 @@ public:
         return m_shaderInfo.parameters;
     }
 
+    inline const ShaderInfo & shaderInfo() const { return m_shaderInfo; }
+
 private:
     const ShaderInfo m_shaderInfo;
 };
