@@ -15,6 +15,7 @@ public:
             AnnotatedGLShaderCompiler &compiler)
         : m_shaderCache(compiler), m_dependencyLocator(dependencyLocator),
         m_compiler(compiler) { }
+    virtual ~ASLProgramCompiler() { }
 
     /**
      * Compiles an ASL shader program with its dependencies and returns a

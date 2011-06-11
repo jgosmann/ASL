@@ -9,6 +9,7 @@ HEADERS += \
     asl/aslpreprocessor_parserinternal.h \
     asl/aslprogramcompiler.h \
     asl/cachedannotatedglshadercompiler.h \
+    asl/defaultaslprogramcompiler.h \
     asl/dependencylocator.h \
     asl/gltypeinfo.h \
     asl/gltypenames.h \
