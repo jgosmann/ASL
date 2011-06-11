@@ -47,6 +47,7 @@ public:
     bool success() const { return m_success; }
 
 private:
+    void reset();
     void compileAndAddShaderAndLoadDependencies(const QString &filename);
     QSharedPointer<AnnotatedGLShader> compileShader(const QString &filename);
     void addShader(const QString &filename,

@@ -413,6 +413,36 @@ public:
                 shaderProgramCompiler->compileFile(stdType, filename));
     }
 
+    void resetsErrorStateAndLogBeforeCompilation()
+    {
+        Expectation first = EXPECT_CALL(shaderCompilerMock,
+                compileFile(_, QString("file1")))
+            .WillRepeatedly(Return(createDummyShader()));
+        EXPECT_CALL(shaderCompilerMock, log()).After(first)
+            .WillRepeatedly(Return(QString("ERROR: 0:0: fubar\n")));
+        EXPECT_CALL(shaderCompilerMock, success()).After(first)
+            .WillRepeatedly(Return(false));
+
+        Expectation second = EXPECT_CALL(shaderCompilerMock,
+                compileFile(_, QString("file2")))
+            .Times(AtLeast(1)).After(first)
+            .WillRepeatedly(Return(createDummyShader()));
+        EXPECT_CALL(shaderCompilerMock, log()).After(second)
+            .WillRepeatedly(Return(QString("")));
+        EXPECT_CALL(shaderCompilerMock, success()).After(second)
+            .WillRepeatedly(Return(true));
+
+        QScopedPointer<AnnotatedGLShaderProgram> compiled1(
+                shaderProgramCompiler->compileFile(stdType, "file1"));
+        CPPUNIT_ASSERT(!shaderProgramCompiler->log().isEmpty());
+        CPPUNIT_ASSERT(!shaderProgramCompiler->success());
+
+        QScopedPointer<AnnotatedGLShaderProgram> compiled2(
+                shaderProgramCompiler->compileFile(stdType, "file2"));
+        CPPUNIT_ASSERT(shaderProgramCompiler->log().isEmpty());
+        CPPUNIT_ASSERT(shaderProgramCompiler->success());
+    }
+
     CPPUNIT_TEST_SUITE(ASLProgramCompilerTest);
     CPPUNIT_TEST(addsMainShaderToProgram);
     CPPUNIT_TEST(cachesCompiledShader);
@@ -428,6 +458,7 @@ public:
     CPPUNIT_TEST(linkerErrorsAppearInCompilerLog);
     CPPUNIT_TEST(definesAslMainMacroInMainShader);
     CPPUNIT_TEST(definesSourceStringNoInDependencies);
+    CPPUNIT_TEST(resetsErrorStateAndLogBeforeCompilation);
     CPPUNIT_TEST_SUITE_END();
 
 private:

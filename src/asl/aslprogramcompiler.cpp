@@ -8,9 +8,8 @@ using namespace asl;
 asl::AnnotatedGLShaderProgram * ASLProgramCompiler::compileFile(
         QGLShader::ShaderType type, const QString &filename)
 {
-    m_success = true;
+    reset();
     m_shaderType = type;
-    m_addedShaders.clear();
 
     m_compiler.prefixSourcesWith("#define ASL_MAIN\n#line 0\n");
     QSharedPointer<AnnotatedGLShader> mainShader(compileShader(filename));
@@ -25,6 +24,13 @@ asl::AnnotatedGLShaderProgram * ASLProgramCompiler::compileFile(
     m_log += m_programUnderConstruction->log();
 
     return m_programUnderConstruction;
+}
+
+void ASLProgramCompiler::reset()
+{
+    m_success = true;
+    m_log.clear();
+    m_addedShaders.clear();
 }
 
 void ASLProgramCompiler::compileAndAddShaderAndLoadDependencies(
