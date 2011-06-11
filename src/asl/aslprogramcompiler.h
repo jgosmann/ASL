@@ -16,6 +16,29 @@ public:
         : m_shaderCache(compiler), m_dependencyLocator(dependencyLocator),
         m_compiler(compiler) { }
 
+    /**
+     * Compiles an ASL shader program with its dependencies and returns a
+     * pointer to it.
+     *
+     * \note Use #success() to test whether the last compilation was successful.
+     * Please note that #log() may return a string containing warnings and
+     * information messages (but not errors) even if the compilation was
+     * successful. Using AnnotatedGLShaderProgram#log() or
+     * AnnotatedGLShaderProgram#success() will provide you only with information
+     * about the linking as normal OpenGL shader. Any information about the
+     * compilation of the Annotated Shading Language or individual shaders will
+     * be missing.
+     *
+     * \note Use always `/' as an universal directory separator for the \a
+     * filename argument.
+     *
+     * \attention You have to free the memory allocated for the shader when you
+     * do not need it anymore. Use \c delete for that.
+     *
+     * \note All loaded shaders will be cached and the same instance will be
+     * used in each shader program using the shader. The memory of a shader will
+     * be freed after destroying the last shader program using the shader.
+     */
     asl::AnnotatedGLShaderProgram * compileFile(QGLShader::ShaderType type,
             const QString &filename);
 
