@@ -18,8 +18,8 @@ public:
     asl::AnnotatedGLShaderProgram * compileFile(QGLShader::ShaderType type,
             const QString &filename);
 
-    const QString log() const { return QString(); }
-    bool success() const { return true; }
+    const QString log() const { return m_log; }
+    bool success() const { return m_success; }
 
 private:
     void compileAndAddShader(const QString &filename);
@@ -33,7 +33,8 @@ private:
     QGLShader::ShaderType m_shaderType;
     QSet<QString> m_addedShaders;
     AnnotatedGLShaderProgram *m_programUnderConstruction;
-    //AnnotatedGLShaderCompiler &m_compiler;
+
+    QString m_log;
 };
 
 } /* namespace asl */

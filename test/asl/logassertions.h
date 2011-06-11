@@ -9,7 +9,7 @@ namespace asl
 {
 
 void assertLogContains(const QString &log, const LogEntry &entry);
-
+void assertLogContainsEntryOfType(const QString &log, const QString &type);
 } /* namespace asl */
 
 #endif /* LOGASSERTIONS_H */

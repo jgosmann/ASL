@@ -7,6 +7,8 @@
 
 #include "annotatedglshadercompilermock.h"
 #include "dependencylocatormock.h"
+#include "logassertions.h"
+#include "logentry.h"
 #include "shaderparameterinfomatcher.h"
 
 #include <QGLPixelBuffer>
@@ -32,7 +34,13 @@ class AnnotatedGLShaderCompilerTest : public TestFixture
 {
 public:
     AnnotatedGLShaderCompilerTest()
-        : pixelBufferForGLContext(1, 1), stdType(QGLShader::Fragment) { }
+        : pixelBufferForGLContext(1, 1), stdType(QGLShader::Fragment)
+    {
+        ON_CALL(dependencyLocatorMock, locate(_, _))
+            .WillByDefault(ReturnArg<0>());
+        ON_CALL(shaderCompilerMock, log()).WillByDefault(Return(QString()));
+        ON_CALL(shaderCompilerMock, success()).WillByDefault(Return(true));
+    }
 
     void setUp()
     {
@@ -219,6 +227,122 @@ public:
         CPPUNIT_ASSERT_EQUAL(info.parameters, compiled->parameters());
     }
 
+    void mainShaderWarningsAppearInCompilerLog()
+    {
+        AnnotatedGLShader *shader = createDummyShader();
+
+        EXPECT_CALL(shaderCompilerMock, compileFile(_, _))
+            .WillRepeatedly(Return(shader));
+        EXPECT_CALL(shaderCompilerMock, log()).WillRepeatedly(Return(QString(
+                LOG_WARNING + ": 13:37: foobaz")));
+
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderProgramCompiler->compileFile(stdType, ""));
+
+        CPPUNIT_ASSERT(shaderProgramCompiler->success());
+        assertLogged(LogEntry().withType(LOG_WARNING).occuringAt(13, 37)
+                .withMessageMatching(QRegExp("foobaz")));
+    }
+
+    void dependencyWarningsAppearInCompilerLog()
+    {
+        QStringList dependencies;
+        dependencies.append("dependency");
+        AnnotatedGLShader *shader = createDummyShader("void main() { }",
+                dependencies);
+        AnnotatedGLShader *dependency = createDummyShader("void a() { }");
+
+        InSequence seq;
+        EXPECT_CALL(shaderCompilerMock,
+            compileFile(_, Ne(QString("dependency"))))
+            .Times(1).WillRepeatedly(Return(shader));
+        EXPECT_CALL(shaderCompilerMock, log())
+            .WillRepeatedly(Return(QString()));
+        EXPECT_CALL(shaderCompilerMock, compileFile(_, QString("dependency")))
+            .Times(1).WillRepeatedly(Return(dependency));
+        EXPECT_CALL(shaderCompilerMock, log()).WillRepeatedly(Return(QString(
+                LOG_WARNING + ": 13:37: foobaz")));
+
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderProgramCompiler->compileFile(stdType, ""));
+
+        CPPUNIT_ASSERT(shaderProgramCompiler->success());
+        assertLogged(LogEntry().withType(LOG_WARNING).occuringAt(13, 37)
+                .withMessageMatching(QRegExp("foobaz")));
+    }
+
+    void mainShaderErrorsAppearInCompilerLog()
+    {
+        AnnotatedGLShader *shader = createDummyShader();
+
+        EXPECT_CALL(shaderCompilerMock, compileFile(_, _))
+            .WillRepeatedly(Return(shader));
+        EXPECT_CALL(shaderCompilerMock, success())
+            .WillRepeatedly(Return(false));
+        EXPECT_CALL(shaderCompilerMock, log()).WillRepeatedly(Return(QString(
+                LOG_ERROR + ": 13:37: foobaz")));
+
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderProgramCompiler->compileFile(stdType, ""));
+
+        CPPUNIT_ASSERT(!shaderProgramCompiler->success());
+        assertLogged(LogEntry().withType(LOG_ERROR).occuringAt(13, 37)
+                .withMessageMatching(QRegExp("foobaz")));
+    }
+
+    void dependencyErrorsAppearInCompilerLog()
+    {
+        QStringList dependencies;
+        dependencies.append("dependency");
+        AnnotatedGLShader *shader = createDummyShader("void main() { }",
+                dependencies);
+        AnnotatedGLShader *dependency = createDummyShader("void a() { }");
+
+        Expectation mainCall = EXPECT_CALL(shaderCompilerMock,
+            compileFile(_, Ne(QString("dependency"))))
+            .Times(1).WillOnce(Return(shader));
+        EXPECT_CALL(shaderCompilerMock, log())
+            .WillRepeatedly(Return(QString()));
+        EXPECT_CALL(shaderCompilerMock, success()).After(mainCall)
+            .WillRepeatedly(Return(true));
+        Expectation failingCall = EXPECT_CALL(shaderCompilerMock,
+            compileFile(_, QString("dependency"))).Times(1).After(mainCall)
+            .WillOnce(Return(dependency));
+        EXPECT_CALL(shaderCompilerMock, log()).After(failingCall)
+            .WillRepeatedly(Return(QString(LOG_ERROR + ": 13:37: foobaz")));
+        EXPECT_CALL(shaderCompilerMock, success()).After(failingCall)
+            .WillRepeatedly(Return(false));
+
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderProgramCompiler->compileFile(stdType, ""));
+
+        CPPUNIT_ASSERT(!shaderProgramCompiler->success());
+        assertLogged(LogEntry().withType(LOG_ERROR).occuringAt(13, 37)
+                .withMessageMatching(QRegExp("foobaz")));
+    }
+
+    void linkerErrorsAppearInCompilerLog()
+    {
+        QStringList dependencies;
+        dependencies.append("dependency");
+        AnnotatedGLShader *shader = createDummyShader("void main() { }",
+                dependencies);
+        AnnotatedGLShader *dependency = createDummyShader("void main() { }");
+
+        EXPECT_CALL(shaderCompilerMock,
+            compileFile(_, Ne(QString("dependency"))))
+            .Times(1).WillOnce(Return(shader));
+        EXPECT_CALL(shaderCompilerMock,
+            compileFile(_, QString("dependency")))
+            .Times(1).WillOnce(Return(dependency));
+
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderProgramCompiler->compileFile(stdType, ""));
+
+        CPPUNIT_ASSERT(!shaderProgramCompiler->success());
+        assertLogContainsEntryOfType(shaderProgramCompiler->log(), LOG_ERROR);
+    }
+
     CPPUNIT_TEST_SUITE(AnnotatedGLShaderCompilerTest);
     CPPUNIT_TEST(addsMainShaderToProgram);
     CPPUNIT_TEST(cachesCompiledShader);
@@ -226,8 +350,13 @@ public:
     CPPUNIT_TEST(loadsRecursiveDependencies);
     CPPUNIT_TEST(loadsDuplicatesOnlyOnce);
     CPPUNIT_TEST(shaderProgramInfoEqualsMainShaderInfo);
+    CPPUNIT_TEST(mainShaderWarningsAppearInCompilerLog);
+    CPPUNIT_TEST(dependencyWarningsAppearInCompilerLog);
+    CPPUNIT_TEST(mainShaderErrorsAppearInCompilerLog);
+    CPPUNIT_TEST(dependencyErrorsAppearInCompilerLog);
+    CPPUNIT_TEST(linkerErrorsAppearInCompilerLog);
     CPPUNIT_TEST_SUITE_END();
-    
+
     // TODO passes errors/warnings on
     // TODO asl main
 
@@ -238,6 +367,11 @@ private:
         CPPUNIT_ASSERT(shaderProgramCompiler->log().isEmpty());
         CPPUNIT_ASSERT(program->log().isEmpty());
         CPPUNIT_ASSERT(program->isLinked());
+    }
+
+    void assertLogged(const asl::LogEntry &entry)
+    {
+        asl::assertLogContains(shaderProgramCompiler->log(), entry);
     }
 
     AnnotatedGLShader * createDummyShader(
@@ -251,10 +385,13 @@ private:
         return shader;
     }
 
+    static const QString LOG_ERROR;
+    static const QString LOG_WARNING;
+
     QGLPixelBuffer pixelBufferForGLContext;
     const QGLShader::ShaderType stdType;
-    AnnotatedGLShaderCompilerMock shaderCompilerMock;
-    DependencyLocatorMock dependencyLocatorMock;
+    NiceMock<AnnotatedGLShaderCompilerMock> shaderCompilerMock;
+    NiceMock<DependencyLocatorMock> dependencyLocatorMock;
     AnnotatedGLShaderProgramCompiler *shaderProgramCompiler;
 };
 }
@@ -262,4 +399,7 @@ private:
 CPPUNIT_TEST_SUITE_REGISTRATION(asl::AnnotatedGLShaderCompilerTest);
 
 using namespace asl;
+
+const QString AnnotatedGLShaderCompilerTest::LOG_ERROR("ERROR");
+const QString AnnotatedGLShaderCompilerTest::LOG_WARNING("WARNING");
 

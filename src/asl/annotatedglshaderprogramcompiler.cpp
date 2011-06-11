@@ -12,6 +12,8 @@ asl::AnnotatedGLShaderProgram * AnnotatedGLShaderProgramCompiler::compileFile(
 
     QSharedPointer<AnnotatedGLShader> mainShader(
             m_shaderCache.compileFile(m_shaderType, filename));
+    m_log += m_shaderCache.log();
+    m_success &= m_shaderCache.success();
     m_programUnderConstruction = new AnnotatedGLShaderProgram(
             mainShader->shaderInfo());
 
@@ -22,6 +24,7 @@ asl::AnnotatedGLShaderProgram * AnnotatedGLShaderProgramCompiler::compileFile(
     compileAndAddDependencies(mainShader->dependencies(), filename);
 
     m_success &= m_programUnderConstruction->link();
+    m_log += m_programUnderConstruction->log();
 
     return m_programUnderConstruction;
 }
@@ -35,6 +38,8 @@ void AnnotatedGLShaderProgramCompiler::compileAndAddShader(
 
     QSharedPointer<AnnotatedGLShader> shader(
             m_shaderCache.compileFile(m_shaderType, filename));
+    m_log += m_shaderCache.log();
+    m_success &= m_shaderCache.success();
     m_success &= m_programUnderConstruction->addSharedShader(
             qSharedPointerCast<QGLShader>(shader));
     m_addedShaders.insert(filename);
