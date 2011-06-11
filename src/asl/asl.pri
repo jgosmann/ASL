@@ -3,11 +3,11 @@ HEADERS += \
     asl/annotatedglshader.h \
     asl/annotatedglshadercompiler.h \
     asl/annotatedglshaderprogram.h \
-    asl/annotatedglshaderprogramcompiler.h \
     asl/aslcompiler.h \
     asl/aslparser_internal.h \
     asl/aslpreprocessor.h \
     asl/aslpreprocessor_parserinternal.h \
+    asl/aslprogramcompiler.h \
     asl/cachedannotatedglshadercompiler.h \
     asl/dependencylocator.h \
     asl/gltypeinfo.h \
@@ -20,9 +20,9 @@ HEADERS += \
 
 SOURCES += \
     asl/annotatedglshaderprogram.cpp \
-    asl/annotatedglshaderprogramcompiler.cpp \
     asl/aslcompiler.cpp \
     asl/aslpreprocessor.cpp \
+    asl/aslprogramcompiler.cpp \
     asl/cachedannotatedglshadercompiler.cpp \
     asl/gltypeinfo.cpp \
     asl/gltypenames.cpp \

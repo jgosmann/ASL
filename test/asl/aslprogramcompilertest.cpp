@@ -1,5 +1,5 @@
 
-#include "../src/asl/annotatedglshaderprogramcompiler.h"
+#include "../src/asl/aslprogramcompiler.h"
 #include "../src/asl/gltypeinfo.h"
 #include "../src/asl/shaderparameterinfobuilder.h"
 
@@ -30,10 +30,10 @@ namespace asl
  * version and we want to be able to run the tests on as many systems as
  * possible.
  */
-class AnnotatedGLShaderCompilerTest : public TestFixture
+class ASLProgramCompilerTest : public TestFixture
 {
 public:
-    AnnotatedGLShaderCompilerTest()
+    ASLProgramCompilerTest()
         : pixelBufferForGLContext(1, 1), stdType(QGLShader::Fragment)
     {
         ON_CALL(dependencyLocatorMock, locate(_, _))
@@ -45,7 +45,7 @@ public:
     void setUp()
     {
         pixelBufferForGLContext.makeCurrent();
-        shaderProgramCompiler = new AnnotatedGLShaderProgramCompiler(
+        shaderProgramCompiler = new ASLProgramCompiler(
                 shaderCompilerMock, dependencyLocatorMock);
     }
 
@@ -413,7 +413,7 @@ public:
                 shaderProgramCompiler->compileFile(stdType, filename));
     }
 
-    CPPUNIT_TEST_SUITE(AnnotatedGLShaderCompilerTest);
+    CPPUNIT_TEST_SUITE(ASLProgramCompilerTest);
     CPPUNIT_TEST(addsMainShaderToProgram);
     CPPUNIT_TEST(cachesCompiledShader);
     CPPUNIT_TEST(loadsDependencies);
@@ -471,15 +471,15 @@ private:
     const QGLShader::ShaderType stdType;
     NiceMock<AnnotatedGLShaderCompilerMock> shaderCompilerMock;
     NiceMock<DependencyLocatorMock> dependencyLocatorMock;
-    AnnotatedGLShaderProgramCompiler *shaderProgramCompiler;
+    ASLProgramCompiler *shaderProgramCompiler;
 };
 }
 
-CPPUNIT_TEST_SUITE_REGISTRATION(asl::AnnotatedGLShaderCompilerTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(asl::ASLProgramCompilerTest);
 
 using namespace asl;
 
-const QString AnnotatedGLShaderCompilerTest::LOG_ERROR("ERROR");
-const QString AnnotatedGLShaderCompilerTest::LOG_WARNING("WARNING");
-const QString AnnotatedGLShaderCompilerTest::LOG_INFO("INFO");
+const QString ASLProgramCompilerTest::LOG_ERROR("ERROR");
+const QString ASLProgramCompilerTest::LOG_WARNING("WARNING");
+const QString ASLProgramCompilerTest::LOG_INFO("INFO");
 

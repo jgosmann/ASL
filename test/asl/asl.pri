@@ -1,7 +1,7 @@
 SOURCES += \
-    asl/annotatedglshaderprogramcompilertest.cpp \
     asl/aslcompilertest.cpp \
     asl/aslpreprocessortest.cpp \
+    asl/aslprogramcompilertest.cpp \
     asl/cachedannotatedglshadercompilertest.cpp \
     asl/logentry.cpp \
     asl/logassertions.cpp \

@@ -1,11 +1,11 @@
 
-#include "annotatedglshaderprogramcompiler.h"
+#include "aslprogramcompiler.h"
 
 #include <QStringBuilder>
 
 using namespace asl;
 
-asl::AnnotatedGLShaderProgram * AnnotatedGLShaderProgramCompiler::compileFile(
+asl::AnnotatedGLShaderProgram * ASLProgramCompiler::compileFile(
         QGLShader::ShaderType type, const QString &filename)
 {
     m_success = true;
@@ -32,7 +32,7 @@ asl::AnnotatedGLShaderProgram * AnnotatedGLShaderProgramCompiler::compileFile(
     return m_programUnderConstruction;
 }
 
-void AnnotatedGLShaderProgramCompiler::compileAndAddShader(
+void ASLProgramCompiler::compileAndAddShader(
         const QString &filename)
 {
     if (m_addedShaders.contains(filename)) {
@@ -56,7 +56,7 @@ void AnnotatedGLShaderProgramCompiler::compileAndAddShader(
     compileAndAddDependencies(shader->dependencies(), filename);
 }
 
-void AnnotatedGLShaderProgramCompiler::compileAndAddDependencies(
+void ASLProgramCompiler::compileAndAddDependencies(
         const QStringList &dependencies, const QString &includingFile)
 {
     foreach (QString dependency, dependencies) {

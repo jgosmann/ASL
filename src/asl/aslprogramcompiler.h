@@ -1,5 +1,5 @@
-#ifndef ANNOTATEDGLSHADERPROGRAMCOMPILER_H
-#define ANNOTATEDGLSHADERPROGRAMCOMPILER_H
+#ifndef ASLPROGRAMCOMPILER_H
+#define ASLPROGRAMCOMPILER_H
 
 #include "annotatedglshadercompiler.h"
 #include "annotatedglshaderprogram.h"
@@ -8,10 +8,10 @@
 
 namespace asl
 {
-class AnnotatedGLShaderProgramCompiler
+class ASLProgramCompiler
 {
 public:
-    AnnotatedGLShaderProgramCompiler(AnnotatedGLShaderCompiler &compiler,
+    ASLProgramCompiler(AnnotatedGLShaderCompiler &compiler,
             DependencyLocator &dependencyLocator)
         : m_shaderCache(compiler), m_dependencyLocator(dependencyLocator),
         m_compiler(compiler) { }
@@ -42,5 +42,5 @@ private:
 } /* namespace asl */
 
 
-#endif /* ANNOTATEDGLSHADERPROGRAMCOMPILER_H */
+#endif /* ASLPROGRAMCOMPILER_H */
 
