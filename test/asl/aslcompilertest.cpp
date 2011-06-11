@@ -198,7 +198,7 @@ public:
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/***/\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         assertHasExactlyOneParameterMatching(compiled.data(),
@@ -217,6 +217,20 @@ public:
         ShaderParameterInfoMatcher parameter;
         assertHasExactlyOneParameterMatching(compiled.data(),
                 parameter.withType(GLTypeInfo::getFor("int")));
+    }
+
+    void parsesUniformAnnotationWithInitialization()
+    {
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "#version 120\n"
+                    "/***/\n"
+                    "/***/\n"
+                    "uniform " + QString(INT) + " param = 3;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withIdentifier("param"));
     }
 
     void doesNotLeakAnnotationsFromPreviousCompilation()
@@ -714,6 +728,7 @@ public:
     CPPUNIT_TEST(parsesParameterName);
     CPPUNIT_TEST(defaultsParameterNameToIdentifier);
     CPPUNIT_TEST(parsesParameterType);
+    CPPUNIT_TEST(parsesUniformAnnotationWithInitialization);
     CPPUNIT_TEST(doesNotLeakAnnotationsFromPreviousCompilation);
     CPPUNIT_TEST(logsWarningIfAnnotatedUnsupportedType);
     CPPUNIT_TEST(logsWarningIfAslProgramStartsNotWithAslComment);

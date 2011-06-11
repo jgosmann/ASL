@@ -111,7 +111,7 @@ ppline:
             sourceStringNo = $3;
         }
 
-parameter: annotationComment UNIFORM datatype IDENTIFIER ';' {
+parameter: annotationComment UNIFORM datatype IDENTIFIER parameterEnd {
             parameterInfoBuilder.withIdentifier(*$4);
             try {
                 shaderInfo.parameters.append(parameterInfoBuilder.build());
@@ -123,6 +123,8 @@ parameter: annotationComment UNIFORM datatype IDENTIFIER ';' {
     | annotationComment error {
             warn("ASL comment is not preceding valid uniform declaration.");
         }
+
+parameterEnd: ';' | '=';
 
 datatype: IDENTIFIER {
             try {

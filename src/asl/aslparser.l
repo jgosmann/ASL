@@ -104,7 +104,7 @@ bool true|false
     return IDENTIFIER;
 }
 
-<READ_UNIFORM>";" {
+<READ_UNIFORM>[;=] {
     BEGIN INITIAL;
     return yytext[0];
 }
