@@ -21,7 +21,9 @@ QSharedPointer<AnnotatedGLShader> CachedAnnotatedGLShaderCompiler::compileFile(
     if (shader.isNull()) {
         shader = QSharedPointer<AnnotatedGLShader>(
                 m_compiler.compileFile(type, filename));
-        m_cache[filename] = shader;
+        if (m_compiler.success()) {
+            m_cache[filename] = shader;
+        }
     }
 
     return shader;
