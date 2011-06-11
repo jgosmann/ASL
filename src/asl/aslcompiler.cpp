@@ -2,7 +2,6 @@
 #include "aslparser_internal.h"
 
 #include <QFile>
-#include <QScopedPointer>
 #include <QTextStream>
 
 using namespace asl;
@@ -15,16 +14,11 @@ AnnotatedGLShader * ASLCompiler::compile(QGLShader::ShaderType type,
     ShaderInfo shaderInfo = parserinternal::parse(source, pathOfSource);
     m_log += parserinternal::log;
 
-    QScopedPointer<AnnotatedGLShader> shaderPrgm(
-            new AnnotatedGLShader(type, shaderInfo));
+    AnnotatedGLShader *shaderPrgm = new AnnotatedGLShader(type, shaderInfo);
     m_success = shaderPrgm->compileSourceCode(source);
     m_log += shaderPrgm->log();
 
-    if (!m_success) {
-        return NULL;
-    }
-
-    return shaderPrgm.take();
+    return shaderPrgm;
 }
 
 asl::AnnotatedGLShader * ASLCompiler::compileFile(QGLShader::ShaderType type,
