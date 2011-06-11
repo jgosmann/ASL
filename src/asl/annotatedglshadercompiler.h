@@ -38,6 +38,8 @@ public:
     virtual asl::AnnotatedGLShader * compileFile(QGLShader::ShaderType type,
             const QString &filename) = 0;
 
+    virtual void prefixSourcesWith(const QString &prefix) = 0;
+
     virtual QString log() const = 0;
 
     /**

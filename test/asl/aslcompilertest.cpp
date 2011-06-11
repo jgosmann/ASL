@@ -31,6 +31,7 @@ public:
 
     void tearDown()
     {
+        shaderCompiler.prefixSourcesWith("");
     }
 
     void logsErrorWhenCompilingInvalidShader()
@@ -682,6 +683,15 @@ public:
         CPPUNIT_ASSERT_EQUAL(dependencies, compiled->dependencies());
     }
 
+    void prefixesSources()
+    {
+        shaderCompiler.prefixSourcesWith("/** ShaderName: foo */\n");
+        QScopedPointer<AnnotatedGLShader> compiled(
+            shaderCompiler.compile(QGLShader::Fragment, trivialShader));
+        assertCleanCompilation(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(QString("foo"), compiled->name());
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -742,6 +752,7 @@ public:
     CPPUNIT_TEST(parsesControlAnnotation);
     CPPUNIT_TEST(defaultsDependciesToEmptyList);
     CPPUNIT_TEST(parsesDependencies);
+    CPPUNIT_TEST(prefixesSources);
     CPPUNIT_TEST_SUITE_END();
 
 private:

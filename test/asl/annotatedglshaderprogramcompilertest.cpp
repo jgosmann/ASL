@@ -156,6 +156,40 @@ public:
         CPPUNIT_ASSERT(compiled->shaders().contains(depSubmain));
     }
 
+    void logsDependencySourceStringNumbers()
+    {
+        QStringList depsMain, depsSubmain;
+        depsMain.append("depMain");
+        depsSubmain.append("depSubmain");
+
+        QString filename("filename");
+        AnnotatedGLShader *dummyShader = createDummyShader(
+                "void main() { }", depsMain);
+        AnnotatedGLShader *depMain = createDummyShader("void a() { }",
+                depsSubmain);
+        AnnotatedGLShader *depSubmain = createDummyShader("void b() { }");
+
+        EXPECT_CALL(dependencyLocatorMock, locate(_, _))
+            .WillRepeatedly(ReturnArgPrefixed(QString("path/to/")));
+        EXPECT_CALL(shaderCompilerMock, compileFile(stdType, filename))
+            .Times(1).WillOnce(Return(dummyShader));
+        EXPECT_CALL(shaderCompilerMock,
+                compileFile(stdType, QString("path/to/depMain")))
+            .Times(1).WillOnce(Return(depMain));
+        EXPECT_CALL(shaderCompilerMock,
+                compileFile(stdType, QString("path/to/depSubmain")))
+            .Times(1).WillOnce(Return(depSubmain));
+
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderProgramCompiler->compileFile(stdType, filename));
+
+        assertCleanCompilationAndLinkage(compiled.data());
+        assertLogged(LogEntry().withType(LOG_INFO).occuringIn(0)
+                .withMessageMatching(QRegExp(".*depMain.*1.*")));
+        assertLogged(LogEntry().withType(LOG_INFO).occuringIn(1)
+                .withMessageMatching(QRegExp(".*depSubmain.*2.*")));
+    }
+
     void loadsDuplicatesOnlyOnce()
     {
         QString filename("filename");
@@ -343,11 +377,48 @@ public:
         assertLogContainsEntryOfType(shaderProgramCompiler->log(), LOG_ERROR);
     }
 
+    void definesAslMainMacroInMainShader()
+    {
+        Expectation prefixCall =
+            EXPECT_CALL(shaderCompilerMock, prefixSourcesWith(QString(
+                "#define ASL_MAIN\n"
+                "#line 0\n"))).Times(AtLeast(1));
+        EXPECT_CALL(shaderCompilerMock, compileFile(_, _))
+            .After(prefixCall).WillRepeatedly(Return(createDummyShader()));
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderProgramCompiler->compileFile(stdType, "file"));
+    }
+
+    void definesSourceStringNoInDependencies()
+    {
+        QString filename("filename");
+        QString dependency("dependency");
+        QStringList dependencies;
+        dependencies.append(dependency);
+
+        Expectation mainPrefix = EXPECT_CALL(shaderCompilerMock,
+                prefixSourcesWith(_)).Times(1);
+        Expectation compileMain = EXPECT_CALL(shaderCompilerMock,
+                compileFile(_, filename))
+            .After(mainPrefix).WillRepeatedly(Return(
+                        createDummyShader("void main() { }", dependencies)));
+        Expectation dependencyPrefix = EXPECT_CALL(shaderCompilerMock,
+                prefixSourcesWith(QString("#line 0 1\n")))
+            .Times(AtLeast(1)).After(compileMain);
+        EXPECT_CALL(shaderCompilerMock, compileFile(_, dependency))
+            .After(dependencyPrefix).WillRepeatedly(Return(
+                        createDummyShader("void a() { }")));
+
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderProgramCompiler->compileFile(stdType, filename));
+    }
+
     CPPUNIT_TEST_SUITE(AnnotatedGLShaderCompilerTest);
     CPPUNIT_TEST(addsMainShaderToProgram);
     CPPUNIT_TEST(cachesCompiledShader);
     CPPUNIT_TEST(loadsDependencies);
     CPPUNIT_TEST(loadsRecursiveDependencies);
+    CPPUNIT_TEST(logsDependencySourceStringNumbers);
     CPPUNIT_TEST(loadsDuplicatesOnlyOnce);
     CPPUNIT_TEST(shaderProgramInfoEqualsMainShaderInfo);
     CPPUNIT_TEST(mainShaderWarningsAppearInCompilerLog);
@@ -355,18 +426,25 @@ public:
     CPPUNIT_TEST(mainShaderErrorsAppearInCompilerLog);
     CPPUNIT_TEST(dependencyErrorsAppearInCompilerLog);
     CPPUNIT_TEST(linkerErrorsAppearInCompilerLog);
+    CPPUNIT_TEST(definesAslMainMacroInMainShader);
+    CPPUNIT_TEST(definesSourceStringNoInDependencies);
     CPPUNIT_TEST_SUITE_END();
-
-    // TODO passes errors/warnings on
-    // TODO asl main
 
 private:
     void assertCleanCompilationAndLinkage(AnnotatedGLShaderProgram *program)
     {
         CPPUNIT_ASSERT(shaderProgramCompiler->success());
-        CPPUNIT_ASSERT(shaderProgramCompiler->log().isEmpty());
+        assertLogContainsOnlyInfo();
         CPPUNIT_ASSERT(program->log().isEmpty());
         CPPUNIT_ASSERT(program->isLinked());
+    }
+
+    void assertLogContainsOnlyInfo() {
+        const QStringList lines = shaderProgramCompiler->log()
+            .split(QRegExp("[\r\n]"));
+        foreach (QString line, lines) {
+            CPPUNIT_ASSERT(line.startsWith("INFO:") || line.isEmpty());
+        }
     }
 
     void assertLogged(const asl::LogEntry &entry)
@@ -387,6 +465,7 @@ private:
 
     static const QString LOG_ERROR;
     static const QString LOG_WARNING;
+    static const QString LOG_INFO;
 
     QGLPixelBuffer pixelBufferForGLContext;
     const QGLShader::ShaderType stdType;
@@ -402,4 +481,5 @@ using namespace asl;
 
 const QString AnnotatedGLShaderCompilerTest::LOG_ERROR("ERROR");
 const QString AnnotatedGLShaderCompilerTest::LOG_WARNING("WARNING");
+const QString AnnotatedGLShaderCompilerTest::LOG_INFO("INFO");
 

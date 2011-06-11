@@ -1,6 +1,8 @@
 
 #include "annotatedglshaderprogramcompiler.h"
 
+#include <QStringBuilder>
+
 using namespace asl;
 
 asl::AnnotatedGLShaderProgram * AnnotatedGLShaderProgramCompiler::compileFile(
@@ -10,6 +12,7 @@ asl::AnnotatedGLShaderProgram * AnnotatedGLShaderProgramCompiler::compileFile(
     m_shaderType = type;
     m_addedShaders.clear();
 
+    m_compiler.prefixSourcesWith("#define ASL_MAIN\n#line 0\n");
     QSharedPointer<AnnotatedGLShader> mainShader(
             m_shaderCache.compileFile(m_shaderType, filename));
     m_log += m_shaderCache.log();
@@ -36,6 +39,13 @@ void AnnotatedGLShaderProgramCompiler::compileAndAddShader(
         return;
     }
 
+    unsigned int sourceStringNo = m_addedShaders.size();
+    m_log = m_log % "INFO: " % QString::number(sourceStringNo - 1) % ":0: "
+        % "Compiling \"" % filename % "\" as source string number "
+        % QString::number(sourceStringNo) % ".\n";
+
+    m_compiler.prefixSourcesWith(
+            "#line 0 " + QString::number(sourceStringNo) + "\n");
     QSharedPointer<AnnotatedGLShader> shader(
             m_shaderCache.compileFile(m_shaderType, filename));
     m_log += m_shaderCache.log();

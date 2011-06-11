@@ -13,7 +13,8 @@ class AnnotatedGLShaderProgramCompiler
 public:
     AnnotatedGLShaderProgramCompiler(AnnotatedGLShaderCompiler &compiler,
             DependencyLocator &dependencyLocator)
-        : m_shaderCache(compiler), m_dependencyLocator(dependencyLocator) { }
+        : m_shaderCache(compiler), m_dependencyLocator(dependencyLocator),
+        m_compiler(compiler) { }
 
     asl::AnnotatedGLShaderProgram * compileFile(QGLShader::ShaderType type,
             const QString &filename);
@@ -28,6 +29,7 @@ private:
 
     CachedAnnotatedGLShaderCompiler m_shaderCache;
     DependencyLocator &m_dependencyLocator;
+    AnnotatedGLShaderCompiler &m_compiler;
 
     bool m_success;
     QGLShader::ShaderType m_shaderType;

@@ -11,11 +11,13 @@ AnnotatedGLShader * ASLCompiler::compile(QGLShader::ShaderType type,
 {
     reset();
 
-    ShaderInfo shaderInfo = parserinternal::parse(source, pathOfSource);
+    const QString prefixedSource(m_prefix + source);
+
+    ShaderInfo shaderInfo = parserinternal::parse(prefixedSource, pathOfSource);
     m_log += parserinternal::log;
 
     AnnotatedGLShader *shaderPrgm = new AnnotatedGLShader(type, shaderInfo);
-    m_success = shaderPrgm->compileSourceCode(source);
+    m_success = shaderPrgm->compileSourceCode(prefixedSource);
     m_log += shaderPrgm->log();
 
     return shaderPrgm;
