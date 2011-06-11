@@ -13,17 +13,12 @@ asl::AnnotatedGLShaderProgram * ASLProgramCompiler::compileFile(
     m_addedShaders.clear();
 
     m_compiler.prefixSourcesWith("#define ASL_MAIN\n#line 0\n");
-    QSharedPointer<AnnotatedGLShader> mainShader(
-            m_shaderCache.compileFile(m_shaderType, filename));
-    m_log += m_shaderCache.log();
-    m_success &= m_shaderCache.success();
+    QSharedPointer<AnnotatedGLShader> mainShader(compileShader(filename));
+
     m_programUnderConstruction = new AnnotatedGLShaderProgram(
             mainShader->shaderInfo());
 
-    m_success &= m_programUnderConstruction->addSharedShader(
-            qSharedPointerCast<QGLShader>(mainShader));
-    m_addedShaders.insert(filename);
-
+    addShader(filename, mainShader);
     compileAndAddDependencies(mainShader->dependencies(), filename);
 
     m_success &= m_programUnderConstruction->link();
@@ -32,37 +27,52 @@ asl::AnnotatedGLShaderProgram * ASLProgramCompiler::compileFile(
     return m_programUnderConstruction;
 }
 
-void ASLProgramCompiler::compileAndAddShader(
+void ASLProgramCompiler::compileAndAddShaderAndLoadDependencies(
         const QString &filename)
 {
-    if (m_addedShaders.contains(filename)) {
-        return;
-    }
+    QSharedPointer<AnnotatedGLShader> shader(compileShader(filename));
+    addShader(filename, shader);
+    compileAndAddDependencies(shader->dependencies(), filename);
+}
 
-    unsigned int sourceStringNo = m_addedShaders.size();
-    m_log = m_log % "INFO: " % QString::number(sourceStringNo - 1) % ":0: "
-        % "Compiling \"" % filename % "\" as source string number "
-        % QString::number(sourceStringNo) % ".\n";
+QSharedPointer<AnnotatedGLShader> ASLProgramCompiler::compileShader(
+        const QString &filename)
+{
 
-    m_compiler.prefixSourcesWith(
-            "#line 0 " + QString::number(sourceStringNo) + "\n");
     QSharedPointer<AnnotatedGLShader> shader(
             m_shaderCache.compileFile(m_shaderType, filename));
     m_log += m_shaderCache.log();
     m_success &= m_shaderCache.success();
+    return shader;
+}
+
+void ASLProgramCompiler::addShader(const QString &filename,
+        QSharedPointer<AnnotatedGLShader> &shader)
+{
     m_success &= m_programUnderConstruction->addSharedShader(
             qSharedPointerCast<QGLShader>(shader));
     m_addedShaders.insert(filename);
-    compileAndAddDependencies(shader->dependencies(), filename);
 }
 
 void ASLProgramCompiler::compileAndAddDependencies(
         const QStringList &dependencies, const QString &includingFile)
 {
+    const unsigned int includingSourceStringNo = m_addedShaders.size() - 1;
     foreach (QString dependency, dependencies) {
         const QString dependencyPath(
                 m_dependencyLocator.locate(dependency, includingFile));
-        compileAndAddShader(dependencyPath);
+
+        if (m_addedShaders.contains(dependencyPath)) {
+            continue;
+        }
+
+        m_log = m_log % "INFO: " % QString::number(includingSourceStringNo)
+            % ":0: Compiling \"" % dependency % "\" as source string number "
+            % QString::number(m_addedShaders.size()) % ".\n";
+
+        m_compiler.prefixSourcesWith(
+            "#line 0 " + QString::number(m_addedShaders.size()) + "\n");
+        compileAndAddShaderAndLoadDependencies(dependencyPath);
     }
 }
 

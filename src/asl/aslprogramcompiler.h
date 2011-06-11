@@ -23,7 +23,10 @@ public:
     bool success() const { return m_success; }
 
 private:
-    void compileAndAddShader(const QString &filename);
+    void compileAndAddShaderAndLoadDependencies(const QString &filename);
+    QSharedPointer<AnnotatedGLShader> compileShader(const QString &filename);
+    void addShader(const QString &filename,
+            QSharedPointer<AnnotatedGLShader> &shader);
     void compileAndAddDependencies(const QStringList &dependencies,
             const QString &includingFile);
 
