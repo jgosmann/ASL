@@ -11,8 +11,8 @@ namespace asl
 class ASLProgramCompiler
 {
 public:
-    ASLProgramCompiler(AnnotatedGLShaderCompiler &compiler,
-            DependencyLocator &dependencyLocator)
+    ASLProgramCompiler(DependencyLocator &dependencyLocator,
+            AnnotatedGLShaderCompiler &compiler)
         : m_shaderCache(compiler), m_dependencyLocator(dependencyLocator),
         m_compiler(compiler) { }
 

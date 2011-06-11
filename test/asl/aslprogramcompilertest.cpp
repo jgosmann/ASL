@@ -46,7 +46,7 @@ public:
     {
         pixelBufferForGLContext.makeCurrent();
         shaderProgramCompiler = new ASLProgramCompiler(
-                shaderCompilerMock, dependencyLocatorMock);
+                dependencyLocatorMock, shaderCompilerMock);
     }
 
     void tearDown()
