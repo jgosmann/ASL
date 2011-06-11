@@ -50,7 +50,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
          *
          * \arg \a arguments has to be \c NULL if the expanded macro has no
          *     arguments. If it is a macro with an empty argument list
-         *     (<tt>#define MACRO()</tt>) you have to pass the pointer to an
+         *     (<tt>\#define MACRO()</tt>) you have to pass the pointer to an
          *     empty list.
          */
         void handleMacro(const QString &macroName,

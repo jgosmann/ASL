@@ -20,7 +20,10 @@ public:
      * \note Use #success() to test whether the last compilation was
      * successful. Please note that #log() may return a string
      * containing warnings (but not errors) even if the compilation was
-     * successful.
+     * successful. Using AnnotatedGLShader#log() or AnnotatedGLShader#success()
+     * will provide you only with information about the compilation as normal
+     * OpenGL shader. Any information about the compilation of the Annotated
+     * Shading Language will be missing.
      *
      * \note Use always `/' as an universal directory separator for the
      * \a pathOfSource argument.
