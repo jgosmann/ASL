@@ -5,7 +5,7 @@
 
 namespace asl
 {
-class RelativeDependencyLocator
+class RelativeDependencyLocator : public DependencyLocator
 {
 public:
     QString locate(const QString &name,
