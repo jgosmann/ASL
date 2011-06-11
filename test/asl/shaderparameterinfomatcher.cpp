@@ -4,6 +4,19 @@
 using namespace common;
 using namespace asl;
 
+ShaderParameterInfoMatcher::ShaderParameterInfoMatcher(
+        const ShaderParameterInfo &other)
+{
+    m_identifier = other.identifier;
+    m_name = other.name;
+    m_description = other.description;
+    m_type = other.type;
+    m_defaultValue = other.defaultValue;
+    m_minValue = other.minimum;
+    m_maxValue = other.maximum;
+    m_preferredUIControls = other.preferredUIControls;
+}
+
 bool ShaderParameterInfoMatcher::matches(const ShaderParameterInfo &matchWith)
         const
 {
@@ -30,4 +43,10 @@ template<class T> bool ShaderParameterInfoMatcher::matchValueIfSpecified(
     return !expected.hasValue() || (actual && *(expected.value()) == *actual);
 }
 
+bool operator==(const asl::ShaderParameterInfo &lhs,
+        const asl::ShaderParameterInfo &rhs)
+{
+    asl::ShaderParameterInfoMatcher matcher(lhs);
+    return matcher.matches(rhs);
+}
 

@@ -1,12 +1,10 @@
 
 %{
-    #ifdef TEST
+    #ifdef COMPILES_TEST
         #include "../src/asl/aslparser_internal.h"
-        #include "../src/asl/annotatedglshaderprogrambuilder.h"
         #include "../src/asl/shaderparameterinfobuilder.h"
     #else
         #include "asl/aslparser_internal.h"
-        #include "asl/annotatedglshaderprogrambuilder.h"
         #include "asl/shaderparameterinfobuilder.h"
     #endif
 
@@ -33,7 +31,7 @@
         QString log;
         unsigned int sourceStringNo;
         bool parsedFirstAslComment;
-        AnnotatedGLShaderProgramBuilder programBuilder;
+        ShaderInfo shaderInfo;
         ShaderParameterInfoBuilder parameterInfoBuilder;
 
         QHash<QString, unsigned int> definedKeys;
@@ -116,7 +114,7 @@ ppline:
 parameter: annotationComment UNIFORM datatype IDENTIFIER ';' {
             parameterInfoBuilder.withIdentifier(*$4);
             try {
-                programBuilder.addParameter(parameterInfoBuilder.build());
+                shaderInfo.parameters.append(parameterInfoBuilder.build());
             } catch (const common::NoValueException &e) {
                 warn(e.what());
             }
@@ -338,9 +336,11 @@ void handleKeyStringValuePair(const QString &key, const QString &value,
 
     } else {
         if ("ShaderName" == key) {
-            programBuilder.setName(value);
+            shaderInfo.name = value;
         } else if ("ShaderDescription" == key) {
-            programBuilder.setDescription(value);
+            shaderInfo.description = value;
+        } else if ("Depends" == key) {
+            shaderInfo.dependencies = value.split(QRegExp("\\s*,\\s*"));
         } else {
             warn(UNKNOWN_KEY_WARNING + key);
         }
@@ -417,15 +417,15 @@ template<class T> GLVariant * savelyCreateGLVariant(const GLTypeInfo &type,
     }
 }
 
-AnnotatedGLShaderProgram * parse(const QString &sourcecode,
+const ShaderInfo parse(const QString &sourcecode,
         const QString &pathOfSource)
 {
-    programBuilder = AnnotatedGLShaderProgramBuilder();
-    programBuilder.setName(QFileInfo(pathOfSource).fileName());
+    shaderInfo = ShaderInfo();
+    shaderInfo.name = QFileInfo(pathOfSource).fileName();
     parsedFirstAslComment = false;
     setInput(sourcecode);
     yyparse();
-    return programBuilder.build();
+    return shaderInfo;
 }
 
 void warn(const QString &msg)

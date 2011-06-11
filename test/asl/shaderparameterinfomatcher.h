@@ -10,6 +10,9 @@ namespace asl
 class ShaderParameterInfoMatcher
 {
     public:
+        ShaderParameterInfoMatcher() { }
+        ShaderParameterInfoMatcher(const ShaderParameterInfo &other);
+
         inline ShaderParameterInfoMatcher & withIdentifier(
                 const QString &identifier)
         {
@@ -83,6 +86,9 @@ class ShaderParameterInfoMatcher
         common::Nullable<QStringList> m_preferredUIControls;
 };
 } /* namespace asl */
+
+bool operator==(const asl::ShaderParameterInfo &lhs,
+        const asl::ShaderParameterInfo &rhs);
 
 #endif /* SHADERPARAMETERINFOMATCHER_H */
 

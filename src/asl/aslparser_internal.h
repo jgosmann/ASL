@@ -13,7 +13,7 @@ namespace parserinternal
     extern unsigned int sourceStringNo;
 
     void clearLog();
-    AnnotatedGLShaderProgram * parse(const QString &sourcecode,
+    const ShaderInfo parse(const QString &sourcecode,
             const QString &pathOfSource = QString());
     void setInput(const QString &sourcecode);
     void reset();
