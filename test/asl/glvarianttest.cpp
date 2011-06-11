@@ -12,6 +12,7 @@
 #define OUT ,
 #define DIM ,
 
+using namespace asl::gltypenames;
 using namespace std;
 
 namespace asl
@@ -78,7 +79,7 @@ public:
 
     void testThrowsInvalidArgumentExceptionIfNotEnoughValuesProvided() {
         try {
-            GLVariant variant("vec4", 2, testValues);
+            GLVariant variant(VEC4, 2, testValues);
         } catch (const invalid_argument &e) {
             return;
         }
@@ -86,42 +87,42 @@ public:
     }
 
     void testSilentlyIgnoresExtraComponents() {
-        GLVariant variant("vec2", 4, testValues);
+        GLVariant variant(VEC2, 4, testValues);
         assertEqualArrayOfLengthN(2, testValues, variant.asFloat());
     }
 
     void testEqualityOperatorReturnsTrueIfEqual()
     {
-        GLVariant v1("mat3", 9, testValues);
-        GLVariant v2("mat3x3", 9, testValues);
+        GLVariant v1(MAT3, 9, testValues);
+        GLVariant v2(MAT3x3, 9, testValues);
         CPPUNIT_ASSERT(v1 == v2);
     }
 
     void testEqualityOperatorReturnsFalseIfTypesNotMatching()
     {
-        GLVariant v1("vec3", 3, testValues);
-        GLVariant v2("vec4", 4, testValues);
+        GLVariant v1(VEC3, 3, testValues);
+        GLVariant v2(VEC4, 4, testValues);
         CPPUNIT_ASSERT(!(v1 == v2));
     }
 
     void testEqualityOperatorReturnsFalseIfUnequal()
     {
-        GLVariant v1("vec3", 3, testValues);
-        GLVariant v2("vec3", 1, floatScalarValue);
+        GLVariant v1(VEC3, 3, testValues);
+        GLVariant v2(VEC3, 1, floatScalarValue);
         CPPUNIT_ASSERT(!(v1 == v2));
     }
 
     void testCopyConstructor()
     {
-        GLVariant v1("mat4", 16, testValues);
+        GLVariant v1(MAT4, 16, testValues);
         GLVariant v2(v1);
         CPPUNIT_ASSERT_EQUAL(v1, v2);
     }
 
     void testCopyCastConstructor()
     {
-        GLVariant src("int", 1, intScalarValue);
-        GLVariant v("float", src);
+        GLVariant src(INT, 1, intScalarValue);
+        GLVariant v(FLOAT, src);
         CPPUNIT_ASSERT_EQUAL(static_cast<GLfloat>(*intScalarValue),
                 v.asFloat()[0]);
     }
@@ -129,17 +130,17 @@ public:
     void testIthValueCasted()
     {
         const GLfloat value = 2.3;
-        GLVariant v("float", 1, &value);
+        GLVariant v(FLOAT, 1, &value);
         CPPUNIT_ASSERT_EQUAL(static_cast<GLint>(2), v.ithValueCasted<GLint>(0));
     }
 
     CPPUNIT_TEST_SUITE(GLVariantTest);
-    CPPUNIT_TEST(testScalar<gltypenames::FLOAT IN GLfloat>);
-    CPPUNIT_TEST(testScalar<gltypenames::INT IN GLint>);
-    CPPUNIT_TEST(testScalar<gltypenames::UINT IN GLuint>);
-    CPPUNIT_TEST(testCast<gltypenames::FLOAT IN GLint OUT GLfloat>);
-    CPPUNIT_TEST(testCast<gltypenames::FLOAT IN GLuint OUT GLfloat>);
-    CPPUNIT_TEST(testCast<gltypenames::INT IN GLuint OUT GLint>);
+    CPPUNIT_TEST(testScalar<FLOAT IN GLfloat>);
+    CPPUNIT_TEST(testScalar<INT IN GLint>);
+    CPPUNIT_TEST(testScalar<UINT IN GLuint>);
+    CPPUNIT_TEST(testCast<FLOAT IN GLint OUT GLfloat>);
+    CPPUNIT_TEST(testCast<FLOAT IN GLuint OUT GLfloat>);
+    CPPUNIT_TEST(testCast<INT IN GLuint OUT GLint>);
     CPPUNIT_TEST(testBooleanScalar<GLint IN 1 OUT true>);
     CPPUNIT_TEST(testBooleanScalar<GLint IN 246 OUT true>);
     CPPUNIT_TEST(testBooleanScalar<GLuint IN 2 OUT true>);
@@ -147,21 +148,21 @@ public:
     CPPUNIT_TEST(testBooleanScalar<GLint IN 0 OUT false>);
     CPPUNIT_TEST(testBooleanScalar<GLuint IN 0 OUT false>);
     CPPUNIT_TEST(testBooleanScalar<GLfloat IN 0 OUT false>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::VEC2>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::VEC3>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::VEC4>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::MAT2>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::MAT3>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::MAT4>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::MAT2x2>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::MAT2x3>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::MAT2x4>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::MAT3x2>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::MAT3x3>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::MAT3x4>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::MAT4x2>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::MAT4x3>);
-    CPPUNIT_TEST(testNonScalar<gltypenames::MAT4x4>);
+    CPPUNIT_TEST(testNonScalar<VEC2>);
+    CPPUNIT_TEST(testNonScalar<VEC3>);
+    CPPUNIT_TEST(testNonScalar<VEC4>);
+    CPPUNIT_TEST(testNonScalar<MAT2>);
+    CPPUNIT_TEST(testNonScalar<MAT3>);
+    CPPUNIT_TEST(testNonScalar<MAT4>);
+    CPPUNIT_TEST(testNonScalar<MAT2x2>);
+    CPPUNIT_TEST(testNonScalar<MAT2x3>);
+    CPPUNIT_TEST(testNonScalar<MAT2x4>);
+    CPPUNIT_TEST(testNonScalar<MAT3x2>);
+    CPPUNIT_TEST(testNonScalar<MAT3x3>);
+    CPPUNIT_TEST(testNonScalar<MAT3x4>);
+    CPPUNIT_TEST(testNonScalar<MAT4x2>);
+    CPPUNIT_TEST(testNonScalar<MAT4x3>);
+    CPPUNIT_TEST(testNonScalar<MAT4x4>);
     CPPUNIT_TEST(testSingleValueIsReplicatedToFillVector);
     CPPUNIT_TEST(testSingleValueInitsDiagnolOfColumnMajorMatrix);
     CPPUNIT_TEST(testThrowsInvalidArgumentExceptionIfNotEnoughValuesProvided);

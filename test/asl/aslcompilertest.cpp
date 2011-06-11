@@ -12,6 +12,8 @@
 #include "logentry.h"
 #include "shaderparameterinfomatcher.h"
 
+using namespace asl::gltypenames;
+
 namespace asl
 {
 /**
@@ -210,8 +212,8 @@ public:
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/***/\n"
-                    "uniform int param;\n"
-                    +trivialShader));
+                    "uniform " + QString(INT) + " param;\n"
+                    + trivialShader));
         ShaderParameterInfoMatcher parameter;
         assertHasExactlyOneParameterMatching(compiled.data(),
                 parameter.withType(GLTypeInfo::getFor("int")));
@@ -226,7 +228,7 @@ public:
                     " * ShaderDescription: Description of wrong shader.\n"
                     " */\n"
                     "/***/\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         QScopedPointer<AnnotatedGLShader> compiled2(
                 shaderCompiler.compile(QGLShader::Fragment,
@@ -251,7 +253,7 @@ public:
     {
         QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
-                    "uniform int foo;\n"
+                    "uniform " + QString(INT) + " foo;\n"
                     "/***/\n"
                     + trivialShader));
         assertLogContains(shaderCompiler.log(),
@@ -279,7 +281,7 @@ public:
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/***/\n"
-                    "uniform /* comment */ int /* more\n"
+                    "uniform /* comment */ " + QString(INT) + " /* more\n"
                     "    comment */ foo // c\n"
                     " ; /* c */\n"
                     + trivialShader));
@@ -338,7 +340,7 @@ public:
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/** ShaderName: real-name */\n"
                     "/** ShaderName: do-not-use-this-name */\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         CPPUNIT_ASSERT_EQUAL(QString("real-name"), compiled->name());
         assertLogContains(shaderCompiler.log(),
@@ -350,7 +352,7 @@ public:
         QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/** Name: do-not-use */\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         CPPUNIT_ASSERT_EQUAL(0, compiled->parameters().size());
         assertLogContains(shaderCompiler.log(),
@@ -377,7 +379,7 @@ public:
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/***/\n"
-                    "uniform int nameOfIdentifier;\n"
+                    "uniform " + QString(INT) + " nameOfIdentifier;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         assertHasExactlyOneParameterMatching(compiled.data(),
@@ -400,7 +402,7 @@ public:
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/** Description: desc */\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         assertHasExactlyOneParameterMatching(compiled.data(),
@@ -414,49 +416,50 @@ public:
 
     void parsesScalarDefaultFloatValue()
     {
-        testParsingOfDefaultWithScalar("float", "42.25",
+        testParsingOfDefaultWithScalar(FLOAT, "42.25",
                 static_cast<GLfloat>(42.25));
     }
 
     void parsesScalarDefaultNegativeFloatValue()
     {
-        testParsingOfDefaultWithScalar("float", "-42.25",
+        testParsingOfDefaultWithScalar(FLOAT, "-42.25",
                 static_cast<GLfloat>(-42.25));
     }
 
     void parsesScalarDefaultFloatWithExponentValue()
     {
-        testParsingOfDefaultWithScalar("float", "2.3e-3",
+        testParsingOfDefaultWithScalar(FLOAT, "2.3e-3",
                 static_cast<GLfloat>(2.3e-3));
     }
 
     void parsesTrueBoolDefaultValue()
     {
-        testParsingOfDefaultWithScalar("bool", "true", static_cast<GLint>(1));
+        testParsingOfDefaultWithScalar(BOOL, "true", static_cast<GLint>(1));
     }
 
     void parsesfalseBoolDefaultValue()
     {
-        testParsingOfDefaultWithScalar("bool", "false", static_cast<GLint>(0));
+        testParsingOfDefaultWithScalar(BOOL, "false", static_cast<GLint>(0));
     }
 
     void parsesScalarWithCastConstructor()
     {
-        testParsingOfDefaultWithScalar("int", "int(2.3)",
+        testParsingOfDefaultWithScalar(INT, "int(2.3)",
                 static_cast<GLint>(2));
     }
 
     void parsesVectorWithReplicationConstructor()
     {
         GLfloat values[] = { 2.3, 2.3, 2.3 };
-        testParsingOfDefault("vec3", "vec3(2.3)", GLVariant("vec3", 3, values));
+        testParsingOfDefault(VEC3, VEC3 + QString("(2.3)"),
+                GLVariant(VEC3, 3, values));
     }
 
     void parsesVectorWithInitializerList()
     {
         GLfloat values[] = { 3.0, -1.2, 3.4 };
-        testParsingOfDefault("vec3", "vec3(3, -1.2, 3.4)",
-                GLVariant("vec3", 3, values));
+        testParsingOfDefault(VEC3, VEC3 + QString("(3, -1.2, 3.4)"),
+                GLVariant(VEC3, 3, values));
     }
 
     void warnsIfDefaultIsInitializedWithInvalidType()
@@ -465,7 +468,7 @@ public:
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/** Default: foo(3, 42, 1) */\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         assertLogContains(shaderCompiler.log(),
             LogEntry().withType(LOG_WARNING).occuringAt(0, 2)
@@ -478,8 +481,8 @@ public:
         QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
-                    "/** Default: vec3(1, 1) */\n"
-                    "uniform vec3 param;\n"
+                    "/** Default: " + QString(VEC3) + "(1, 1) */\n"
+                    "uniform " + QString(VEC3) + " param;\n"
                     + trivialShader));
         assertLogContains(shaderCompiler.log(),
             LogEntry().withType(LOG_WARNING).occuringAt(0, 2)
@@ -490,8 +493,8 @@ public:
     void castsDefaultValueToCorrectType()
     {
         GLfloat values[] = { 42.0, -2.0, 0.0 };
-        testParsingOfDefault("vec3", "ivec3(42, -2, 0)",
-                GLVariant("vec3", 3, values));
+        testParsingOfDefault(VEC3, IVEC3 + QString("(42, -2, 0)"),
+                GLVariant(VEC3, 3, values));
     }
 
     void warnsOnSyntaxErrorInDefaultAnnotation()
@@ -499,8 +502,8 @@ public:
         QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
-                    "/** Default: vec3(1, ) */\n"
-                    "uniform vec3 param;\n"
+                    "/** Default: " + QString(VEC3) + "(1, ) */\n"
+                    "uniform " + QString(VEC3) + " param;\n"
                     + trivialShader));
         assertLogContains(shaderCompiler.log(),
             LogEntry().withType(LOG_WARNING).occuringAt(0, 2)
@@ -511,8 +514,8 @@ public:
     void parsesMultilineDefaultAnnotation()
     {
         GLfloat values[] = { 1.3, -3.5, 2.4 };
-        testParsingOfDefault("vec3", "vec3(1.3,\n *     -3.5, 2.4)",
-                GLVariant("vec3", 3, values));
+        testParsingOfDefault(VEC3, VEC3 + QString("(1.3,\n *     -3.5, 2.4)"),
+                GLVariant(VEC3, 3, values));
     }
 
     template<const char *glslName> void testRangeDefaultsToMinAndMaxOfType()
@@ -535,16 +538,17 @@ public:
         QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
-                    "/** Range: vec3(1, 2, 3), vec3(4, 5, 6) */\n"
-                    "uniform vec3 param;\n"
+                    "/** Range: " + QString(VEC3) + "(1, 2, 3), "
+                    + QString(VEC3) + "(4, 5, 6) */\n"
+                    "uniform " + QString(VEC3) + " param;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         GLfloat minValues[] = { 1, 2, 3 };
         GLfloat maxValues[] = { 4, 5, 6 };
         assertCleanCompilation(compiled.data());
         assertHasExactlyOneParameterMatching(compiled.data(),
-                parameter.withMinimum(GLVariant("vec3", 3, minValues))
-                    .withMaximum(GLVariant("vec3", 3, maxValues)));
+                parameter.withMinimum(GLVariant(VEC3, 3, minValues))
+                    .withMaximum(GLVariant(VEC3, 3, maxValues)));
     }
 
     void testRangeCastsMinAndMaxValue()
@@ -552,16 +556,17 @@ public:
         QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
-                    "/** Range: ivec3(1, 2, 3), ivec3(4, 5, 6) */\n"
-                    "uniform vec3 param;\n"
+                    "/** Range: " + QString(IVEC3) + "(1, 2, 3), "
+                    + QString(IVEC3) + "(4, 5, 6) */\n"
+                    "uniform " + VEC3 + " param;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         GLfloat minValues[] = { 1, 2, 3 };
         GLfloat maxValues[] = { 4, 5, 6 };
         assertCleanCompilation(compiled.data());
         assertHasExactlyOneParameterMatching(compiled.data(),
-                parameter.withMinimum(GLVariant("vec3", 3, minValues))
-                    .withMaximum(GLVariant("vec3", 3, maxValues)));
+                parameter.withMinimum(GLVariant(VEC3, 3, minValues))
+                    .withMaximum(GLVariant(VEC3, 3, maxValues)));
     }
 
     void testRangeSetsMinAndMaxWithMinMaxIdentifier()
@@ -570,13 +575,13 @@ public:
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/** Range: min, max */\n"
-                    "uniform vec3 param;\n"
+                    "uniform " + QString(VEC3) + " param;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         assertCleanCompilation(compiled.data());
         assertHasExactlyOneParameterMatching(compiled.data(),
-            parameter.withMinimum(GLVariant::minOfType("vec3"))
-                .withMaximum(GLVariant::maxOfType("vec3")));
+            parameter.withMinimum(GLVariant::minOfType(VEC3))
+                .withMaximum(GLVariant::maxOfType(VEC3)));
     }
 
     void testRangeSetsMinAndMaxWithMinMaxIdentifierAndValueMixed()
@@ -585,14 +590,14 @@ public:
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/** Range: min, 3 */\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         GLint value = 3;
         assertCleanCompilation(compiled.data());
         assertHasExactlyOneParameterMatching(compiled.data(),
-            parameter.withMinimum(GLVariant::minOfType("int"))
-                .withMaximum(GLVariant("int", 1, &value)));
+            parameter.withMinimum(GLVariant::minOfType(INT))
+                .withMaximum(GLVariant(INT, 1, &value)));
     }
 
     void testSingleWordRangeSpecifiers()
@@ -600,15 +605,15 @@ public:
         GLfloat zero = 0;
         GLfloat one = 1;
         GLfloat byteMax = 255;
-        GLVariant zeroV("float", 1, &zero);
-        GLVariant oneV("float", 1, &one);
-        GLVariant byteMaxV("float", 1, &byteMax);
+        GLVariant zeroV(FLOAT, 1, &zero);
+        GLVariant oneV(FLOAT, 1, &one);
+        GLVariant byteMaxV(FLOAT, 1, &byteMax);
         testSingleWordRangeSpecifier("percent", zeroV, oneV);
         testSingleWordRangeSpecifier("byte", zeroV, byteMaxV);
         testSingleWordRangeSpecifier("unsigned", zeroV,
-                GLVariant::maxOfType("float"));
+                GLVariant::maxOfType(FLOAT));
         testSingleWordRangeSpecifier("positive", oneV,
-                GLVariant::maxOfType("float"));
+                GLVariant::maxOfType(FLOAT));
     }
 
     void warnsOnDoubleRangeSpecification()
@@ -620,7 +625,7 @@ public:
                     " * Range: 0, 3\n"
                     " * Range: percent\n"
                     " */\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         assertLogContains(shaderCompiler.log(),
             LogEntry().withType(LOG_WARNING).occuringAt(0, 4)
@@ -633,7 +638,7 @@ public:
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/***/\n"
-                    "uniform float param;\n"
+                    "uniform " + QString(FLOAT) + " param;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         assertCleanCompilation(compiled.data());
@@ -647,7 +652,7 @@ public:
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/** Control: color\t, default */\n"
-                    "uniform vec3 param;\n"
+                    "uniform " + QString(VEC3) + " param;\n"
                     + trivialShader));
         QStringList controls;
         controls.append("color");
