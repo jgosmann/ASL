@@ -9,8 +9,21 @@ ShaderListView::ShaderListView(QWidget *parent) :
 
 void ShaderListView::init(){
 
-    itemModel = new ShaderListModel();
+    //Initializes the model
+    itemModel = new ShaderItemList();
     this->setModel(itemModel);
+
+    //All settings for drag and drop
+    this->setSelectionMode(QAbstractItemView::SingleSelection);
+    this->setDragEnabled(true);
+    this->setDragDropMode(QAbstractItemView::InternalMove);
+    this->viewport()->setAcceptDrops(true);
+    this->setDropIndicatorShown(true);
+
+    this->setDragDropOverwriteMode(false);
+
+
+
 
 
 }
@@ -18,14 +31,14 @@ void ShaderListView::init(){
 void ShaderListView::addShader(QSharedPointer<Shader> shader){
 //    shaderList.append(shader);
 //    QStandardItem* item = new QStandardItem(shader->name());
-//    item->setCheckable(true);
+    QStandardItem* item = new ShaderItem(shader);
+    item->setCheckable(true);
 
-//    itemModel->appendRow(item);
-    itemModel->addShader(shader);
+    itemModel->appendRow(item);
+//    itemModel->addShader(shader);
 }
 
-void ShaderListView::moveSelShaderDown(int shaderPos){
-//    QStandardItem* tmp = itemModel->item(shaderPos);
-//    itemModel->removeRow(shaderPos);
-//    itemModel->insertRow(shaderPos+1,tmp);
+
+void ShaderListView::clearList(){
+    itemModel->clear();
 }

@@ -10,6 +10,8 @@
 
 #include <asl/annotatedglshaderprogram.h>
 #include <gui/shaderlistmodel.h>
+#include <gui/shaderitemlist.h>
+#include <gui/shaderitem.h>
 
 
 typedef class asl::AnnotatedGLShaderProgram Shader;
@@ -20,7 +22,8 @@ class ShaderListView : public QListView
 public:
     explicit ShaderListView(QWidget *parent = 0);
     void init();
-    ShaderListModel *itemModel;
+//    ShaderListModel *itemModel;
+    ShaderItemList *itemModel;
     QList< QSharedPointer<Shader> > shaderList;
 
     /**
@@ -32,13 +35,11 @@ public:
       */
     void addShader(QSharedPointer<Shader> shader);
     /**
-      * Moves the selected shader one up in the list.
+      * Clears the List
       */
-    void moveSelShaderUp();
-    /**
-      * Moves the selected shader one down in the list.
-      */
-    void moveSelShaderDown(int shaderPos);
+    void clearList();
+
+
 
 signals:
 
