@@ -13,6 +13,8 @@
 #include <gui/shaderitemlist.h>
 #include <gui/shaderitem.h>
 
+#include <iostream>
+
 
 typedef class asl::AnnotatedGLShaderProgram Shader;
 
@@ -38,12 +40,28 @@ public:
       * Clears the List
       */
     void clearList();
+    /**
+      * returns a list of all checked shaders
+      * the order of the list matches with the view
+      */
+    QList<QSharedPointer<Shader> > getCheckedShaders();
+    /**
+      * returns all shaders
+      * the order of the list matches with the view
+      */
+    QList<QSharedPointer<Shader> > getAllShaders();
+
+
 
 
 
 signals:
+    void shaderClicked(QSharedPointer<Shader> shader);
 
 public slots:
+
+private slots:
+    void clickedOnShader(const QModelIndex & index);
 
 };
 
