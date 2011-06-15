@@ -12,9 +12,6 @@ MainWindow::MainWindow(QWidget *parent) :
     // set working directory to execution directory
     QDir::setCurrent(QCoreApplication::applicationDirPath());
 
-    connect(ui->groupBox_Options, SIGNAL( uniformChanged(QString&, void*) ),
-          ui->glDisplay, SLOT( applyUniform(QString&, void*) ));
-
     connect(ui->spinBox_Zoom, SIGNAL(valueChanged(int)), ui->glDisplay, SLOT(setImageZoom(int)));
     connect(ui->glDisplay, SIGNAL(zoomChanged(int)), ui->spinBox_Zoom, SLOT(setValue(int)));
     connect(ui->pushButton_loadImage, SIGNAL(clicked()), ui->glDisplay, SLOT(loadImageFile()));

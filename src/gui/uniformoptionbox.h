@@ -16,12 +16,6 @@ namespace gui {
       UniformOptionBox(QWidget* parent = NULL);
       virtual ~UniformOptionBox();
 
-    signals:
-      /**
-       *  This signal directly transmits all information to GLImageViewer that
-       *  it requires to execute "setUniform" on his shaderProgram.
-       */
-      void uniformChanged(QString& glslName, void* value);
   };
 }
 
