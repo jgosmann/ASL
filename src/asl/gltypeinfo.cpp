@@ -7,16 +7,14 @@
 using namespace asl;
 using namespace std;
 
-const GLTypeInfo::KnownTypesTable GLTypeInfo::knownTypes;
-
 const GLTypeInfo & GLTypeInfo::getFor(const QString &glslName)
         throw(invalid_argument)
 {
-    if (!knownTypes.isTypeKnown(glslName)) {
+    if (!knownTypes().isTypeKnown(glslName)) {
         throw invalid_argument(
                 "Not a valid GLSL type supported by GLTypeInfo.");
     }
-    return *knownTypes.getType(glslName);
+    return *knownTypes().getType(glslName);
 }
 
 GLTypeInfo::GLTypeInfo(const QString &glslName, GLTypeInfo::Structure structure,
@@ -88,5 +86,11 @@ GLTypeInfo::KnownTypesTable::~KnownTypesTable()
 void GLTypeInfo::KnownTypesTable::registerType(const GLTypeInfo *type)
 {
     m_knownTypes.insert(type->glslName(), type);
+}
+
+const GLTypeInfo::KnownTypesTable & GLTypeInfo::knownTypes()
+{
+    static const KnownTypesTable * const knownTypes = new KnownTypesTable();
+    return *knownTypes;
 }
 

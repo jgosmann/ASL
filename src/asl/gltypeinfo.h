@@ -111,7 +111,7 @@ private:
             QHash<QString, const GLTypeInfo *> m_knownTypes;
     };
 
-    static const KnownTypesTable knownTypes;
+    static const KnownTypesTable & knownTypes();
 };
 }
 
