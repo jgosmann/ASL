@@ -9,7 +9,6 @@
 #include <QSharedPointer>
 
 #include <asl/annotatedglshaderprogram.h>
-#include <gui/shaderlistmodel.h>
 #include <gui/shaderitemlist.h>
 #include <gui/shaderitem.h>
 
