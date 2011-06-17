@@ -131,23 +131,8 @@
         <item row="2" column="2" rowspan="3" colspan="5">
          <widget class="gui::GLImageViewer" name="glDisplay" native="true"/>
         </item>
-        <item row="4" column="0" colspan="2">
-         <widget class="gui::UniformOptionBox" name="groupBox_Options">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="title">
-           <string>Options:</string>
-          </property>
-          <zorder>groupBox</zorder>
-          <zorder>groupBox</zorder>
-         </widget>
-        </item>
         <item row="2" column="0" rowspan="2" colspan="2">
-         <widget class="QGroupBox" name="groupBox">
+         <widget class="QGroupBox" name="groupBox_ShaderList">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
             <horstretch>0</horstretch>
@@ -159,15 +144,9 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout">
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
               <widget class="QPushButton" name="pushButton_AddShader">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
                <property name="text">
                 <string>Add Shader</string>
                </property>
@@ -178,9 +157,6 @@
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Expanding</enum>
-               </property>
                <property name="sizeHint" stdset="0">
                 <size>
                  <width>40</width>
@@ -190,22 +166,16 @@
               </spacer>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_DeleteShader">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
+              <widget class="QPushButton" name="pushButton_RemoveShader">
                <property name="text">
-                <string>Delete Shader</string>
+                <string>Remove Shader</string>
                </property>
               </widget>
              </item>
             </layout>
            </item>
            <item>
-            <widget class="QListView" name="listView_ShaderList">
+            <widget class="ShaderListView" name="listView_ShaderList">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
                <horstretch>0</horstretch>
@@ -217,7 +187,7 @@
            <item>
             <widget class="QLabel" name="label_Description">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -225,6 +195,51 @@
              <property name="text">
               <string/>
              </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="4" column="0" colspan="2">
+         <widget class="QGroupBox" name="groupBox_ShaderOptions">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="title">
+           <string>Options:</string>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QStackedWidget" name="stackedWidget_ShaderOptionStack">
+             <widget class="QWidget" name="page">
+              <widget class="QScrollArea" name="scrollArea">
+               <property name="geometry">
+                <rect>
+                 <x>9</x>
+                 <y>19</y>
+                 <width>251</width>
+                 <height>281</height>
+                </rect>
+               </property>
+               <property name="widgetResizable">
+                <bool>true</bool>
+               </property>
+               <widget class="QWidget" name="scrollAreaWidgetContents">
+                <property name="geometry">
+                 <rect>
+                  <x>0</x>
+                  <y>0</y>
+                  <width>249</width>
+                  <height>279</height>
+                 </rect>
+                </property>
+               </widget>
+              </widget>
+             </widget>
+             <widget class="QWidget" name="page_2"/>
             </widget>
            </item>
           </layout>
@@ -275,10 +290,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>gui::UniformOptionBox</class>
-   <extends>QGroupBox</extends>
-   <header>gui/uniformoptionbox.h</header>
-   <container>1</container>
+   <class>ShaderListView</class>
+   <extends>QListView</extends>
+   <header location="global">gui/shaderlistview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
