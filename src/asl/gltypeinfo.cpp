@@ -7,16 +7,14 @@
 using namespace asl;
 using namespace std;
 
-const GLTypeInfo::KnownTypesTable GLTypeInfo::knownTypes;
-
 const GLTypeInfo & GLTypeInfo::getFor(const QString &glslName)
         throw(invalid_argument)
 {
-    if (!knownTypes.isTypeKnown(glslName)) {
+    if (!knownTypes().isTypeKnown(glslName)) {
         throw invalid_argument(
                 "Not a valid GLSL type supported by GLTypeInfo.");
     }
-    return *knownTypes.getType(glslName);
+    return *knownTypes().getType(glslName);
 }
 
 GLTypeInfo::GLTypeInfo(const QString &glslName, GLTypeInfo::Structure structure,
@@ -40,13 +38,13 @@ GLTypeInfo::KnownTypesTable::KnownTypesTable()
 {
     /* Scalars, Open GL Shading Language, 3rd Edition, p. 68 */
     registerType(new GLTypeInfo(
-        "float", GLTypeInfo::SCALAR, GLTypeInfo::FLOAT, 1, 1));
+        gltypenames::FLOAT, GLTypeInfo::SCALAR, GLTypeInfo::FLOAT, 1, 1));
     registerType(new GLTypeInfo(
-        "int", GLTypeInfo::SCALAR, GLTypeInfo::INT, 1, 1));
+        gltypenames::INT, GLTypeInfo::SCALAR, GLTypeInfo::INT, 1, 1));
     registerType(new GLTypeInfo(
-        "uint", GLTypeInfo::SCALAR, GLTypeInfo::UINT, 1, 1));
+        gltypenames::UINT, GLTypeInfo::SCALAR, GLTypeInfo::UINT, 1, 1));
     registerType(new GLTypeInfo(
-        "bool", GLTypeInfo::SCALAR, GLTypeInfo::BOOL, 1, 1));
+        gltypenames::BOOL, GLTypeInfo::SCALAR, GLTypeInfo::BOOL, 1, 1));
 
     /* Vectors, Open GL Shading Language, 3rd Edition, p. 69 */
     for (unsigned short int i = 2; i <= 4; ++i) {
@@ -71,7 +69,8 @@ GLTypeInfo::KnownTypesTable::KnownTypesTable()
                 GLTypeInfo::MATRIX, GLTypeInfo::FLOAT, i, j));
             if (i == j) {
                 registerType(new GLTypeInfo(
-                    "mat" % QString::number(i), GLTypeInfo::MATRIX,
+                    QString(gltypenames::MAT_BASE_NAME) % QString::number(i),
+                    GLTypeInfo::MATRIX,
                     GLTypeInfo::FLOAT, i, j));
             }
         }
@@ -88,5 +87,11 @@ GLTypeInfo::KnownTypesTable::~KnownTypesTable()
 void GLTypeInfo::KnownTypesTable::registerType(const GLTypeInfo *type)
 {
     m_knownTypes.insert(type->glslName(), type);
+}
+
+const GLTypeInfo::KnownTypesTable & GLTypeInfo::knownTypes()
+{
+    static const KnownTypesTable * const knownTypes = new KnownTypesTable();
+    return *knownTypes;
 }
 

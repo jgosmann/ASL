@@ -30,10 +30,10 @@
 %%%%% Weiteres %%%%%
 
 \title{Guide to the Annotated Shader Language}
-\author{Jan Gosmann \and Denis John \and Markus Kastrop \and Andreas Mrugalla}
+\author{Jan Gosmann \and Denis John \and Markus Kastrop}
 \hypersetup{
   pdftitle={Guide to the Annotated Shader Language},
-  pdfauthor={Jan Gosmann, Denis John, Markus Kastrop, Andreas Mrugalla},
+  pdfauthor={Jan Gosmann, Denis John, Markus Kastrop},
   pdfkeywords={OpenGL, Shader, ASL}
 }
 
@@ -51,23 +51,23 @@ in shaders running on the GPU. This project was part of the Computer Graphics
 module.
 
 We aimed to make this image manipulation program flexible and extensible.  
-Therefore we decided to save the source code of the shaders in their own files 
-which will be loaded and compiled and runtime. This makes it easy to add new 
+Therefore, we decided to save the source code of the shaders in their own files 
+which will be loaded and compiled at runtime. This makes it easy to add new 
 algorithms: just write a shader and store it in the right directory.
 
 However, it would be nice if one could control the various parameters of the 
-algorithms, but a normal shader program does not provide the information what 
-the purpose and valid range of a parameter is. This is the point were the 
-Annotated Shader Language comes into play.
+algorithms with GUI controls. But a normal shader program does not provide the 
+information what the purpose and valid range of a parameter is. This is the 
+point were the Annotated Shader Language comes into play.
 
-The Annotated Shader Language, or short ASL, allows it to add information like 
+The Annotated Shader Language, or short ASL, allows to add information like 
 description and parameter range of a parameter to the program. Because all ASL 
-elements are written in comments the shader program can still be compiled 
+elements are written within comments, the shader program can still be compiled 
 without using an ASL shader compiler.
 
-Because developed ASL only as part of a rather small project there is still room 
-for many enhancements. For example, at the moment it is only possible to 
-annotate uniforms and whole files, but no per vertex parameters. We had no need 
+Because ASL was developed only as part of a rather small project there is still 
+room for many enhancements. For example, at the moment it is only possible to 
+annotate uniforms and whole files, but not per vertex parameters. We had no need 
 for this function as we only used fragment shaders which do not have per vertex 
 parameters.
 
@@ -121,8 +121,8 @@ The uniform \lstinline$tex$ is expected to be passed to all shaders by the
 program using the shader and is not considered as a parameter the user can 
 directly change per shader. Therefore it has no annotation.
 
-Not only the uniforms, but also the \lstinline$main()$ function is annotated 
-with some general information about the shader.
+Please note that the uniform \lstinline$tex$ has no annotation! The first 
+annotation comment provides always general information about the program.
 
 \chapter{Annotation Comments}
 Annotations are added to the shader program with special comments starting with 
@@ -175,9 +175,15 @@ tabulators and spaces.
 
 \section{General Shader Annotation}
 There are some annotations which are not used as annotation for a single element 
-like a parameter, but for the whole shader program. These have to occur in the 
-very first annotation comment and this comment does not need to be before any 
-special element of the shader program.
+like a parameter, but for the whole shader program. These annotations have to 
+occur in a special annotation comment which has to be at the start of the file.  
+Only preprocessor directives and white spaces are allowed to precede it.
+
+Please note that you have to include this general annotation comment in any ASL 
+program to be treated as an ASL program. If you want to assign the default 
+values to all keys you may just use \lstinline$/***/$ (the first two asterisks 
+introduce the ASL Comment and the third asterisk and last slash close it 
+immediately).
 
 \key{ShaderName}
 Gives the name of the shader program. Should be short. If this annotation is 
@@ -191,15 +197,18 @@ done with the \lstinline$Depends$ key. You may view it as an include function
 even though it does not really include files, but compiles the files 
 individually and links them together.
 
-The \lstinline$Depends$ key takes a list of paths to other shader programs. Each 
-path may not use more than one line and you have to specify each path in its own 
-line. Be sure to indent the lines correctly. Use always a slash `/' as directory 
-separator.
+The \lstinline$Depends$ key takes a comma separated list of paths to other 
+shader programs. At the moment the name of a dependency must not contain 
+a comma. Moreover, each path may not use more than one line. Use always a slash 
+`/' as directory separator.
 
-The paths are relative to the file in which you use the \lstinline$Depends$ key. 
 The files ``included'' this way can specify their own dependencies. In the 
 dependency list may even be duplicates which will only be linked once to the 
 complete program.
+
+The procedure by which the dependencies may be compiler specific. However, it is
+required to look for files relative to the file specifying the dependencies 
+first.
 
 \subsection{Example}
 \begin{lstlisting}
@@ -213,7 +222,7 @@ complete program.
 
 \section{Uniform Annotation}
 To annotate a uniform parameter of a shader program write an annotation comment 
-before it.
+in front of it.
 
 The data type of the parameter should be taken from the parameter declaration by 
 the ASL compiler. Our current implementation does not support samplers, but only 
@@ -224,24 +233,26 @@ The allowed keys for annotations are described in the following subsections.
 \key{Name}
 Gives the name of the parameter. Should be short. This annotation exists because 
 the variable names in programs are often not that clear without context. This 
-annotations allows you to add a more clear name for the user interface. You also 
+annotation allows you to add a more clear name for the user interface. You also 
 do not have to worry about characters not valid in variable names.
 
-This annotation is required for each annotated parameter.
+This annotation default to the identifier of the annotated parameter.
 
 \key{Description}
 A description what the annotated parameter does. Programs using ASL may present 
-this description as tool tip or any other way that seem suitable to them.
+this description as tool tip or any other way that seems suitable to them.
 
 \key{Default}
 Gives the default value for the parameter. Specifying the value works the same 
-as specifying a value in the standard shading language. The default value has to 
-be of the exact same type as the parameter. The only exception are float 
-parameters where specifying the default value as integer is also permissible.
+as specifying a value in the standard shading language. However, it is not 
+possible to use calculations or expressions like \lstinline$3 * 60$.
+
+The ASL compiler tries to cast the type of the value to the type of the 
+annotated uniform.
 
 \key{Range}
 This gives the valid parameter range. The basic syntax is the minimum and 
-maximum value separated by commas:
+maximum value separated by a comma:
 \begin{lstlisting}
 Range: 0, 1
 \end{lstlisting}
@@ -271,11 +282,6 @@ Instead of specifying the ranges manually there are some predefined ranges:
     \item \verb$unsigned$ is the same as \lstinline$0, max$
     \item \verb$positive$ is the same as \lstinline$1, max$
 \end{itemize}
-
-Moreover, you can give a list of valid values within curly braces:
-\begin{lstlisting}
-Range: { 1, 2, 3, 5, 8, 13 }
-\end{lstlisting}
 
 \key{Control}
 A vector may either represent a position or a color. In each case another 
@@ -324,7 +330,7 @@ chapter.
 \section{ASL\_MAIN Macro}
 ASL provides the \lstinline$ASL_MAIN$ macro. This will be set only for the 
 top-level file being compiled and not for files being compiled because they 
-occurred within an \lstinline$Depends$ key.
+occurred within a \lstinline$Depends$ key.
 
 This allows you to write ASL shaders which can operate either as standalone ASL 
 shader or provide functionality to other ASL shaders.
@@ -371,9 +377,9 @@ conventions in this chapter.
 
 \subsection{Fragment Shaders}
 \begin{itemize}
-    \item \lstinline$uniform sampler2D texture$: The texture used by the shader.
-    \item \lstinline$uniform int textureWidth$: The width of the texture.
-    \item \lstinline$uniform int textureHeight$: The height of the texture.
+    \item \lstinline$uniform sampler2D tex$: The texture used by the shader.
+    \item \lstinline$uniform int texWidth$: The width of the texture.
+    \item \lstinline$uniform int texHeight$: The height of the texture.
 \end{itemize}
 
 \appendix
@@ -386,6 +392,9 @@ geometry shaders. For example we do not provide any support for annotating
 ``varying'' respective ``in'' parameters.
 
 Moreover we had no use for parameters of the type sampler. Because of that our 
-compiler is not able to make use of annotated parameters of that type.
+compiler is not able to create use of annotated parameters of that type.
+
+It might also be nice to be able use expressions like \lstinline$3 * 42$ for 
+specifying default, minimum and maximum value.
 
 \end{document}

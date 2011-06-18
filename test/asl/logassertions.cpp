@@ -34,3 +34,12 @@ void asl::assertLogContains(const QString &log, const LogEntry &entry)
                 + ". Actual log:\n" + log));
 }
 
+void asl::assertLogContainsEntryOfType(const QString &log, const QString &type)
+{
+    const QRegExp matcher(type + ":([^\r\n]*)");
+
+    if (0 > matcher.indexIn(log)) {
+        CPPUNIT_FAIL(qPrintable("Expected " + type + ". Actual log:\n" + log));
+    }
+}
+

@@ -12,6 +12,8 @@
 #include "logentry.h"
 #include "shaderparameterinfomatcher.h"
 
+using namespace asl::gltypenames;
+
 namespace asl
 {
 /**
@@ -22,11 +24,16 @@ namespace asl
 class ASLCompilerTest : public TestFixture
 {
 public:
-    ASLCompilerTest() : pixelBufferForGLContext(1, 1) { }
+    ASLCompilerTest() : pixelBufferForGLContext(1, 1), shaderCompiler() { }
 
     void setUp()
     {
         pixelBufferForGLContext.makeCurrent();
+    }
+
+    void tearDown()
+    {
+        shaderCompiler.prefixSourcesWith("");
     }
 
     void logsErrorWhenCompilingInvalidShader()
@@ -37,17 +44,17 @@ public:
 
     void resetsStateBeforeCompiling()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> createsLogEntries(
+        QScopedPointer<AnnotatedGLShader> createsLogEntries(
                 shaderCompiler.compile(QGLShader::Fragment,
                    "/** unknownKey: foo */\n" + invalidShader));
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment, trivialShader));
         assertCleanCompilation(compiled.data());
     }
 
     void compilesAndLinksTrivialShader()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
             shaderCompiler.compile(QGLShader::Fragment, trivialShader));
         assertCleanCompilation(compiled.data());
     }
@@ -56,7 +63,7 @@ public:
     {
         const QString filename("filename.fs");
         const QString path("path/to/" + filename);
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
             shaderCompiler.compile(QGLShader::Fragment, trivialShader,
                 path));
         CPPUNIT_ASSERT_EQUAL(filename, compiled->name());
@@ -64,14 +71,14 @@ public:
 
     void shaderDescriptionDefaultsToEmptyString()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment, trivialShader));
         CPPUNIT_ASSERT_EQUAL(QString(""), compiled->description());
     }
 
     void parsesShaderName()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/** ShaderName: test-shader */\n"
                     + trivialShader));
@@ -80,7 +87,7 @@ public:
 
     void parsesShaderDescription()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/** ShaderDescription: Some description. */\n"
                     + trivialShader));
@@ -90,7 +97,7 @@ public:
 
     void removesLeadingAndTrailingAteriskInAslCommentLine()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/**\n"
                     " * ShaderName: test-shader *\n"
@@ -101,7 +108,7 @@ public:
 
     void parsesMultilineStrings()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/**\n"
                     " * ShaderDescription: Line 1.\n"
@@ -117,7 +124,7 @@ public:
 
     void parsesMultilineStringsWithNoInitialIndentation()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/**\n"
                     "ShaderDescription: Line 1.\n"
@@ -131,7 +138,7 @@ public:
 
     void parsesTwoKeysWithSameIdentation()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/**\n"
                     " * ShaderName: name\n"
@@ -145,7 +152,7 @@ public:
 
     void warnsAboutUnknownKeys()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/** unknownKey: value */\n"
                     + trivialShader));
@@ -157,7 +164,7 @@ public:
 
     void warnsAboutDuplicateKeys()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/**\n"
                     " * ShaderName: name1\n"
@@ -172,7 +179,7 @@ public:
 
     void parsesParameterName()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/**\n"
@@ -187,11 +194,11 @@ public:
 
     void defaultsParameterNameToIdentifier()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/***/\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         assertHasExactlyOneParameterMatching(compiled.data(),
@@ -201,29 +208,43 @@ public:
 
     void parsesParameterType()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/***/\n"
-                    "uniform int param;\n"
-                    +trivialShader));
+                    "uniform " + QString(INT) + " param;\n"
+                    + trivialShader));
         ShaderParameterInfoMatcher parameter;
         assertHasExactlyOneParameterMatching(compiled.data(),
                 parameter.withType(GLTypeInfo::getFor("int")));
     }
 
+    void parsesUniformAnnotationWithInitialization()
+    {
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "#version 120\n"
+                    "/***/\n"
+                    "/***/\n"
+                    "uniform " + QString(INT) + " param = 3;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withIdentifier("param"));
+    }
+
     void doesNotLeakAnnotationsFromPreviousCompilation()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled1(
+        QScopedPointer<AnnotatedGLShader> compiled1(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/**\n"
                     " * ShaderName: nameOfWrongShader\n"
                     " * ShaderDescription: Description of wrong shader.\n"
                     " */\n"
                     "/***/\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
-        QScopedPointer<AnnotatedGLShaderProgram> compiled2(
+        QScopedPointer<AnnotatedGLShader> compiled2(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n" + trivialShader));
         CPPUNIT_ASSERT_EQUAL(QString(""), compiled2->description());
@@ -232,7 +253,7 @@ public:
 
     void logsWarningIfAnnotatedUnsupportedType()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/***/\n"
@@ -244,9 +265,9 @@ public:
 
     void logsWarningIfAslProgramStartsNotWithAslComment()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
-                    "uniform int foo;\n"
+                    "uniform " + QString(INT) + " foo;\n"
                     "/***/\n"
                     + trivialShader));
         assertLogContains(shaderCompiler.log(),
@@ -256,7 +277,7 @@ public:
 
     void allowsCommentsAndPreprocessorBeforeFirstAslComment()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/* some comment */\n"
                     "// another comment\n"
@@ -270,11 +291,11 @@ public:
 
     void allowCommentsInAnnotatedUniform()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/***/\n"
-                    "uniform /* comment */ int /* more\n"
+                    "uniform /* comment */ " + QString(INT) + " /* more\n"
                     "    comment */ foo // c\n"
                     " ; /* c */\n"
                     + trivialShader));
@@ -286,7 +307,7 @@ public:
 
     void linePreprocessorDirectiveSetsLine()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "#line 23\n"
                     "/**\n"
@@ -301,7 +322,7 @@ public:
 
     void linePreprocessorDirectiveSetsLineAndSourcestringNo()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "#line 23 42\n"
                     "/**\n"
@@ -316,7 +337,7 @@ public:
 
     void warnsAboutAslCommontNotPrecedingUniform()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/***/\n"
@@ -329,11 +350,11 @@ public:
 
     void warnsAboutAndDoesNotInterpretGeneralAnnotationsInUniformAslComment()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/** ShaderName: real-name */\n"
                     "/** ShaderName: do-not-use-this-name */\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         CPPUNIT_ASSERT_EQUAL(QString("real-name"), compiled->name());
         assertLogContains(shaderCompiler.log(),
@@ -342,10 +363,10 @@ public:
 
     void warnsAboutAndDoesNotInterpretUniformAnnotationsinStartAslComment()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/** Name: do-not-use */\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         CPPUNIT_ASSERT_EQUAL(0, compiled->parameters().size());
         assertLogContains(shaderCompiler.log(),
@@ -354,7 +375,7 @@ public:
 
     void allowsNonAnnotatingTextInAslComments()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/**\n"
                     " * some text\n"
@@ -368,11 +389,11 @@ public:
 
     void parsesIdentifier()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/***/\n"
-                    "uniform int nameOfIdentifier;\n"
+                    "uniform " + QString(INT) + " nameOfIdentifier;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         assertHasExactlyOneParameterMatching(compiled.data(),
@@ -381,7 +402,7 @@ public:
 
     void defaultsParameterDescriptionToEmptyString()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     aslShaderWithOneAslParameterWithoutAnnotations));
         ShaderParameterInfoMatcher parameter;
@@ -391,11 +412,11 @@ public:
 
     void parsesParameterDescription()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/** Description: desc */\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         assertHasExactlyOneParameterMatching(compiled.data(),
@@ -409,58 +430,59 @@ public:
 
     void parsesScalarDefaultFloatValue()
     {
-        testParsingOfDefaultWithScalar("float", "42.25",
+        testParsingOfDefaultWithScalar(FLOAT, "42.25",
                 static_cast<GLfloat>(42.25));
     }
 
     void parsesScalarDefaultNegativeFloatValue()
     {
-        testParsingOfDefaultWithScalar("float", "-42.25",
+        testParsingOfDefaultWithScalar(FLOAT, "-42.25",
                 static_cast<GLfloat>(-42.25));
     }
 
     void parsesScalarDefaultFloatWithExponentValue()
     {
-        testParsingOfDefaultWithScalar("float", "2.3e-3",
+        testParsingOfDefaultWithScalar(FLOAT, "2.3e-3",
                 static_cast<GLfloat>(2.3e-3));
     }
 
     void parsesTrueBoolDefaultValue()
     {
-        testParsingOfDefaultWithScalar("bool", "true", static_cast<GLint>(1));
+        testParsingOfDefaultWithScalar(BOOL, "true", static_cast<GLint>(1));
     }
 
     void parsesfalseBoolDefaultValue()
     {
-        testParsingOfDefaultWithScalar("bool", "false", static_cast<GLint>(0));
+        testParsingOfDefaultWithScalar(BOOL, "false", static_cast<GLint>(0));
     }
 
     void parsesScalarWithCastConstructor()
     {
-        testParsingOfDefaultWithScalar("int", "int(2.3)",
+        testParsingOfDefaultWithScalar(INT, "int(2.3)",
                 static_cast<GLint>(2));
     }
 
     void parsesVectorWithReplicationConstructor()
     {
         GLfloat values[] = { 2.3, 2.3, 2.3 };
-        testParsingOfDefault("vec3", "vec3(2.3)", GLVariant("vec3", 3, values));
+        testParsingOfDefault(VEC3, VEC3 + QString("(2.3)"),
+                GLVariant(VEC3, 3, values));
     }
 
     void parsesVectorWithInitializerList()
     {
         GLfloat values[] = { 3.0, -1.2, 3.4 };
-        testParsingOfDefault("vec3", "vec3(3, -1.2, 3.4)",
-                GLVariant("vec3", 3, values));
+        testParsingOfDefault(VEC3, VEC3 + QString("(3, -1.2, 3.4)"),
+                GLVariant(VEC3, 3, values));
     }
 
     void warnsIfDefaultIsInitializedWithInvalidType()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/** Default: foo(3, 42, 1) */\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         assertLogContains(shaderCompiler.log(),
             LogEntry().withType(LOG_WARNING).occuringAt(0, 2)
@@ -470,11 +492,11 @@ public:
 
     void warnsIfPassedIncompatibleNumberOfArgumentsToTypeConstructor()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
-                    "/** Default: vec3(1, 1) */\n"
-                    "uniform vec3 param;\n"
+                    "/** Default: " + QString(VEC3) + "(1, 1) */\n"
+                    "uniform " + QString(VEC3) + " param;\n"
                     + trivialShader));
         assertLogContains(shaderCompiler.log(),
             LogEntry().withType(LOG_WARNING).occuringAt(0, 2)
@@ -485,17 +507,17 @@ public:
     void castsDefaultValueToCorrectType()
     {
         GLfloat values[] = { 42.0, -2.0, 0.0 };
-        testParsingOfDefault("vec3", "ivec3(42, -2, 0)",
-                GLVariant("vec3", 3, values));
+        testParsingOfDefault(VEC3, IVEC3 + QString("(42, -2, 0)"),
+                GLVariant(VEC3, 3, values));
     }
 
     void warnsOnSyntaxErrorInDefaultAnnotation()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
-                    "/** Default: vec3(1, ) */\n"
-                    "uniform vec3 param;\n"
+                    "/** Default: " + QString(VEC3) + "(1, ) */\n"
+                    "uniform " + QString(VEC3) + " param;\n"
                     + trivialShader));
         assertLogContains(shaderCompiler.log(),
             LogEntry().withType(LOG_WARNING).occuringAt(0, 2)
@@ -506,13 +528,13 @@ public:
     void parsesMultilineDefaultAnnotation()
     {
         GLfloat values[] = { 1.3, -3.5, 2.4 };
-        testParsingOfDefault("vec3", "vec3(1.3,\n *     -3.5, 2.4)",
-                GLVariant("vec3", 3, values));
+        testParsingOfDefault(VEC3, VEC3 + QString("(1.3,\n *     -3.5, 2.4)"),
+                GLVariant(VEC3, 3, values));
     }
 
     template<const char *glslName> void testRangeDefaultsToMinAndMaxOfType()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/***/\n"
@@ -527,67 +549,69 @@ public:
 
     void testRangeSetsMinAndMaxValue()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
-                    "/** Range: vec3(1, 2, 3), vec3(4, 5, 6) */\n"
-                    "uniform vec3 param;\n"
+                    "/** Range: " + QString(VEC3) + "(1, 2, 3), "
+                    + QString(VEC3) + "(4, 5, 6) */\n"
+                    "uniform " + QString(VEC3) + " param;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         GLfloat minValues[] = { 1, 2, 3 };
         GLfloat maxValues[] = { 4, 5, 6 };
         assertCleanCompilation(compiled.data());
         assertHasExactlyOneParameterMatching(compiled.data(),
-                parameter.withMinimum(GLVariant("vec3", 3, minValues))
-                    .withMaximum(GLVariant("vec3", 3, maxValues)));
+                parameter.withMinimum(GLVariant(VEC3, 3, minValues))
+                    .withMaximum(GLVariant(VEC3, 3, maxValues)));
     }
 
     void testRangeCastsMinAndMaxValue()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
-                    "/** Range: ivec3(1, 2, 3), ivec3(4, 5, 6) */\n"
-                    "uniform vec3 param;\n"
+                    "/** Range: " + QString(IVEC3) + "(1, 2, 3), "
+                    + QString(IVEC3) + "(4, 5, 6) */\n"
+                    "uniform " + VEC3 + " param;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         GLfloat minValues[] = { 1, 2, 3 };
         GLfloat maxValues[] = { 4, 5, 6 };
         assertCleanCompilation(compiled.data());
         assertHasExactlyOneParameterMatching(compiled.data(),
-                parameter.withMinimum(GLVariant("vec3", 3, minValues))
-                    .withMaximum(GLVariant("vec3", 3, maxValues)));
+                parameter.withMinimum(GLVariant(VEC3, 3, minValues))
+                    .withMaximum(GLVariant(VEC3, 3, maxValues)));
     }
 
     void testRangeSetsMinAndMaxWithMinMaxIdentifier()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/** Range: min, max */\n"
-                    "uniform vec3 param;\n"
+                    "uniform " + QString(VEC3) + " param;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         assertCleanCompilation(compiled.data());
         assertHasExactlyOneParameterMatching(compiled.data(),
-            parameter.withMinimum(GLVariant::minOfType("vec3"))
-                .withMaximum(GLVariant::maxOfType("vec3")));
+            parameter.withMinimum(GLVariant::minOfType(VEC3))
+                .withMaximum(GLVariant::maxOfType(VEC3)));
     }
 
     void testRangeSetsMinAndMaxWithMinMaxIdentifierAndValueMixed()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/** Range: min, 3 */\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         GLint value = 3;
         assertCleanCompilation(compiled.data());
         assertHasExactlyOneParameterMatching(compiled.data(),
-            parameter.withMinimum(GLVariant::minOfType("int"))
-                .withMaximum(GLVariant("int", 1, &value)));
+            parameter.withMinimum(GLVariant::minOfType(INT))
+                .withMaximum(GLVariant(INT, 1, &value)));
     }
 
     void testSingleWordRangeSpecifiers()
@@ -595,27 +619,27 @@ public:
         GLfloat zero = 0;
         GLfloat one = 1;
         GLfloat byteMax = 255;
-        GLVariant zeroV("float", 1, &zero);
-        GLVariant oneV("float", 1, &one);
-        GLVariant byteMaxV("float", 1, &byteMax);
+        GLVariant zeroV(FLOAT, 1, &zero);
+        GLVariant oneV(FLOAT, 1, &one);
+        GLVariant byteMaxV(FLOAT, 1, &byteMax);
         testSingleWordRangeSpecifier("percent", zeroV, oneV);
         testSingleWordRangeSpecifier("byte", zeroV, byteMaxV);
         testSingleWordRangeSpecifier("unsigned", zeroV,
-                GLVariant::maxOfType("float"));
+                GLVariant::maxOfType(FLOAT));
         testSingleWordRangeSpecifier("positive", oneV,
-                GLVariant::maxOfType("float"));
+                GLVariant::maxOfType(FLOAT));
     }
 
     void warnsOnDoubleRangeSpecification()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/**\n"
                     " * Range: 0, 3\n"
                     " * Range: percent\n"
                     " */\n"
-                    "uniform int param;\n"
+                    "uniform " + QString(INT) + " param;\n"
                     + trivialShader));
         assertLogContains(shaderCompiler.log(),
             LogEntry().withType(LOG_WARNING).occuringAt(0, 4)
@@ -624,11 +648,11 @@ public:
 
     void defaultsControlAnnotationToEmptyList()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/***/\n"
-                    "uniform float param;\n"
+                    "uniform " + QString(FLOAT) + " param;\n"
                     + trivialShader));
         ShaderParameterInfoMatcher parameter;
         assertCleanCompilation(compiled.data());
@@ -638,11 +662,11 @@ public:
 
     void parsesControlAnnotation()
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/** Control: color\t, default */\n"
-                    "uniform vec3 param;\n"
+                    "uniform " + QString(VEC3) + " param;\n"
                     + trivialShader));
         QStringList controls;
         controls.append("color");
@@ -651,6 +675,40 @@ public:
         assertCleanCompilation(compiled.data());
         assertHasExactlyOneParameterMatching(compiled.data(),
                 parameter.withPreferredUIControls(controls));
+    }
+
+    void defaultsDependciesToEmptyList()
+    {
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        assertCleanCompilation(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(QStringList(), compiled->dependencies());
+    }
+
+    void parsesDependencies()
+    {
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/** Depends: dep1, ../foo/bar */\n"
+                    + trivialShader));
+        QStringList dependencies;
+        dependencies.append("dep1");
+        dependencies.append("../foo/bar");
+        ShaderParameterInfoMatcher parameter;
+        assertCleanCompilation(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(dependencies, compiled->dependencies());
+    }
+
+    void prefixesSources()
+    {
+        shaderCompiler.prefixSourcesWith("/** ShaderName: foo */\n");
+        QScopedPointer<AnnotatedGLShader> compiled(
+            shaderCompiler.compile(QGLShader::Fragment, trivialShader));
+        assertCleanCompilation(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(QString("foo"), compiled->name());
     }
 
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
@@ -670,6 +728,7 @@ public:
     CPPUNIT_TEST(parsesParameterName);
     CPPUNIT_TEST(defaultsParameterNameToIdentifier);
     CPPUNIT_TEST(parsesParameterType);
+    CPPUNIT_TEST(parsesUniformAnnotationWithInitialization);
     CPPUNIT_TEST(doesNotLeakAnnotationsFromPreviousCompilation);
     CPPUNIT_TEST(logsWarningIfAnnotatedUnsupportedType);
     CPPUNIT_TEST(logsWarningIfAslProgramStartsNotWithAslComment);
@@ -711,18 +770,20 @@ public:
     CPPUNIT_TEST(warnsOnDoubleRangeSpecification);
     CPPUNIT_TEST(defaultsControlAnnotationToEmptyList);
     CPPUNIT_TEST(parsesControlAnnotation);
+    CPPUNIT_TEST(defaultsDependciesToEmptyList);
+    CPPUNIT_TEST(parsesDependencies);
+    CPPUNIT_TEST(prefixesSources);
     CPPUNIT_TEST_SUITE_END();
 
 private:
-    void assertCleanCompilation(const AnnotatedGLShaderProgram *program)
+    void assertCleanCompilation(const AnnotatedGLShader *shader)
     {
-        CPPUNIT_ASSERT(program);
+        CPPUNIT_ASSERT(shader);
         CPPUNIT_ASSERT_MESSAGE(qPrintable(shaderCompiler.log()),
                 shaderCompiler.log().isEmpty());
-        CPPUNIT_ASSERT_MESSAGE(qPrintable(program->log()),
-                program->log().isEmpty());
+        CPPUNIT_ASSERT_MESSAGE(qPrintable(shader->log()),
+                shader->log().isEmpty());
         CPPUNIT_ASSERT(shaderCompiler.success());
-        CPPUNIT_ASSERT(program->isLinked());
     }
 
     void assertFailedAndLogged(const asl::LogEntry &entry)
@@ -732,11 +793,23 @@ private:
     }
 
     void assertHasExactlyOneParameterMatching(
-            const AnnotatedGLShaderProgram *program,
+            const AnnotatedGLShader *shader,
             const ShaderParameterInfoMatcher &matcher)
     {
-        CPPUNIT_ASSERT_EQUAL(1, program->parameters().size());
-        CPPUNIT_ASSERT(matcher.matches(program->parameters()[0]));
+        CPPUNIT_ASSERT_EQUAL(1, shader->parameters().size());
+        CPPUNIT_ASSERT(matcher.matches(shader->parameters()[0]));
+    }
+
+    void assertHasParameterMatching(
+            const AnnotatedGLShader *shader,
+            const ShaderParameterInfoMatcher &matcher)
+    {
+        for (int i = 0; i < shader->parameters().size(); ++i) {
+            if (matcher.matches(shader->parameters()[i])) {
+                return;
+            }
+        }
+        CPPUNIT_FAIL("No matching parameter.");
     }
 
     template<class T> void testParsingOfDefaultWithScalar(
@@ -749,7 +822,7 @@ private:
     void testParsingOfDefault(const QString &glslTypename,
             const QString &srcValue, const GLVariant &expected)
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/** Default: " + srcValue + " */\n"
@@ -764,7 +837,7 @@ private:
     void testSingleWordRangeSpecifier(const QString &specifier,
             const GLVariant &min, const GLVariant &max)
     {
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+        QScopedPointer<AnnotatedGLShader> compiled(
                 shaderCompiler.compile(QGLShader::Fragment,
                     "/***/\n"
                     "/** Range: " + specifier + " */\n"
