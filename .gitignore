@@ -1,5 +1,5 @@
-cg
-cg-test
+bin/*
+!bin/data
 moc
 obj
 ui
