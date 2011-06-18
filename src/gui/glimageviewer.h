@@ -42,19 +42,6 @@ namespace gui {
 
       void setImageZoom(int value);
 
-      /**
-      *  This slot allows other widgets who are capable of loading shader files
-      *  to add them to the GLImageViewer widget.
-      */
-      void addShader(QGLShader& shader);
-
-      /**
-       *  This slot receives all information needed to execute "setUniform" on
-       *  m_shaderProgram when the user has changed any of the uniforms in the
-       *  GUI.
-       */
-      void applyUniform(const QString& glslName, const void* value);
-
   signals:
       void zoomChanged(int value);
 
