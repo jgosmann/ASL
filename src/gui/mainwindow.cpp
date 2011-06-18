@@ -14,8 +14,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->spinBox_Zoom, SIGNAL(valueChanged(int)), ui->glDisplay, SLOT(setImageZoom(int)));
     connect(ui->glDisplay, SIGNAL(zoomChanged(int)), ui->spinBox_Zoom, SLOT(setValue(int)));
-    connect(ui->pushButton_loadImage, SIGNAL(clicked()), ui->glDisplay, SLOT(loadImageFile()));
-    connect(ui->pushButton_saveImage, SIGNAL(clicked()), ui->glDisplay, SLOT(saveImageFile()));
+    connect(ui->action_LoadImage, SIGNAL(changed()), ui->glDisplay, SLOT(loadImageFile()));
+    connect(ui->action_SaveImage, SIGNAL(changed()), ui->glDisplay, SLOT(saveImageFile()));
 }
 
 MainWindow::~MainWindow()
