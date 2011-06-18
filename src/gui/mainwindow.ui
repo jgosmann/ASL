@@ -139,7 +139,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>254</width>
+                <width>264</width>
                 <height>295</height>
                </rect>
               </property>
@@ -194,7 +194,7 @@
             </layout>
            </item>
            <item>
-            <widget class="ShaderListView" name="listView_ShaderList">
+            <widget class="QListView" name="listView_ShaderList">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
                <horstretch>0</horstretch>
@@ -206,7 +206,7 @@
            <item>
             <widget class="QLabel" name="label_Description">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+              <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
