@@ -1,4 +1,5 @@
 SOURCES += gui/mainwindow.cpp \
+    gui/glimagerenderer.cpp \
     gui/glimageviewer.cpp \
     gui/uniformoptiongenerator.cpp\
     gui/shaderlistview.cpp \
@@ -6,6 +7,7 @@ SOURCES += gui/mainwindow.cpp \
     gui/shaderitem.cpp
 
 HEADERS  += gui/mainwindow.h \
+    gui/glimagerenderer.h \
     gui/glimageviewer.h \
     gui/uniformoptiongenerator.h \
     gui/shaderlistview.h \
