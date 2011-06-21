@@ -1,5 +1,7 @@
-HEADERS += render/renderable.h \
-    render/texturerendererwithshaderchain.h
+HEADERS += \
+    src/render/renderable.h \
+    src/render/texturerendererwithshaderchain.h
 
 SOURCES += \
-    render/texturerendererwithshaderchain.cpp
+    src/render/texturerendererwithshaderchain.cpp
+

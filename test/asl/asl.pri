@@ -1,17 +1,18 @@
 SOURCES += \
-    asl/aslcompilertest.cpp \
-    asl/aslpreprocessortest.cpp \
-    asl/aslprogramcompilertest.cpp \
-    asl/cachedannotatedglshadercompilertest.cpp \
-    asl/logentry.cpp \
-    asl/logassertions.cpp \
-    asl/relativedependencylocatortest.cpp \
-    asl/shaderparameterinfomatcher.cpp \
-    asl/glvarianttest.cpp
+    test/asl/aslcompilertest.cpp \
+    test/asl/aslpreprocessortest.cpp \
+    test/asl/aslprogramcompilertest.cpp \
+    test/asl/cachedannotatedglshadercompilertest.cpp \
+    test/asl/logentry.cpp \
+    test/asl/logassertions.cpp \
+    test/asl/relativedependencylocatortest.cpp \
+    test/asl/shaderparameterinfomatcher.cpp \
+    test/asl/glvarianttest.cpp
 
-HEADERS += asl/annotatedglshadercompilermock.h \
-    asl/dependencylocatormock.h \
-    asl/logentry.h \
-    asl/logassertions.h \
-    asl/shaderparameterinfomatcher.h \
+HEADERS += \
+    test/asl/annotatedglshadercompilermock.h \
+    test/asl/dependencylocatormock.h \
+    test/asl/logentry.h \
+    test/asl/logassertions.h \
+    test/asl/shaderparameterinfomatcher.h \
 

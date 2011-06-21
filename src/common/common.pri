@@ -1,6 +1,7 @@
-HEADERS += common/nullable.h \
-    common/defaultable.h \
-    common/novalueexception.h
+HEADERS += \
+    src/common/defaultable.h \
+    src/common/novalueexception.h \
+    src/common/nullable.h
 
 SOURCES +=
 

@@ -389,7 +389,7 @@
   <customwidget>
    <class>ShaderListView</class>
    <extends>QListView</extends>
-   <header location="global">gui/shaderlistview.h</header>
+   <header>gui/shaderlistview.h</header>
   </customwidget>
   <customwidget>
    <class>gui::UniformOptionGenerator</class>

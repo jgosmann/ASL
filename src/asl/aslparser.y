@@ -1,12 +1,7 @@
 
 %{
-    #ifdef COMPILES_TEST
-        #include "../src/asl/aslparser_internal.h"
-        #include "../src/asl/shaderparameterinfobuilder.h"
-    #else
-        #include "asl/aslparser_internal.h"
-        #include "asl/shaderparameterinfobuilder.h"
-    #endif
+    #include "asl/aslparser_internal.h"
+    #include "asl/shaderparameterinfobuilder.h"
 
     #include <exception>
 

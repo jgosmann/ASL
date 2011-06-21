@@ -1,10 +1,6 @@
 
 %{
-    #ifdef COMPILES_TEST
-        #include "../src/asl/aslpreprocessor_parserinternal.h"
-    #else
-        #include "asl/aslpreprocessor_parserinternal.h"
-    #endif
+    #include "asl/aslpreprocessor_parserinternal.h"
 
     #include <QStack>
     #include <QStringBuilder>

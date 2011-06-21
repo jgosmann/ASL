@@ -1,39 +1,41 @@
 HEADERS += \
-    asl/annotated.h \
-    asl/annotatedglshader.h \
-    asl/annotatedglshadercompiler.h \
-    asl/annotatedglshaderprogram.h \
-    asl/aslcompiler.h \
-    asl/aslparser_internal.h \
-    asl/aslpreprocessor.h \
-    asl/aslpreprocessor_parserinternal.h \
-    asl/aslprogramcompiler.h \
-    asl/cachedannotatedglshadercompiler.h \
-    asl/defaultaslprogramcompiler.h \
-    asl/dependencylocator.h \
-    asl/gltypeinfo.h \
-    asl/gltypenames.h \
-    asl/glvariant.h \
-    asl/relativedependencylocator.h \
-    asl/shaderinfo.h \
-    asl/shaderparameterinfo.h \
-    asl/shaderparameterinfobuilder.h \
+    src/asl/annotated.h \
+    src/asl/annotatedglshader.h \
+    src/asl/annotatedglshadercompiler.h \
+    src/asl/annotatedglshaderprogram.h \
+    src/asl/aslcompiler.h \
+    src/asl/aslparser_internal.h \
+    src/asl/aslpreprocessor.h \
+    src/asl/aslpreprocessor_parserinternal.h \
+    src/asl/aslprogramcompiler.h \
+    src/asl/cachedannotatedglshadercompiler.h \
+    src/asl/defaultaslprogramcompiler.h \
+    src/asl/dependencylocator.h \
+    src/asl/gltypeinfo.h \
+    src/asl/gltypenames.h \
+    src/asl/glvariant.h \
+    src/asl/relativedependencylocator.h \
+    src/asl/shaderinfo.h \
+    src/asl/shaderparameterinfo.h \
+    src/asl/shaderparameterinfobuilder.h \
 
 SOURCES += \
-    asl/annotatedglshaderprogram.cpp \
-    asl/aslcompiler.cpp \
-    asl/aslpreprocessor.cpp \
-    asl/aslprogramcompiler.cpp \
-    asl/cachedannotatedglshadercompiler.cpp \
-    asl/gltypeinfo.cpp \
-    asl/gltypenames.cpp \
-    asl/glvariant.cpp \
-    asl/relativedependencylocator.cpp \
-    asl/shaderparameterinfobuilder.cpp \
+    src/asl/annotatedglshaderprogram.cpp \
+    src/asl/aslcompiler.cpp \
+    src/asl/aslpreprocessor.cpp \
+    src/asl/aslprogramcompiler.cpp \
+    src/asl/cachedannotatedglshadercompiler.cpp \
+    src/asl/gltypeinfo.cpp \
+    src/asl/gltypenames.cpp \
+    src/asl/glvariant.cpp \
+    src/asl/relativedependencylocator.cpp \
+    src/asl/shaderparameterinfobuilder.cpp \
 
-LEXSOURCES += asl/aslpreprocessor.l \
-    asl/aslparser.l
+LEXSOURCES += \
+    src/asl/aslpreprocessor.l \
+    src/asl/aslparser.l
 
-YACCSOURCES += asl/aslpreprocessor.y \
-    asl/aslparser.y
+YACCSOURCES += \
+    src/asl/aslpreprocessor.y \
+    src/asl/aslparser.y
 

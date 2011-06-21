@@ -1,5 +1,6 @@
-SOURCES += common/defaultabletest.cpp \
-    common/nullabletest.cpp
+SOURCES += \
+    test/common/defaultabletest.cpp \
+    test/common/nullabletest.cpp
 
 HEADERS +=
 
