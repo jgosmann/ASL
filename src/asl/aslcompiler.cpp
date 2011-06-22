@@ -27,8 +27,16 @@ asl::AnnotatedGLShader * ASLCompiler::compileFile(QGLShader::ShaderType type,
         const QString &filename)
 {
     QFile file(filename);
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        m_log += "ERROR: Could not open file \"" + filename + "\".\n";
+        return compile(type, "", filename);
+    }
+
     QTextStream inStream(&file);
-    return compile(type, inStream.readAll(), filename);
+    AnnotatedGLShader *retVal = compile(type, inStream.readAll(), filename);
+    file.close();
+    return retVal;
 }
 
 void ASLCompiler::reset()
