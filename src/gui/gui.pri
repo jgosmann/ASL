@@ -1,13 +1,18 @@
-SOURCES += gui/mainwindow.cpp gui/glimageviewer.cpp \
-    gui/shaderlistview.cpp \
-    gui/shaderlistmodel.cpp \
-    gui/shaderitemlist.cpp \
-    gui/shaderitem.cpp
+SOURCES += \
+    src/gui/mainwindow.cpp \
+    src/gui/glimageviewer.cpp \
+    src/gui/uniformoptiongenerator.cpp\
+    src/gui/shaderlistview.cpp \
+    src/gui/shaderitemlist.cpp \
+    src/gui/shaderitem.cpp
 
-HEADERS  += gui/mainwindow.h gui/glimageviewer.h \
-    gui/shaderlistview.h \
-    gui/shaderlistmodel.h \
-    gui/shaderitemlist.h \
-    gui/shaderitem.h
+HEADERS  += \
+    src/gui/mainwindow.h \
+    src/gui/glimageviewer.h \
+    src/gui/uniformoptiongenerator.h \
+    src/gui/shaderlistview.h \
+    src/gui/shaderitemlist.h \
+    src/gui/shaderitem.h
 
-FORMS    += gui/mainwindow.ui
+FORMS    += \
+    src/gui/mainwindow.ui

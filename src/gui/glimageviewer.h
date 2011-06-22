@@ -14,51 +14,63 @@
 #include <QGLFramebufferObject>
 #include <iostream>
 
-class GLImageViewer : public QGLWidget
-{
-    Q_OBJECT
+#include "asl/gltypeinfo.h"
 
-public:
-    GLImageViewer(QWidget *parent = NULL, Qt::WindowFlags f = 0);
-    virtual ~GLImageViewer();
+namespace gui {
 
-    void enableShaders(const int state);
+  /**
+  *  This class loads an abitrary image-file to the framebuffer and applies all
+  *  shaders in the current shaderProgram on it.
+  */
+  class GLImageViewer : public QGLWidget
+  {
+      Q_OBJECT
 
-public slots:
-    void clearImage();
-    void setImage(const QImage &image);
+  public:
+      GLImageViewer(QWidget *parent = NULL, Qt::WindowFlags f = 0);
+      virtual ~GLImageViewer();
 
-    void zoomImage(int value);
-    void loadImageFile();
-    void saveImageFile();
+      void enableShaders(const int state);
 
-signals:
-    void zoomChanged(int value);
 
-protected:
-    void virtual initializeGL();
-    void virtual resizeGL(int w, int h);
-    void virtual paintGL();
+  public slots:
+      void clearImage();
+      void setImage(const QImage &image);
 
-    void virtual keyPressEvent(QKeyEvent *event);
-    void virtual wheelEvent(QWheelEvent *event);
+      void loadImageFile();
+      void saveImageFile();
 
-private:
-    bool m_textureLoaded;
-    GLuint m_textureID;
+      void setImageZoom(int value);
 
-    bool m_useShaderProgram;
+  signals:
+      void zoomChanged(int value);
 
-    QImage m_image;
-    float m_imageRatio;
-    float m_imageZoom;
-    QSize m_imageSize;
-    QSize m_originalSize;
-    QVector<QGLFramebufferObject*> m_frameBufferObjects;
+  protected:
+      void virtual initializeGL();
+      void virtual resizeGL(int w, int h);
+      void virtual paintGL();
 
-    QGLShaderProgram m_shaderProgram;
+      void virtual keyPressEvent(QKeyEvent *event);
+      void virtual wheelEvent(QWheelEvent *event);
 
-    void calculateImageSize(int w, int h);
-};
+  private:
+      void renderToFramebuffer();
+
+      bool m_textureLoaded;
+      GLuint m_textureID;
+
+      bool m_useShaderProgram;
+
+      QImage *m_image;
+      float m_imageRatio;
+      float m_imageZoom;
+      QSize m_imageSize;
+      QSize m_originalSize;
+      QGLFramebufferObject *m_frameBuffer;
+
+      QGLShaderProgram *m_shaderProgram;
+  };
+
+}
 
 #endif // GLIMAGEVIEWER_H

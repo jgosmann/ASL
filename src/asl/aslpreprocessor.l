@@ -8,21 +8,19 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 %x DEFINE_DECL
 %x MACRO_DEF
 %x ARGLIST
+%x ERROR_DIRECTIVE
 
 %{
+    #include <cassert>
     #include <QByteArray>
     #include <QStack>
     #include <QTextStream>
 
-    #ifdef TEST
-        #include "../src/asl/aslpreprocessor_parserinternal.h"
-    #else
-        #include "asl/aslpreprocessor_parserinternal.h"
-    #endif
+    #include "asl/aslpreprocessor_parserinternal.h"
 
     #include "aslpreprocessor_yacc.h"
 
-    void aslpreprocessorerror(char *msg);
+    void aslpreprocessorerror(const char *msg);
 
     using namespace asl::ppinternal;
 
@@ -41,20 +39,32 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
          */
         bool doMacroExpansions = false;
 
+        void popInput();
+
         /**
          * Does macro expansion by pushing a new buffer on the stack.
          *
          * \arg \a arguments has to be \c NULL if the expanded macro has no
          *     arguments. If it is a macro with an empty argument list
-         *     (<tt>#define MACRO()</tt>) you have to pass the pointer to an
+         *     (<tt>\#define MACRO()</tt>) you have to pass the pointer to an
          *     empty list.
          */
-        void expandMacro(const QString &macroName,
+        void handleMacro(const QString &macroName,
                 const QStringList *arguments);
+        QString expandPredefinedMacro(const QString &macroName,
+                const QStringList *arguments);
+        bool checkIfValidMacroAndLogErrorIfNot(const QString &macroName,
+                const QStringList *arguments);
+        QString expandUserMacro(const QString &macroName,
+                const QStringList *arguments);
+        void pushExpandedMacro(const QString &macroName,
+                const QString &expansion);
 
         /** \attention Destroys \c yytext! */
         bool argumentListFollows();
         QStringList readArgumentList();
+
+        QString readErrorDirective();
 
     } /* namespace ppinternal */
     } /* namespace asl */
@@ -62,7 +72,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 
 %%
 
-<INITIAL>"/*""/"?([^*/]*"*")+"/" {
+<INITIAL>"/*"("/"?[^*/]*("*"[^/])?)+"*/" {
     aslpreprocessorlval.string = new QString(yytext);
     return CHARACTERS;
 }
@@ -73,15 +83,25 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 }
 
 <INITIAL>{directivePrefix}define {
-    BEGIN DEFINE_DECL;
-    doMacroExpansions = false;
-    return DEFINE;
+    if (excludeIfNestingLevel > 0) {
+        aslpreprocessorlval.string = new QString(yytext);
+        return CHARACTERS;
+    } else {
+        BEGIN DEFINE_DECL;
+        doMacroExpansions = false;
+        return DEFINE;
+    }
 }
 
 <INITIAL>{directivePrefix}undef {
-    BEGIN PP_LINE;
-    doMacroExpansions = false;
-    return UNDEF;
+    if (excludeIfNestingLevel > 0) {
+        aslpreprocessorlval.string = new QString(yytext);
+        return CHARACTERS;
+    } else {
+        BEGIN PP_LINE;
+        doMacroExpansions = false;
+        return UNDEF;
+    }
 }
 
 <INITIAL>{directivePrefix}if {
@@ -120,6 +140,18 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     return ENDIF;
 }
 
+<INITIAL>{directivePrefix}error[^\n] {
+    BEGIN ERROR_DIRECTIVE;
+    doMacroExpansions = false;
+    return ERROR;
+}
+
+<INITIAL>{directivePrefix}line {
+    BEGIN PP_LINE;
+    doMacroExpansions = false;
+    return LINE;
+}
+
 <PP_LINE>[-+*/%()<>!&^|~] { return *yytext; }
 <PP_LINE>"==" { return EQ; }
 <PP_LINE>"!=" { return NE; }
@@ -151,9 +183,9 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
                 && macroTable.value(identifier).arguments != NULL;
         if (macroHasArgList && argumentListFollows()) {
             QStringList arguments = readArgumentList();
-            expandMacro(identifier, &arguments);
+            handleMacro(identifier, &arguments);
         } else {
-            expandMacro(identifier, NULL);
+            handleMacro(identifier, NULL);
         }
     }
 }
@@ -196,7 +228,18 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     return CHARACTERS;
 }
 
-<PP_LINE,DEFINE_DECL,MACRO_DEF>\n {
+<PP_LINE,DEFINE_DECL,MACRO_DEF,ERROR_DIRECTIVE>"/*""/"?([^*/]*"*")+"/" { }
+<ERROR_DIRECTIVE>"//".*\n {
+    BEGIN INITIAL;
+    return ENDPP;
+}
+
+<ERROR_DIRECTIVE>. {
+    aslpreprocessorlval.string = new QString(yytext);
+    return CHARACTERS;
+}
+
+<PP_LINE,DEFINE_DECL,MACRO_DEF,ERROR_DIRECTIVE>\n {
     BEGIN INITIAL;
     return ENDPP;
 }
@@ -221,16 +264,19 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
     return CHARACTERS;
 }
 
+<PP_LINE,DEFINE_DECL,ARGLIST>. { }
+
 %%
 
 int yywrap(void)
 {
-    yypop_buffer_state();
-    delete readBuffers.pop();
-    if (!macroExpansionStack.isEmpty()) {
-        macroExpansionStack.removeFirst();
+    popInput();
+    if (!YY_CURRENT_BUFFER) {
+        resetAndClean();
+        return 1;
+    } else {
+        return 0;
     }
-    return !YY_CURRENT_BUFFER;
 }
 
 namespace asl
@@ -251,24 +297,75 @@ void clean()
 }
 
 void resetAndClean() {
+    clean();
     yylineno = 1;
     doMacroExpansions = false;
-    clean();
+    ifNestingLevel = 0;
+    excludeIfNestingLevel = 0;
+}
+
+void popInput() {
+    yypop_buffer_state();
+    delete readBuffers.pop();
+    if (!macroExpansionStack.isEmpty()) {
+        macroExpansionStack.removeFirst();
+    }
 }
 
 void pushInput(const QString &sourcecode)
 {
     readBuffers.push(new QByteArray(sourcecode.toAscii()));
+
+    if (readBuffers.size() == 1) {
+        if (sourcecode.rightRef(1) != "\n") {
+            readBuffers.top()->append('\n');
+        }
+    }
+
     yypush_buffer_state(YY_CURRENT_BUFFER);
     yy_scan_string(readBuffers.top()->constData());
 }
 
-void expandMacro(const QString &macroName, const QStringList *arguments)
+void handleMacro(const QString &macroName, const QStringList *arguments)
+{
+    QString expansion = expandPredefinedMacro(macroName, arguments);
+    bool expandedMacro = !expansion.isEmpty();
+
+    if (!expandedMacro) {
+        if (!checkIfValidMacroAndLogErrorIfNot(macroName, arguments)) {
+            return;
+        }
+        expansion = expandUserMacro(macroName, arguments);
+    }
+
+    pushExpandedMacro(macroName, expansion);
+}
+
+QString expandPredefinedMacro(const QString &macroName,
+        const QStringList *arguments)
+{
+    /* Suppress unused argument warning. Maybe there will be predefined macros
+     * with arguments in later versions.
+     */
+    (void) arguments;
+
+    if ("__LINE__" == macroName) {
+        return QString::number(aslpreprocessorlineno);
+    } else if("__FILE__" == macroName) {
+        return QString::number(sourceStringNo);
+    } else if("__VERSION__" == macroName) {
+        return QString::number(glslVersion);
+    }
+    return "";
+}
+
+bool checkIfValidMacroAndLogErrorIfNot(const QString &macroName,
+        const QStringList *arguments)
 {
     if (!isDefined(macroName)) {
         aslpreprocessorerror(
             ("undefined macro: " + macroName).toAscii().data());
-        return;
+        return false;
     }
 
     const Macro &macro = macroTable.value(macroName);
@@ -278,19 +375,28 @@ void expandMacro(const QString &macroName, const QStringList *arguments)
             aslpreprocessorerror(
                 ("Macro " + macroName + " has too few arguments.")
                 .toAscii().data());
-            return;
+            return false;
         } else if (arguments->size() > macro.arguments->size()) {
             aslpreprocessorerror(
                 ("Macro " + macroName + " has too many arguments.")
                 .toAscii().data());
-            return;
+            return false;
         }
     }
 
+    return true;
+}
+
+QString expandUserMacro(const QString &macroName, const QStringList *arguments)
+{
+    assert(checkIfValidMacroAndLogErrorIfNot(macroName, arguments));
+
+    const Macro &macro = macroTable.value(macroName);
+
     QStringList expansion;
     foreach (MacroPart part, *(macro.parts.data())) {
-        bool isMacroArgument =
-            part.isArgument && macro.arguments->contains(part.text);
+        bool isMacroArgument = macro.arguments
+            && part.isArgument && macro.arguments->contains(part.text);
         if (arguments && isMacroArgument) {
             const unsigned int argIdx = macro.arguments->indexOf(part.text);
             const QString argExpansion = arguments->at(argIdx);
@@ -299,8 +405,14 @@ void expandMacro(const QString &macroName, const QStringList *arguments)
             expansion.append(part.text);
         }
     }
+
+    return expansion.join("");
+}
+
+void pushExpandedMacro(const QString &macroName, const QString &expansion)
+{
     macroExpansionStack.prepend(macroName);
-    pushInput(expansion.join(""));
+    pushInput(expansion);
 }
 
 bool argumentListFollows()
@@ -314,21 +426,21 @@ QStringList readArgumentList()
 {
     QStringList arguments = QStringList(QString());
 
-    unsigned int parenthesisNestingLevel = 0;
+    unsigned int parenthesisifNestingLevelLevel = 0;
     char c;
 
     do {
         c = yyinput();
         if ('(' == c) {
-            ++parenthesisNestingLevel;
+            ++parenthesisifNestingLevelLevel;
         } else if (')' == c) {
-            --parenthesisNestingLevel;
-        } else if (',' == c && parenthesisNestingLevel == 1) {
+            --parenthesisifNestingLevelLevel;
+        } else if (',' == c && parenthesisifNestingLevelLevel == 1) {
             arguments.append(QString());
         } else {
             arguments.back() += c;
         }
-    } while (parenthesisNestingLevel > 0);
+    } while (parenthesisifNestingLevelLevel > 0);
 
     return arguments;
 }

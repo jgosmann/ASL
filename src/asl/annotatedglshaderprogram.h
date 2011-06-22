@@ -1,45 +1,34 @@
-#ifndef ANNOTATEDGLSHADER_H
-#define ANNOTATEDGLSHADER_H
+#ifndef ANNOTATEDGLSHADERPROGRAM_H
+#define ANNOTATEDGLSHADERPROGRAM_H
 
 #include <QGLShaderProgram>
+#include <QList>
+#include <QSharedPointer>
+#include <QStringList>
 
-#include "shaderparameterinfo.h"
+#include "annotated.h"
+#include "shaderinfo.h"
 
 namespace asl
 {
-class AnnotatedGLShaderProgram : public QGLShaderProgram
+class AnnotatedGLShaderProgram : public QGLShaderProgram, public Annotated
 {
-    Q_OBJECT
-
-    Q_PROPERTY(QString name READ name)
-    Q_PROPERTY(QString description READ description)
 
 public:
-    explicit AnnotatedGLShaderProgram(const QString &name,
-            const QString &description);
+    AnnotatedGLShaderProgram(const ShaderInfo &shaderInfo)
+            : QGLShaderProgram(static_cast<QObject *>(NULL)),
+            Annotated(shaderInfo) { }
 
-    inline const QString & name() const {
-        return m_name;
-    }
-
-    inline const QString & description() const {
-        return m_description;
-    }
-
-    inline const asl::ShaderParameterInfo & parameterInfo() const {
-        return m_parameterInfo;
-    }
+    bool addSharedShader(QSharedPointer<QGLShader> shader);
 
 signals:
 
 public slots:
 
 private:
-    const QString m_name;
-    const QString m_description;
-    const asl::ShaderParameterInfo m_parameterInfo;
+    QList<QSharedPointer<QGLShader> > m_shadersInUse;
 
 };
 }
 
-#endif // ANNOTATEDGLSHADER_H
+#endif // ANNOTATEDGLSHADERPROGRAM_H

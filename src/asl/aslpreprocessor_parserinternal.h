@@ -7,15 +7,19 @@
 #include <QStringList>
 #include <QTextStream>
 
-#include "compilationexception.h"
-
 extern int aslpreprocessorlineno;
 
 namespace asl
 {
 namespace ppinternal
 {
+    extern unsigned int sourceStringNo;
+    extern unsigned int glslVersion;
+
     extern QString log;
+    extern bool success;
+    extern int ifNestingLevel;
+    extern int excludeIfNestingLevel;
 
     typedef struct macroPart_t {
         bool isArgument;

@@ -1,14 +1,11 @@
 
 %{
-    #ifdef TEST
-        #include "../src/asl/aslpreprocessor_parserinternal.h"
-    #else
-        #include "asl/aslpreprocessor_parserinternal.h"
-    #endif
+    #include "asl/aslpreprocessor_parserinternal.h"
 
+    #include <QStack>
     #include <QStringBuilder>
 
-    void yyerror(char *msg);
+    void yyerror(const char *msg);
     int yylex();
 
     using namespace asl::ppinternal;
@@ -17,9 +14,19 @@
     {
     namespace ppinternal
     {
+        unsigned int sourceStringNo;
+        unsigned int glslVersion = 0;
+
         QTextStream *outStream;
         QString log;
+        bool success;
+        int ifNestingLevel;
+        int excludeIfNestingLevel;
+        QStack<bool> ifConditionResults;
         QHash<QString, Macro> macroTable;
+
+        void handleIfBlockStart(bool isTrue);
+        void handleIfBlockEnd();
     } /* namespace ppinternal */
     } /* namespace asl */
 
@@ -39,10 +46,11 @@
 %type <macroParts> macrodef
 %type <parsed> part stmt pp
 %type <parsed> ifclause elseclause
+%type <string> errormsg
 
 /* Do not reorder the tokens! The order matters! */
 %token <string> CHARACTERS
-%token DEFINE ENDPP UNDEF IF ELIF IFDEF IFNDEF ELSE ENDIF
+%token DEFINE ENDPP UNDEF IF ELIF IFDEF IFNDEF ELSE ENDIF ERROR LINE
 %token <string> IDENTIFIER
 %token <integer> INTEGER
 
@@ -75,7 +83,29 @@ pp:
     define { $$ = new QStringList(); }
     | undef { $$ = new QStringList(); }
     | ifclause { $$ = $1; }
+    | ERROR errormsg ENDPP {
+            $$ = new QStringList();
+            --aslpreprocessorlineno; // because of ENDPP we are already in the
+                                     // next line.
+            yyerror($2->toAscii().data());
+            ++aslpreprocessorlineno;
+            delete $2;
+        }
+    | LINE INTEGER ENDPP {
+            aslpreprocessorlineno = $2 + 1;
+            $$ = new QStringList();
+        }
+    | LINE INTEGER INTEGER ENDPP {
+            aslpreprocessorlineno = $2 + 1;
+            sourceStringNo = $3;
+            $$ = new QStringList();
+        }
     | error ENDPP { $$ = new QStringList(); }
+    ;
+
+errormsg:
+    errormsg CHARACTERS { $$ = $1; $$->append($2); delete $2; }
+    | { $$ = new QString(); }
     ;
 
 expr:
@@ -156,13 +186,13 @@ macrodef:
 
 undef: UNDEF IDENTIFIER ENDPP { macroTable.remove(*$2); delete $2; };
 
-ifclause: ifstart part elseclause ENDIF ENDPP {
+ifclause: ifstart { ++ifNestingLevel; ifConditionResults.push($1 != 0); handleIfBlockStart($1 != 0); } part { handleIfBlockEnd(); } elseclause ENDIF { ifConditionResults.pop(); --ifNestingLevel; } ENDPP {
         if ($1 != 0) {
-            $$ = $2;
-            delete $3;
-        } else {
             $$ = $3;
-            delete $2;
+            delete $5;
+        } else {
+            $$ = $5;
+            delete $3;
         }
     };
 
@@ -173,14 +203,14 @@ ifstart:
       ;
 
 elseclause:
-    ELSE ENDPP part { $$ = $3; }
-    | elif part elseclause {
+    ELSE ENDPP { handleIfBlockStart(!ifConditionResults.top()); } part { handleIfBlockEnd(); $$ = $4; }
+    | elif { handleIfBlockStart(!ifConditionResults.top() && $1 != 0); ifConditionResults.top() = ($1 != 0); } part { handleIfBlockEnd(); } elseclause {
         if ($1 != 0) {
-            $$ = $2;
-            delete $3;
-        } else {
             $$ = $3;
-            delete $2;
+            delete $5;
+        } else {
+            $$ = $5;
+            delete $3;
         } }
     | { $$ = new QStringList(); }
     ;
@@ -197,10 +227,12 @@ elif: ELIF expr ENDPP { $$ = $2; };
 
 using namespace asl::ppinternal;
 
-void yyerror(char *msg)
+void yyerror(const char *msg)
 {
-    log = log % QString::number(aslpreprocessorlineno) % ": (preprocessor) "
-            % QString(msg) % QChar('\n');
+    success = false;
+    log = log % "ERROR: " % QString::number(sourceStringNo) % QChar(':')
+            % QString::number(aslpreprocessorlineno)
+            % ": (preprocessor) " % QString(msg) % QChar('\n');
 }
 
 namespace asl
@@ -218,8 +250,23 @@ bool isDefined(const QString &macroName)
     return macroTable.contains(macroName);
 }
 
+void handleIfBlockStart(bool isTrue)
+{
+    if (!isTrue && excludeIfNestingLevel == 0) {
+        excludeIfNestingLevel = ifNestingLevel;
+    }
+}
+
+void handleIfBlockEnd()
+{
+    if (ifNestingLevel == excludeIfNestingLevel) {
+        excludeIfNestingLevel = 0;
+    }
+}
+
 void parse(const QString &sourcecode, QTextStream *out)
 {
+    success = true;
     outStream = out;
     pushInput(sourcecode);
     yyparse();

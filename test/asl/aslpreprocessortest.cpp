@@ -1,11 +1,14 @@
 #include <QRegExp>
 #include <QScopedPointer>
 #include <QString>
+#include <QStringList>
 
 #include "../src/asl/aslpreprocessor.h"
-#include "../src/asl/compilationexception.h"
 
-#include "common.h"
+#include "../testenv.h"
+
+#include "logassertions.h"
+#include "logentry.h"
 
 namespace asl
 {
@@ -24,11 +27,13 @@ public:
     void excludesIfNDefPartIfMacroIsDefined()
     {
         const QString input(
-                "#define INCLUDE\n"
-                "#ifndef INCLUDE\n"
+                "#define MACRO\n"
+                "#ifndef MACRO\n"
                 "    /* should not be included */\n"
+                "    #define EXCLUDE\n"
                 "#endif\n"
-                "/* should be included */\n");
+                "/* should be included */\n"
+                + inputToAssertMacroIsUndefined("EXCLUDE"));
 
         const QString expected = "/* should be included */\n";
         testProcessing(input, expected);
@@ -78,7 +83,8 @@ public:
     {
         const QString input("#ifndef UNDEFINED_MACRO\n");
         preprocessor.process(input);
-        assertLoggedError(2, QRegExp(".*syntax.*"));
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
+                .withMessageMatching(QRegExp(".*syntax.*")));
     }
 
     void excludesIfdefPartIfMacroNotDefined()
@@ -86,8 +92,10 @@ public:
         const QString input(
                 "#ifdef UNDEFINED_MACRO\n"
                 "/* should be excluded */\n"
+                "#define EXCLUDE\n"
                 "#endif\n"
-                "/* should be included */\n");
+                "/* should be included */\n"
+                + inputToAssertMacroIsUndefined("EXCLUDE"));
         const QString output("/* should be included */\n");
         testProcessing(input, output);
     }
@@ -114,11 +122,17 @@ public:
         const QString input(
                 "#ifdef UNDEFINED_MACRO\n"
                 "    /* exclude 1 */\n"
+                "    #define EXCLUDE1\n"
                 "    #ifndef UNDEFINED_MACRO\n"
                 "        /* exclude 2 */\n"
+                "        #define EXCLUDE2\n"
                 "    #endif\n"
                 "    /* exclude 3 */\n"
-                "#endif\n");
+                "    #define EXCLUDE2\n"
+                "#endif\n"
+                + inputToAssertMacroIsUndefined("EXCLUDE1")
+                + inputToAssertMacroIsUndefined("EXCLUDE2")
+                + inputToAssertMacroIsUndefined("EXCLUDE3"));
         testProcessing(input, "");
     }
 
@@ -127,11 +141,16 @@ public:
         const QString input(
                 "#ifndef UNDEFINED_MACRO\n"
                 "    /* include 1 */\n"
+                "    #define INCLUDE1\n"
                 "    #ifdef UNDEFINED_MACRO\n"
                 "        /* exclude */\n"
+                "        #define EXCLUDE\n"
                 "    #endif\n"
                 "    /* include 2 */\n"
-                "#endif\n");
+                "    #define INCLUDE2\n"
+                "#endif\n"
+                + inputToAssertMacroIsUndefined("EXCLUDE")
+                + inputToAssertNCountedMacrosAreDefined("INCLUDE", 2));
         const QString expectedOutput(
                 "    /* include 1 */\n"
                 "    /* include 2 */\n");
@@ -143,9 +162,13 @@ public:
         const QString input(
                 "#ifdef UNDEFINED_MACRO\n"
                 "    /* exclude */\n"
+                "    #define EXCLUDE\n"
                 "#else\n"
                 "    /* include */\n"
-                "#endif\n");
+                "    #define INCLUDE\n"
+                "#endif\n"
+                + inputToAssertMacroIsUndefined("EXCLUDE")
+                + inputToAssertMacroIsDefined("INCLUDE"));
         const QString expectedOutput("    /* include */\n");
         testProcessing(input, expectedOutput);
     }
@@ -155,9 +178,13 @@ public:
         const QString input(
                 "#ifndef UNDEFINED_MACRO\n"
                 "    /* include */\n"
+                "    #define INCLUDE\n"
                 "#else\n"
                 "    /* exclude */\n"
-                "#endif\n");
+                "    #define EXCLUDE\n"
+                "#endif\n"
+                + inputToAssertMacroIsUndefined("EXCLUDE")
+                + inputToAssertMacroIsDefined("INCLUDE"));
         const QString expectedOutput("    /* include */\n");
         testProcessing(input, expectedOutput);
     }
@@ -167,27 +194,40 @@ public:
         const QString input(
             "#ifdef UNDEFINED_MACRO\n"
             "    /* exclude 1 */\n"
+            "    #define EXCLUDE1\n"
             "    #ifdef UNDEFINED_MACRO\n"
             "        /* exclude 2 */\n"
+            "        #define EXCLUDE2\n"
             "    #else\n"
             "        /* exclude 3 */\n"
+            "        #define EXCLUDE3\n"
             "    #endif\n"
             "    /* exclude 4 */\n"
+            "    #define EXCLUDE4\n"
             "#else\n"
             "    /* include 1 */\n"
+            "    #define INCLUDE1\n"
             "    #ifdef UNDEFINED_MACRO\n"
-            "        /* exclude 4 */\n"
+            "        /* exclude 5 */\n"
+            "        #define EXCLUDE5\n"
             "    #else\n"
             "        /* include 2 */\n"
+            "        #define INCLUDE2\n"
             "    #endif\n"
             "    /* include 3 */\n"
+            "    #define INCLUDE3\n"
             "    #ifndef UNDEFINED_MACRO\n"
             "        /* include 4 */\n"
+            "        #define INCLUDE4\n"
             "    #else\n"
-            "        /* exclude 5 */\n"
+            "        /* exclude 6 */\n"
+            "        #define EXCLUDE6\n"
             "    #endif\n"
             "    /* include 5 */\n"
-            "#endif\n");
+            "    #define INCLUDE5\n"
+            "#endif\n"
+            + inputToAssertNCountedMacrosAreDefined("INCLUDE", 5)
+            + inputToAssertNCountedMacrosAreUndefined("EXCLUDE", 6));
         const QString expectedOutput(
             "    /* include 1 */\n"
             "        /* include 2 */\n"
@@ -219,7 +259,9 @@ public:
         const QString input(
                 "#if 1\n"
                 "/* include */\n"
-                "#endif\n");
+                "#define INCLUDE\n"
+                "#endif\n"
+                + inputToAssertMacroIsDefined("INCLUDE"));
         const QString expectedOutput("/* include */\n");
         testProcessing(input, expectedOutput);
     }
@@ -229,9 +271,13 @@ public:
         const QString input(
                 "#if 0\n"
                 "/* exclude */\n"
+                "#define EXCLUDE\n"
                 "#else\n"
                 "/* include */\n"
-                "#endif\n");
+                "#define INCLUDE\n"
+                "#endif\n"
+                + inputToAssertMacroIsUndefined("EXCLUDE")
+                + inputToAssertMacroIsDefined("INCLUDE"));
         const QString expectedOutput("/* include */\n");
         testProcessing(input, expectedOutput);
     }
@@ -241,74 +287,104 @@ public:
         const QString input(
                 "#if 1\n"
                 "/* include */\n"
+                "#define INCLUDE\n"
                 "#elif 1\n"
                 "/* exclude 1 */\n"
+                "#define EXCLUDE1\n"
                 "#elif 1\n"
                 "/* exclude 2 */\n"
+                "#define EXCLUDE2\n"
                 "#else\n"
                 "/* exclude 3 */\n"
-                "#endif\n");
+                "#define EXCLUDE3\n"
+                "#endif\n"
+                + inputToAssertNCountedMacrosAreUndefined("EXCLUDE", 3)
+                + inputToAssertMacroIsDefined("INCLUDE"));
         const QString expectedOutput("/* include */\n");
         testProcessing(input, expectedOutput);
     }
 
     void ignoresElifPartsAndElsePartsAfterFirstMetCondition()
     {
-        const QString input(
+        QString input(
                 "#if 0\n"
                 "/* exclude 1 */\n"
+                "#define EXCLUDE1\n"
                 "#elif 0\n"
                 "/* exclude 2 */\n"
+                "#define EXCLUDE2\n"
                 "#elif 1\n"
                 "/* include */\n"
+                "#define INCLUDE\n"
                 "#elif 1\n"
                 "/* exclude 3 */\n"
+                "#define EXCLUDE3\n"
                 "#elif 1\n"
                 "/* exclude 4 */\n"
+                "#define EXCLUDE4\n"
                 "#else\n"
                 "/* exclude 5 */\n"
-                "#endif\n");
+                "#define EXCLUDE5\n"
+                "#endif\n"
+                + inputToAssertNCountedMacrosAreUndefined("EXCLUDE", 5)
+                + inputToAssertMacroIsDefined("INCLUDE"));
         const QString expectedOutput("/* include */\n");
         testProcessing(input, expectedOutput);
     }
 
     void includesElsePartIfNoIfOrElifConditionIsMet()
     {
-        const QString input(
+        QString input(
                 "#if 0\n"
                 "/* exclude 1 */\n"
+                "#define EXCLUDE1\n"
                 "#elif 0\n"
                 "/* exclude 2 */\n"
+                "#define EXCLUDE2\n"
                 "#elif 0\n"
                 "/* exclude 3 */\n"
+                "#define EXCLUDE3\n"
                 "#else\n"
                 "/* include */\n"
-                "#endif\n");
+                "#define INCLUDE\n"
+                "#endif\n"
+                + inputToAssertNCountedMacrosAreUndefined("EXCLUDE", 3)
+                + inputToAssertMacroIsDefined("INCLUDE"));
         const QString expectedOutput("/* include */\n");
         testProcessing(input, expectedOutput);
     }
 
     void handlesNestedElifs()
     {
-        const QString input(
+        QString input(
                 "#if 0\n"
                 "    /* exclude 1 */\n"
+                "    #define EXCLUDE1\n"
                 "    #if 0\n"
                 "        /* exclude 2 */\n"
+                "        #define EXCLUDE2\n"
                 "    #elif 1\n"
                 "        /* exlcude 3 */\n"
+                "        #define EXCLUDE3\n"
                 "    #endif\n"
                 "#elif 1\n"
                 "    /* include 1 */\n"
+                "    #define INCLUDE1\n"
                 "    #if 0\n"
                 "        /* exclude 4 */\n"
+                "        #define EXCLUDE4\n"
                 "    #elif 1\n"
                 "        /* include 2 */\n"
+                "        #define INCLUDE2\n"
                 "    #elif 1\n"
                 "        /* exclude 5 */\n"
+                "        #define EXCLUDE5\n"
                 "    #endif\n"
                 "    /* include 3 */\n"
-                "#endif\n");
+                "    #define INCLUDE3\n"
+                "#endif\n"
+                + inputToAssertNCountedMacrosAreUndefined("EXCLUDE", 5)
+                + inputToAssertNCountedMacrosAreDefined("INCLUDE", 3));
         const QString expectedOutput(
                 "    /* include 1 */\n"
                 "        /* include 2 */\n"
@@ -496,7 +572,8 @@ public:
                 "#if MACRO + 1\n"
                 "#endif\n");
         preprocessor.process(input);
-        assertLoggedError(2, QRegExp(".*argument.*"));
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 2)
+                .withMessageMatching(QRegExp(".*argument.*")));
     }
 
     void logsErrorIfTooFewArgumentsArePassedToMacro()
@@ -506,7 +583,8 @@ public:
                 "#if MACRO(1) + 1\n"
                 "#endif\n");
         preprocessor.process(input);
-        assertLoggedError(2, QRegExp(".*too\\s+few\\s+arguments.*"));
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 2)
+                .withMessageMatching(QRegExp(".*too\\s+few\\s+arguments.*")));
     }
 
     void logsErrorIfTooManyArgumentsArePassedToMacro()
@@ -516,7 +594,8 @@ public:
                 "#if MACRO(1, 1) + 1\n"
                 "#endif\n");
         preprocessor.process(input);
-        assertLoggedError(2, QRegExp(".*too\\s+many\\s+arguments.*"));
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 2)
+                .withMessageMatching(QRegExp(".*too\\s+many\\s+arguments.*")));
     }
 
     void logsErrorIfExpandingUndefinedMacro()
@@ -525,7 +604,8 @@ public:
                 "#if MACRO\n"
                 "#endif\n");
         preprocessor.process(input);
-        assertLoggedError(1, QRegExp(".*undefined.*"));
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
+               .withMessageMatching(QRegExp(".*undefined.*")));
     }
 
     void logsErrorIfPreprocessorDirectiveWithinAnother()
@@ -534,8 +614,10 @@ public:
                 "#define #if TEST\n"
                 "#if #define\n");
         preprocessor.process(input);
-        assertLoggedError(1, QRegExp(".*syntax.*"));
-        assertLoggedError(2, QRegExp(".*syntax.*"));
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
+               .withMessageMatching(QRegExp(".*syntax.*")));
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 2)
+               .withMessageMatching(QRegExp(".*syntax.*")));
     }
 
     void commentEndsDefine()
@@ -546,8 +628,7 @@ public:
                 "#if MACRO\n"
                 "    /* include */\n"
                 "#endif\n");
-        testProcessing(input, "/* some comment\n    spanning more than one "
-                "line */\n    /* include */\n");
+        testProcessing(input, "    /* include */\n");
     }
 
     void escapedNewlineContinuesDefine()
@@ -573,6 +654,15 @@ public:
         testProcessing(input, "");
     }
 
+    void unfulfilledIfClauseExcludesSyntaxErrors()
+    {
+        const QString input(
+                "#if 0\n"
+                "#define A(,,)\n"
+                "#endif\n");
+        testProcessing(input, "");
+    }
+
     void expandsMacrosInMacros()
     {
         const QString input(
@@ -582,6 +672,151 @@ public:
                 "    /* include */\n"
                 "#endif\n");
         testProcessing(input, "    /* include */\n");
+    }
+
+    void newlineAtEofNotRequired()
+    {
+        const QString input(
+                "#if 1\n"
+                "/* include */\n"
+                "#endif");
+        testProcessing(input, "/* include */\n");
+    }
+
+    void errorDirectiveGeneratesError()
+    {
+        const QString input("#error message\n");
+        preprocessor.process(input);
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
+               .withMessageMatching(QRegExp(".*message.*")));
+    }
+
+    void excludesCommentsFromErrorDirective()
+    {
+        const QString input("#error part1 /* comment */ part2 // end\n");
+        preprocessor.process(input);
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 1)
+               .withMessageMatching(QRegExp(".*part1  part2.*")));
+    }
+
+    void allowsCommentsInDirectives()
+    {
+        const QString input(
+                "#define /* c */ INCLUDE1 /* c */ 1 /* c */\n"
+                "#ifdef /* c */ INCLUDE1 /* c */\n"
+                "    #define INCLUDE2\n"
+                "#endif /* c */\n"
+                "#ifndef /* c */ UNDEF /* c */\n"
+                "    #define INCLUDE3\n"
+                "#endif\n"
+                "#if /* c */ 1 /* c */\n"
+                "    #define INCLUDE4\n"
+                "#endif\n"
+                "#if 0\n"
+                "#elif /* c */ 1 /* c */\n"
+                "    #define INCLUDE5\n"
+                "#endif\n"
+                "#if 0\n"
+                "#else /* c */\n"
+                "    #define INCLUDE6\n"
+                "#endif\n"
+                + inputToAssertNCountedMacrosAreDefined("INCLUDE", 6));
+        testProcessing(input, "");
+    }
+
+    void handlesElifAfterIfdef()
+    {
+        const QString input(
+                "#ifdef UNDEFINED\n"
+                "#elif 1\n"
+                "#define INCLUDE\n"
+                "#endif\n"
+                + inputToAssertMacroIsDefined("INCLUDE"));
+        testProcessing(input, "");
+    }
+
+    void handlesElifAfterIfndef()
+    {
+        const QString input(
+                "#define DEFINED\n"
+                "#ifndef DEFINED\n"
+                "#elif 1\n"
+                "#define INCLUDE\n"
+                "#endif\n"
+                + inputToAssertMacroIsDefined("INCLUDE"));
+        testProcessing(input, "");
+    }
+
+    void lineDirectiveChangesLine()
+    {
+        const QString input(
+                "#line 42\n"
+                "#define X(,,)\n");
+        preprocessor.process(input);
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(0, 43));
+    }
+
+    void lineDirectiveChangesLineAndSourceStringNumber()
+    {
+        const QString input(
+                "#line 42 23\n"
+                "#define X(,,)\n");
+        preprocessor.process(input);
+        assertFailedAndLogged(asl::LogEntry().withType(LOG_ERROR).occuringAt(23, 43));
+    }
+
+    void testLineMacro()
+    {
+        const QString input(
+                "/* line 1 */\n"
+                "#if __LINE__ == 2\n"
+                "/* include */\n"
+                "#endif\n");
+        testProcessing(input, "/* line 1 */\n/* include */\n");
+    }
+
+    void testFileMacro()
+    {
+        const QString input(
+                "#if __FILE__ == 2\n"
+                "/* include */\n"
+                "#endif\n");
+        testProcessing(input, "/* include */\n", 2);
+    }
+
+    void testVersionMacro()
+    {
+        const QString input(
+                "#if __VERSION__ >= 110\n"
+                "/* include */\n"
+                "#endif\n");
+        testProcessing(input, "/* include */\n");
+    }
+
+    void parsesVersionString()
+    {
+        CPPUNIT_ASSERT_EQUAL(
+            ASLPreprocessor::parseGlslVersionString(
+                reinterpret_cast<const GLubyte *>("2.1")),
+            (unsigned int) 210);
+        CPPUNIT_ASSERT_EQUAL(
+            ASLPreprocessor::parseGlslVersionString(
+                reinterpret_cast<const GLubyte *>("1.1.3")),
+            (unsigned int) 113);
+        CPPUNIT_ASSERT_EQUAL(
+            ASLPreprocessor::parseGlslVersionString(
+                reinterpret_cast<const GLubyte *>("1.2 vendor specific")),
+            (unsigned int) 120);
+        CPPUNIT_ASSERT_EQUAL(
+            ASLPreprocessor::parseGlslVersionString(
+                reinterpret_cast<const GLubyte *>("1.1.4 vendor specific")),
+            (unsigned int) 114);
+    }
+
+    void allowsMultipleSlashesInMultilineComments()
+    {
+        const QString input("/*\n/ /***\n#define X 1\n / \n*/\n");
+        testProcessing(input, input);
     }
 
     CPPUNIT_TEST_SUITE(ASLPreprocessorTest);
@@ -639,16 +874,31 @@ public:
     CPPUNIT_TEST(logsErrorIfPreprocessorDirectiveWithinAnother);
     CPPUNIT_TEST(commentEndsDefine);
     CPPUNIT_TEST(escapedNewlineContinuesDefine);
-    //CPPUNIT_TEST(unfulfilledIfClauseExcludesDefine);
-    //CPPUNIT_TEST(expandsMacrosInMacros);
+    CPPUNIT_TEST(unfulfilledIfClauseExcludesDefine);
+    CPPUNIT_TEST(unfulfilledIfClauseExcludesSyntaxErrors);
+    CPPUNIT_TEST(expandsMacrosInMacros);
+    CPPUNIT_TEST(newlineAtEofNotRequired);
+    CPPUNIT_TEST(errorDirectiveGeneratesError);
+    CPPUNIT_TEST(excludesCommentsFromErrorDirective);
+    CPPUNIT_TEST(allowsCommentsInDirectives);
+    CPPUNIT_TEST(handlesElifAfterIfdef);
+    CPPUNIT_TEST(handlesElifAfterIfndef);
+    CPPUNIT_TEST(lineDirectiveChangesLine);
+    CPPUNIT_TEST(lineDirectiveChangesLineAndSourceStringNumber);
+    CPPUNIT_TEST(testLineMacro);
+    CPPUNIT_TEST(testFileMacro);
+    CPPUNIT_TEST(testVersionMacro);
+    CPPUNIT_TEST(parsesVersionString);
+    CPPUNIT_TEST(allowsMultipleSlashesInMultilineComments);
     CPPUNIT_TEST_SUITE_END();
 
 private:
-    void testProcessing(const QString &input, const QString &expectedOutput)
+    void testProcessing(const QString &input, const QString &expectedOutput,
+            unsigned int sourceStringNo = 0)
     {
         CPPUNIT_ASSERT_EQUAL(expectedOutput.toStdString(),
-                preprocessor.process(input).toStdString());
-        assertLogIsEmpty();
+                preprocessor.process(input, sourceStringNo).toStdString());
+        assertSuccess();
     }
 
     bool expressionResultsInZero(const QString &expression)
@@ -663,40 +913,88 @@ private:
                 "    /* is zero */\n"
                 "#endif\n");
         const QString output = preprocessor.process(input);
-        assertLogIsEmpty();
+        assertSuccess();
         return output == "    /* is zero */\n";
     }
 
-    void assertLoggedError(unsigned int line,
-            const QRegExp &mustContain = QRegExp(".*"))
+    void assertFailedAndLogged(asl::LogEntry entry)
     {
-        const QRegExp matcher("(\\d+):\\s+\\(preprocessor\\)\\s+([^\r\n]*)");
-        const QString log = preprocessor.log();
 
-        int matchIdx = -1;
-        while (0 <= (matchIdx = matcher.indexIn(log, matchIdx + 1))) {
-            //printf(">%s<", matcher.cap(0).toAscii().constData());
-            bool lineCorrect = (matcher.cap(1).toUInt() == line);
-            bool mustContainCorrect =
-                (0 <= mustContain.indexIn(matcher.cap(2)));
-            if (lineCorrect && mustContainCorrect) {
-                return;
-            }
+        CPPUNIT_ASSERT(!preprocessor.success());
+        asl::assertLogContains(preprocessor.log(),
+                entry.withMessageMatching(
+                    prefixRegexWithPreprocessorIndicator(entry.matchesMsg())));
+    }
+
+    QRegExp prefixRegexWithPreprocessorIndicator(QRegExp regex)
+    {
+        switch (regex.patternSyntax()) {
+            case QRegExp::Wildcard: /* fall through */
+            case QRegExp::WildcardUnix: /* fall through */
+            case QRegExp::FixedString:
+                regex.setPattern("(preprocessor) " + regex.pattern());
+                break;
+            default:
+                regex.setPattern("\\(preprocessor\\) " + regex.pattern());
+                break;
         }
-
-        CPPUNIT_FAIL(("Expected error containing \"" + mustContain.pattern()
-                + "\" in line " + QString::number(line) + ". Actual log:\n"
-                + log).toAscii().constData());
+        return regex;
     }
 
-    void assertLogIsEmpty()
+    void assertSuccess()
     {
-        CPPUNIT_ASSERT(preprocessor.log().length() <= 0);
+        if (!preprocessor.success()) {
+            CPPUNIT_FAIL(("Error while preprocessing file:\n"
+                    + preprocessor.log()).toAscii().constData());
+        }
     }
 
+    QString inputToAssertNCountedMacrosAreDefined(const QString &macroName,
+            unsigned int count)
+    {
+        QStringList input;
+        for (unsigned int i = 0; i < count; ++i) {
+            input.append(inputToAssertMacroIsDefined(
+                    macroName + QString::number(i + 1)));
+        }
+        return input.join("");
+    }
+
+    QString inputToAssertNCountedMacrosAreUndefined(const QString &macroName,
+            unsigned int count)
+    {
+        QStringList input;
+        for (unsigned int i = 0; i < count; ++i) {
+            input.append(inputToAssertMacroIsUndefined(
+                    macroName + QString::number(i + 1)));
+        }
+        return input.join("");
+    }
+
+    QString inputToAssertMacroIsDefined(const QString &macroName)
+    {
+        return QString(
+                "#ifndef " + macroName + "\n"
+                "/* Macro " + macroName + " undefined, but should be "
+                    "defined. */\n"
+                "#endif\n");
+    }
+
+    QString inputToAssertMacroIsUndefined(const QString &macroName)
+    {
+        return QString(
+                "#ifdef " + macroName + "\n"
+                "/* Macro " + macroName + " defined, but should be "
+                    "undefined. */\n"
+                "#endif\n");
+    }
 
     asl::ASLPreprocessor preprocessor;
+
+    static const QString LOG_ERROR;
 };
+
+const QString ASLPreprocessorTest::LOG_ERROR("ERROR");
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(asl::ASLPreprocessorTest);
