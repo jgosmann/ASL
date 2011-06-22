@@ -33,6 +33,10 @@ MainWindow::MainWindow(QWidget *parent) :
               QGLFramebufferObject*)),
             ui->glDisplay, SLOT(updateFramebufferObject(
               QGLFramebufferObject*)));
+
+    connect(ui->pushButton_AddShader,SIGNAL(clicked()),this,SLOT(loadShaderDialog()));
+
+
 }
 
 MainWindow::~MainWindow()
@@ -40,4 +44,22 @@ MainWindow::~MainWindow()
     delete ui;
     delete m_sharedContext;
     delete m_glImageRenderer;
+}
+
+void MainWindow::loadShaderDialog()
+{
+    QString s = QFileDialog::getOpenFileName(this,"Load Shader");
+
+    if(s != QString::null){
+        Shader* shader = compiler.compileFile(QGLShader::Fragment,s);
+        if(compiler.success()){
+            QSharedPointer<Shader> shaderPointer = QSharedPointer<Shader>(shader);
+            ui->listView_ShaderList->addShader(shaderPointer);
+
+        } else {
+            QMessageBox::warning(this, tr("An Error accured while compiling"),
+                                           compiler.log(),
+                                           QMessageBox::Ok);
+        }
+    }
 }
