@@ -17,9 +17,6 @@ test {
     CONFIG   -= app_bundle
     TARGET = cg_test
 
-    QMAKE_CFLAGS_DEBUG += -fprofile-arcs -ftest-coverage
-    QMAKE_CXXFLAGS_DEBUG += -fprofile-arcs -ftest-coverage
-
     SOURCES -= src/main.cpp
 
     DEFINES += COMPILES_TEST
