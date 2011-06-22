@@ -2,8 +2,9 @@
 
 namespace gui {
 
-  ShaderParameterControl::ShaderParameterControl(TypeInfo &type, QGLShaderProgram &program)
+  ShaderParameterControl::ShaderParameterControl(ShaderParameterInfo &info, 
+      QGLShaderProgram &shaderProgram)
   {
-
+    m_controls = malloc(sizeof(ControlT) * elems);
   }
 }

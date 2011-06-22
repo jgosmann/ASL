@@ -1,8 +1,7 @@
 #ifndef GLIMAGEVIEWER_H
 #define GLIMAGEVIEWER_H
 
-#include <QGLShader>
-#include <QGLShaderProgram>
+#include <QGLContext>
 #include <QGLWidget>
 #include <QImage>
 #include <QWidget>
@@ -12,63 +11,40 @@
 #include <QFileDialog>
 #include <QString>
 #include <QGLFramebufferObject>
-#include <iostream>
 
-#include "asl/gltypeinfo.h"
+#include "mainwindow.h"
 
 namespace gui {
 
-  /**
-  *  This class loads an abitrary image-file to the framebuffer and applies all
-  *  shaders in the current shaderProgram on it.
-  */
   class GLImageViewer : public QGLWidget
   {
       Q_OBJECT
 
   public:
-      GLImageViewer(QWidget *parent = NULL, Qt::WindowFlags f = 0);
+      GLImageViewer(QWidget *parent=NULL, Qt::WindowFlags f=0);
       virtual ~GLImageViewer();
 
-      void enableShaders(const int state);
-
-
   public slots:
-      void clearImage();
-      void setImage(const QImage &image);
-
-      void loadImageFile();
-      void saveImageFile();
-
-      void setImageZoom(int value);
+    void updateFramebufferObject(QGLFramebufferObject *framebuffer);
+    void setImageZoom(int value);
 
   signals:
-      void zoomChanged(int value);
+    void zoomChanged(int value);
 
   protected:
-      void virtual initializeGL();
-      void virtual resizeGL(int w, int h);
-      void virtual paintGL();
+    void virtual initializeGL();
+    void virtual resizeGL(int w, int h);
+    void virtual paintGL();
 
-      void virtual keyPressEvent(QKeyEvent *event);
-      void virtual wheelEvent(QWheelEvent *event);
+    void virtual keyPressEvent(QKeyEvent *event);
+    void virtual wheelEvent(QWheelEvent *event);
 
   private:
-      void renderToFramebuffer();
+    QGLContext *m_openGLContext;
+    QGLFramebufferObject *m_framebuffer;
 
-      bool m_textureLoaded;
-      GLuint m_textureID;
-
-      bool m_useShaderProgram;
-
-      QImage *m_image;
-      float m_imageRatio;
-      float m_imageZoom;
-      QSize m_imageSize;
-      QSize m_originalSize;
-      QGLFramebufferObject *m_frameBuffer;
-
-      QGLShaderProgram *m_shaderProgram;
+    float m_imageRatio;
+    float m_imageZoom;
   };
 
 }
