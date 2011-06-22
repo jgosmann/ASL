@@ -4,10 +4,10 @@
  * ShaderName: Mandelbrot Set
  * ShaderDescription: Calculates the Mandelbrot set using the current image as
  *     basis for a color palette.
- * Depends: cmplxMultiply.glsl
+ * Depends: juliaSets.asl.frag, mapCoords.asl.glsl
  */
 
 void main() {
-    gl_FragColor = calcJuliaSetcolor(vec2(0, 0), /* TODO map coord */);
+    gl_FragColor = calcJuliaSetcolor(vec2(0, 0), mapCoords(gl_FragCoord));
 }
 
