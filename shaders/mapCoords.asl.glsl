@@ -17,7 +17,7 @@ uniform float zoomFactor = 1;
  * Name: Translation
  * Default: vec2(0, 0)
  */
-uniform vec2 translation = vec(0, 0);
+uniform vec2 translation = vec2(0, 0);
 
 vec2 mapCoords(vec2 coords) {
     return (2 * coords - 1) / zoomFactor + translation;
