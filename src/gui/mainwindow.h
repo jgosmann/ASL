@@ -3,6 +3,12 @@
 
 #include <QMainWindow>
 #include <QCoreApplication>
+#include <QGLContext>
+#include <QGLFormat>
+
+#include <iostream>
+
+#include "glimagerenderer.h"
 
 namespace Ui {
     class MainWindow;
@@ -21,8 +27,9 @@ public:
 private:
     Ui::MainWindow *ui;
 
-private slots:
-    void on_checkBox_ApplyShaders_stateChanged(int );
+    QGLContext *m_sharedContext;
+    // this class connects the shaderList with the glImageViewer-widget
+    GLImageRenderer *m_glImageRenderer;
 };
 }
 
