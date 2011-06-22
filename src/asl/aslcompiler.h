@@ -25,6 +25,7 @@ public:
     const bool success() const { return m_success; }
 
 private:
+    void prefixSource(QString &source) const;
     void reset();
 
     QString m_log;
