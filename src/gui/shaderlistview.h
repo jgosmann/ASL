@@ -64,7 +64,7 @@ private slots:
     void clickedOnShader(const QModelIndex & index);
 
 private:
-    int currentRow = -1;
+    int currentRow;
 
 };
 
