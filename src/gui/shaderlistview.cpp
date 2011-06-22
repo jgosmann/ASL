@@ -4,6 +4,7 @@ ShaderListView::ShaderListView(QWidget *parent) :
     QListView(parent)
 {
     currentRow = -1;
+    init();
 
 }
 

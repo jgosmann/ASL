@@ -5,10 +5,17 @@
 #include <QCoreApplication>
 #include <QGLContext>
 #include <QGLFormat>
+#include <QSharedPointer>
+#include <QMessageBox>
+
+#include <asl/annotatedglshaderprogram.h>
+#include <asl/defaultaslprogramcompiler.h>
 
 #include <iostream>
 
 #include "glimagerenderer.h"
+
+typedef class asl::AnnotatedGLShaderProgram Shader;
 
 namespace Ui {
     class MainWindow;
@@ -30,6 +37,12 @@ private:
     QGLContext *m_sharedContext;
     // this class connects the shaderList with the glImageViewer-widget
     GLImageRenderer *m_glImageRenderer;
+
+    asl::DefaultASLProgramCompiler compiler;
+
+
+public slots:
+    void loadShaderDialog();
 };
 }
 
