@@ -4,29 +4,34 @@
 
 using namespace gui;
 
-GLImageRenderer::GLImageRenderer(QObject* parent)
+GLImageRenderer::GLImageRenderer(QObject* parent, QGLContext &sharedContext)
   : QObject(parent),
-    m_useShaderProgram(false)
+    m_sharedContext(sharedContext),
+    m_useShaderProgram(false),
+    m_framebuffer(NULL),
+    m_image(NULL)
 {
 }
 
 GLImageRenderer::~GLImageRenderer()
 {
-  delete m_openGLContext;
-  delete m_framebuffer;
-  delete m_image;
+  if(m_framebuffer)
+    delete m_framebuffer;
+  if(m_image)
+    delete m_image;
 }
 
 //-- MEMBER-FUNCTIONS ---------------------------------------------------------
 
 void GLImageRenderer::renderToFramebuffer()
 {
-  if(!m_image)
+  //TODO:
+  if(!m_image || !m_framebuffer)
     return;
 
   glDisable(GL_DEPTH_TEST);
 
-  m_textureID = m_openGLContext->bindTexture(*m_image);
+  m_textureID = m_sharedContext.bindTexture(*m_image);
 
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -65,7 +70,7 @@ void GLImageRenderer::renderToFramebuffer()
   }
   m_framebuffer->release();
 
-  m_openGLContext->deleteTexture(m_textureID);
+  m_sharedContext.deleteTexture(m_textureID);
 
   glEnable(GL_DEPTH_TEST);
 
@@ -74,17 +79,10 @@ void GLImageRenderer::renderToFramebuffer()
 
 //-- SLOTS --------------------------------------------------------------------
 
-void GLImageRenderer::setOpenGLContext(const QGLContext &context)
-{
-  if(!context.isValid())
-    std::cout << "context is invalid!" << std::endl;
-  m_openGLContext = &context;
-}
-
 /** TODO: connect this one to your shaderList-Widget! */
 void GLImageRenderer::renderImage(list<QGLShaderProgram*> &shaderProgramList)
 {
-  if( !m_openGLContext->isValid() )
+  if( !m_sharedContext.isValid() )
     return;
 
   m_shaderProgramList = shaderProgramList;
@@ -100,7 +98,7 @@ void GLImageRenderer::enableShaders(const int state)
     m_useShaderProgram = false;
   }
 
-  if( m_openGLContext->isValid() )
+  if( m_sharedContext.isValid() )
     renderToFramebuffer();
 }
 
@@ -108,7 +106,7 @@ void GLImageRenderer::loadImageFile()
 {
   m_image = new QImage( QFileDialog::getOpenFileName() );
 
-  m_openGLContext->makeCurrent();
+  m_sharedContext.makeCurrent();
   m_framebuffer = new QGLFramebufferObject( m_image->size() );
 }
 

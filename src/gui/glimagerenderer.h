@@ -16,15 +16,14 @@ namespace gui {
     Q_OBJECT
 
   public:
-    GLImageRenderer(QObject *parent);
+    GLImageRenderer(QObject *parent, QGLContext &sharedContext);
     ~GLImageRenderer();
 
   public slots:
-    inline void setOpenGLContext(const QGLContext &context);
-    inline void renderImage(list<QGLShaderProgram*> &shaderProgramList);
-    inline void enableShaders(const int state);
-    inline void loadImageFile();
-    inline void saveImageFile();
+    void renderImage(list<QGLShaderProgram*> &shaderProgramList);
+    void enableShaders(const int state);
+    void loadImageFile();
+    void saveImageFile();
 
   signals:
     void framebufferObjectChanged(QGLFramebufferObject *framebuffer);
@@ -34,7 +33,7 @@ namespace gui {
 
     bool m_useShaderProgram;
 
-    QGLContext *m_openGLContext;
+    QGLContext &m_sharedContext;
 
     QGLFramebufferObject *m_framebuffer;
     list<QGLShaderProgram*> m_shaderProgramList;

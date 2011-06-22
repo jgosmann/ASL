@@ -7,22 +7,21 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
-
     // set working directory to execution directory
     QDir::setCurrent(QCoreApplication::applicationDirPath());
 
-    m_glImageRenderer = new GLImageRenderer(this);
+    ui->setupUi(this);
+
+    // share QGLContext with class GLImageRenderer
+    m_sharedContext = new QGLContext( 
+        ui->glDisplay->context()->format() );
+    m_sharedContext->create( ui->glDisplay->context() );
+    m_glImageRenderer = new GLImageRenderer(this, *m_sharedContext);
 
     connect(ui->spinBox_Zoom, SIGNAL(valueChanged(int)), 
             ui->glDisplay, SLOT(setImageZoom(int)));
     connect(ui->glDisplay, SIGNAL(zoomChanged(int)), 
             ui->spinBox_Zoom, SLOT(setValue(int)));
-
-    connect(ui->glDisplay, SIGNAL(
-              shareOpenGLContext(QGLContext&)),
-            m_glImageRenderer, SLOT(
-              setOpenGLContext(QGLContext&)));
 
     connect(ui->action_LoadImage, SIGNAL(changed()), 
             m_glImageRenderer, SLOT(loadImageFile()));
@@ -31,13 +30,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->checkBox_ApplyShaders, SIGNAL(stateChanged(int)), 
             m_glImageRenderer, SLOT(enableShaders(int)));
     connect(m_glImageRenderer, SIGNAL(framebufferObjectChanged(
-              QGLFramebufferObject&)),
+              QGLFramebufferObject*)),
             ui->glDisplay, SLOT(updateFramebufferObject(
-              QGLFramebufferObject&)));
+              QGLFramebufferObject*)));
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete m_sharedContext;
     delete m_glImageRenderer;
 }

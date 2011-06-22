@@ -29,7 +29,6 @@ namespace gui {
     void setImageZoom(int value);
 
   signals:
-    void shareOpenGLContext(const QGLContext &context);
     void zoomChanged(int value);
 
   protected:
@@ -43,9 +42,7 @@ namespace gui {
   private:
     QGLContext *m_openGLContext;
     QGLFramebufferObject *m_framebuffer;
-    QGLShaderProgram *m_shaderProgram;
 
-    QImage *m_image;
     float m_imageRatio;
     float m_imageZoom;
   };

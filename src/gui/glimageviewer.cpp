@@ -6,17 +6,16 @@ using namespace gui;
 
 GLImageViewer::GLImageViewer(QWidget *parent, Qt::WindowFlags f) :
     QGLWidget(parent, NULL, f),
-    m_imageZoom(1.0f)
+    m_imageZoom(1.0f),
+    m_framebuffer(NULL)
 {
-  makeCurrent();
-  emit shareOpenGLContext( *context() );
 }
 
 
 GLImageViewer::~GLImageViewer()
 {
-  delete m_framebuffer;
-  delete m_shaderProgram;
+  if(m_framebuffer)
+    delete m_framebuffer;
 }
 
 //-- OpenGL core functions ----------------------------------------------------
@@ -24,13 +23,13 @@ GLImageViewer::~GLImageViewer()
 void GLImageViewer::initializeGL()
 {
   glEnable(GL_TEXTURE_2D);
-
-  // set the viewpoint dependent to image size
-  glViewport(0, 0, m_image->width(), m_image->height());
 }
 
 void GLImageViewer::resizeGL(int w, int h)
 {
+  // set the viewpoint dependent to image size
+  glViewport(0, 0, w, h);//m_image->width(), m_image->height());
+
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
@@ -42,36 +41,39 @@ void GLImageViewer::resizeGL(int w, int h)
 
 void GLImageViewer::paintGL()
 {
-    glDisable(GL_DEPTH_TEST);
+  if(!m_framebuffer)
+    return;
 
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glDisable(GL_DEPTH_TEST);
 
-    // load & set initial default image
-    bindTexture(*m_image);
+  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glLoadIdentity();
-    glScalef(m_imageZoom, m_imageZoom, 1.0f);
+  // load & set initial default image
+  bindTexture( m_framebuffer->toImage() );
 
-    glBegin(GL_QUADS);
-        glNormal3f( 0.0f, 0.0f, 1.0f);
+  glLoadIdentity();
+  glScalef(m_imageZoom, m_imageZoom, 1.0f);
 
-        glTexCoord2f( 0.0f, 0.0f);
-        glVertex2f(-1.0f, m_imageRatio);
+  glBegin(GL_QUADS);
+      glNormal3f( 0.0f, 0.0f, 1.0f);
 
-        glTexCoord2f( 1.0f, 0.0f);
-        glVertex2f( 1.0f, m_imageRatio);
+      glTexCoord2f( 0.0f, 0.0f);
+      glVertex2f(-1.0f, m_imageRatio);
 
-        glTexCoord2f( 1.0f, 1.0f);
-        glVertex2f( 1.0f,-m_imageRatio);
+      glTexCoord2f( 1.0f, 0.0f);
+      glVertex2f( 1.0f, m_imageRatio);
 
-        glTexCoord2f( 0.0f, 1.0f);
-        glVertex2f(-1.0f,-m_imageRatio);
-    glEnd();
+      glTexCoord2f( 1.0f, 1.0f);
+      glVertex2f( 1.0f,-m_imageRatio);
 
-    deleteTexture( m_framebuffer->texture() );
+      glTexCoord2f( 0.0f, 1.0f);
+      glVertex2f(-1.0f,-m_imageRatio);
+  glEnd();
 
-    glEnable(GL_DEPTH_TEST);
+  deleteTexture( m_framebuffer->texture() );
+
+  glEnable(GL_DEPTH_TEST);
 }
 
 //-- SLOTS --------------------------------------------------------------------
@@ -79,8 +81,8 @@ void GLImageViewer::paintGL()
 void GLImageViewer::updateFramebufferObject(QGLFramebufferObject *framebuffer)
 {
   m_framebuffer = framebuffer;
-  m_image = &m_framebuffer->toImage();
-  m_imageRatio = (float) m_image->width() / m_image->height();
+  m_imageRatio = (float) m_framebuffer->toImage().width() / 
+    m_framebuffer->toImage().height();
 }
 
 void GLImageViewer::setImageZoom(int value)

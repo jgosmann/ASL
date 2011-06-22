@@ -27,6 +27,7 @@ public:
 private:
     Ui::MainWindow *ui;
 
+    QGLContext *m_sharedContext;
     // this class connects the shaderList with the glImageViewer-widget
     GLImageRenderer *m_glImageRenderer;
 };
