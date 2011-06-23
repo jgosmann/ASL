@@ -443,6 +443,21 @@ public:
         CPPUNIT_ASSERT(shaderProgramCompiler->success());
     }
 
+    void returnsExportedFunctions()
+    {
+        QStringList exportedFunctions;
+        exportedFunctions.append("f1");
+        exportedFunctions.append("f2");
+
+        EXPECT_CALL(shaderCompilerMock, compileFile(_, QString("dep")))
+            .WillRepeatedly(Return(createDummyShader("void main() { }",
+                            QStringList(), exportedFunctions)));
+
+        CPPUNIT_ASSERT_EQUAL(exportedFunctions,
+            shaderProgramCompiler->getExportedFunctionsForDependency(
+                QGLShader::Fragment, "dep", ""));
+    }
+
     CPPUNIT_TEST_SUITE(ASLProgramCompilerTest);
     CPPUNIT_TEST(addsMainShaderToProgram);
     CPPUNIT_TEST(cachesCompiledShader);
@@ -459,6 +474,7 @@ public:
     CPPUNIT_TEST(definesAslMainMacroInMainShader);
     CPPUNIT_TEST(definesSourceStringNoInDependencies);
     CPPUNIT_TEST(resetsErrorStateAndLogBeforeCompilation);
+    CPPUNIT_TEST(returnsExportedFunctions);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -485,10 +501,12 @@ private:
 
     AnnotatedGLShader * createDummyShader(
             const QString &source = QString("void main() { }"),
-            const QStringList &dependencies = QStringList())
+            const QStringList &dependencies = QStringList(),
+            const QStringList &exportedFunctions = QStringList())
     {
         ShaderInfo info;
         info.dependencies = dependencies;
+        info.exportedFunctions = exportedFunctions;
         AnnotatedGLShader *shader = new AnnotatedGLShader(stdType, info);
         shader->compileSourceCode(source);
         return shader;

@@ -11,7 +11,7 @@ class DefaultASLProgramCompiler : public ASLProgramCompiler
 {
 public:
     DefaultASLProgramCompiler()
-        : ASLProgramCompiler(m_dependencyLocator, m_compiler) { }
+        : m_compiler(*this), ASLProgramCompiler(m_dependencyLocator, m_compiler) { }
 
 private:
     ASLCompiler m_compiler;

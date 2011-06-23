@@ -8,6 +8,7 @@
 
 #include "../testenv.h"
 
+#include "exportedfunctionsretrievermock.h"
 #include "logassertions.h"
 #include "logentry.h"
 #include "shaderparameterinfomatcher.h"
@@ -24,7 +25,13 @@ namespace asl
 class ASLCompilerTest : public TestFixture
 {
 public:
-    ASLCompilerTest() : pixelBufferForGLContext(1, 1), shaderCompiler() { }
+    ASLCompilerTest() : pixelBufferForGLContext(1, 1),
+            shaderCompiler(exportedFunctionsRetrieverMock)
+    {
+        ON_CALL(exportedFunctionsRetrieverMock,
+                getExportedFunctionsForDependency(_, _, _))
+            .WillByDefault(Return(QStringList()));
+    }
 
     void setUp()
     {
@@ -34,6 +41,8 @@ public:
     void tearDown()
     {
         shaderCompiler.prefixSourcesWith("");
+        CPPUNIT_ASSERT(Mock::VerifyAndClearExpectations(
+                    &exportedFunctionsRetrieverMock));
     }
 
     void logsErrorWhenCompilingInvalidShader()
@@ -702,6 +711,24 @@ public:
         CPPUNIT_ASSERT_EQUAL(dependencies, compiled->dependencies());
     }
 
+    void addsExportedFunctionsOfDependencies()
+    {
+        QGLShader::ShaderType type = QGLShader::Fragment;
+        QStringList exportedFunctions;
+        exportedFunctions.append("void foo();");
+
+        EXPECT_CALL(exportedFunctionsRetrieverMock,
+                getExportedFunctionsForDependency(type, QString("dep1"),
+                    QString("")))
+            .Times(1).WillOnce(Return(exportedFunctions));
+
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(type,
+                    "/** Depends: dep1 */\n"
+                    "void main() { foo(); }\n"));
+        assertCleanCompilation(compiled.data());
+    }
+
     void prefixesSources()
     {
         shaderCompiler.prefixSourcesWith("/** ShaderName: foo */\n");
@@ -795,6 +822,7 @@ public:
     CPPUNIT_TEST(parsesControlAnnotation);
     CPPUNIT_TEST(defaultsDependciesToEmptyList);
     CPPUNIT_TEST(parsesDependencies);
+    CPPUNIT_TEST(addsExportedFunctionsOfDependencies);
     CPPUNIT_TEST(prefixesSources);
     CPPUNIT_TEST(prefixSourcesKeepsVersionDirectiveAsFirstDirective);
     CPPUNIT_TEST(parsesExportedFunctions);
@@ -881,6 +909,7 @@ private:
     static const QString LOG_WARNING;
 
     QGLPixelBuffer pixelBufferForGLContext;
+    NiceMock<ExportedFunctionsRetrieverMock> exportedFunctionsRetrieverMock;
     asl::ASLCompiler shaderCompiler;
 };
 }

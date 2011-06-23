@@ -7,12 +7,16 @@
 
 #include "annotatedglshader.h"
 #include "annotatedglshadercompiler.h"
+#include "exportedfunctionsretriever.h"
 
 namespace asl
 {
 class ASLCompiler : public asl::AnnotatedGLShaderCompiler
 {
 public:
+    ASLCompiler(ExportedFunctionsRetriever &exportedFunctionsRetriever)
+            : m_exportedFunctionsRetriever(exportedFunctionsRetriever) { }
+
     asl::AnnotatedGLShader * compile(QGLShader::ShaderType type,
             const QString &source, const QString &pathOfSource = "");
 
@@ -25,13 +29,16 @@ public:
     const bool success() const { return m_success; }
 
 private:
-    void prefixSource(QString &source) const;
+    static void prefixKeepingVersionStatementIntact(const QString &prefix,
+            QString &source);
     void reset();
 
     QString m_log;
     bool m_success;
 
     QString m_prefix;
+
+    ExportedFunctionsRetriever &m_exportedFunctionsRetriever;
 };
 }
 

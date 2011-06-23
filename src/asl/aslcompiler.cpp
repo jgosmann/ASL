@@ -12,10 +12,17 @@ AnnotatedGLShader * ASLCompiler::compile(QGLShader::ShaderType type,
     reset();
 
     QString prefixedSource(source);
-    prefixSource(prefixedSource);
+    prefixKeepingVersionStatementIntact(m_prefix, prefixedSource);
 
     ShaderInfo shaderInfo = parserinternal::parse(prefixedSource, pathOfSource);
     m_log += parserinternal::log;
+
+    foreach (QString dependency, shaderInfo.dependencies) {
+        prefixKeepingVersionStatementIntact(
+                m_exportedFunctionsRetriever.getExportedFunctionsForDependency(
+                    type, dependency, pathOfSource).join("\n"),
+                prefixedSource);
+    }
 
     AnnotatedGLShader *shaderPrgm = new AnnotatedGLShader(type, shaderInfo);
     m_success = shaderPrgm->compileSourceCode(prefixedSource);
@@ -40,15 +47,16 @@ asl::AnnotatedGLShader * ASLCompiler::compileFile(QGLShader::ShaderType type,
     return retVal;
 }
 
-void ASLCompiler::prefixSource(QString &source) const
+void ASLCompiler::prefixKeepingVersionStatementIntact(
+        const QString &prefix, QString &source)
 {
     const QRegExp versionDirectiveMatcher(
             "^\\s*#version\\s+[^\r\n]*([\r\n]+|$)");
     const int pos = versionDirectiveMatcher.indexIn(source);
     if (pos < 0) {
-        source.prepend(m_prefix);
+        source.prepend(prefix);
     } else {
-        source.insert(pos + versionDirectiveMatcher.matchedLength(), m_prefix);
+        source.insert(pos + versionDirectiveMatcher.matchedLength(), prefix);
     }
 }
 

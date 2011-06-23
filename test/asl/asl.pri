@@ -12,6 +12,7 @@ SOURCES += \
 HEADERS += \
     test/asl/annotatedglshadercompilermock.h \
     test/asl/dependencylocatormock.h \
+    test/asl/exportedfunctionsretrievermock.h \
     test/asl/logentry.h \
     test/asl/logassertions.h \
     test/asl/shaderparameterinfomatcher.h \
