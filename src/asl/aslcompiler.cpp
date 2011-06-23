@@ -20,7 +20,7 @@ AnnotatedGLShader * ASLCompiler::compile(QGLShader::ShaderType type,
     foreach (QString dependency, shaderInfo.dependencies) {
         prefixKeepingVersionStatementIntact(
                 m_exportedFunctionsRetriever.getExportedFunctionsForDependency(
-                    type, dependency, pathOfSource).join("\n"),
+                    type, dependency, pathOfSource).join("\n") + "\n",
                 prefixedSource);
     }
 
