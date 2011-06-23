@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+
 using namespace gui;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -35,6 +36,9 @@ MainWindow::MainWindow(QWidget *parent) :
               QGLFramebufferObject*)));
 
     connect(ui->pushButton_AddShader,SIGNAL(clicked()),this,SLOT(loadShaderDialog()));
+    connect(ui->pushButton_RemoveShader,SIGNAL(clicked()),ui->listView_ShaderList,SLOT(removeSelectedShader()));
+
+
 
 
 }
@@ -48,8 +52,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::loadShaderDialog()
 {
-    QString s = QFileDialog::getOpenFileName(this,"Load Shader");
 
+
+    QString s = QFileDialog::getOpenFileName(this,"Load Shader");
+    std::cout << s.toStdString() << std::endl;
     if(s != QString::null){
         Shader* shader = compiler.compileFile(QGLShader::Fragment,s);
         if(compiler.success()){
