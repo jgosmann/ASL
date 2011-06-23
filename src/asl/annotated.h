@@ -30,6 +30,10 @@ public:
         return m_shaderInfo.parameters;
     }
 
+    inline const QStringList & exportedFunctions() const {
+        return m_shaderInfo.exportedFunctions;
+    }
+
     inline const ShaderInfo & shaderInfo() const { return m_shaderInfo; }
 
 private:

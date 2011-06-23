@@ -1,6 +1,7 @@
 
 %option yylineno
 
+comment ("/*"([^*]("/"?[^*/]*("*"[^/])?)+)?"*/")|("//".*\n)
 whitespace [ \t\r\n]
 annotationWhitespace [ \t\r\n*]
 notAnnotationWhitespace [^ \t\r\n*]
@@ -124,8 +125,7 @@ bool true|false
     return NEGATE;
 }
 
-<INITIAL,READ_UNIFORM>"/*"([^*]("/"?[^*/]*("*"[^/])?)+)?"*/" { }
-<INITIAL,READ_UNIFORM>"//".*\n { }
+<INITIAL,READ_UNIFORM>{comment} { }
 
 <INITIAL>^[ \t]*#line {
     BEGIN READ_LINE;
@@ -135,6 +135,12 @@ bool true|false
 <READ_LINE>\n {
     BEGIN INITIAL;
     return END;
+}
+
+<INITIAL>{identifier}({comment}|{whitespace})+{identifier}({comment}|{whitespace})*"("[^)]*")" {
+    aslparserlval.string = new QString(yytext);
+    aslparserlval.string->append(";");
+    return EXPORTED_FUNCTION;
 }
 
 

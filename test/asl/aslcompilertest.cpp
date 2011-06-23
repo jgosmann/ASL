@@ -721,6 +721,19 @@ public:
         CPPUNIT_ASSERT_EQUAL(QString("foo"), compiled->name());
     }
 
+    void parsesExportedFunctions()
+    {
+        QScopedPointer<AnnotatedGLShader> compiled(
+            shaderCompiler.compile(QGLShader::Fragment,
+                "/***/\n"
+                "void foo(int x) { /* content */ } int bar() { return 1; }"));
+        QStringList expected;
+        expected.append("void foo(int x);");
+        expected.append("int bar();");
+        assertCleanCompilation(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(expected, compiled->exportedFunctions());
+    }
+
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
@@ -784,6 +797,7 @@ public:
     CPPUNIT_TEST(parsesDependencies);
     CPPUNIT_TEST(prefixesSources);
     CPPUNIT_TEST(prefixSourcesKeepsVersionDirectiveAsFirstDirective);
+    CPPUNIT_TEST(parsesExportedFunctions);
     CPPUNIT_TEST_SUITE_END();
 
 private:

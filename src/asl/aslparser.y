@@ -68,18 +68,23 @@
 
 %token <integer> INTEGER BOOLEAN
 %token <flt> FLT
-%token <string> KEY IDENTIFIER ANNOTATION_STRING
+%token <string> KEY IDENTIFIER ANNOTATION_STRING EXPORTED_FUNCTION
 %token ANNOTATION_START ANNOTATION_END UNIFORM LINE END NEGATE UNEXPECTED_CHAR
 %token '(' ')' ','
 
 %%
 
 program:
-    leadingChars
+    nonAslProgram
     | pplines aslStartComment remainingProgram
     | leadingChars aslStartComment remainingProgram {
             warn("ASL program is not starting with ASL comment.");
         }
+    | ;
+
+nonAslProgram:
+    nonAslProgram leadingChars
+    | nonAslProgram EXPORTED_FUNCTION
     | ;
 
 aslStartComment: annotationComment {
@@ -95,6 +100,10 @@ pplines: pplines ppline | ;
 remainingProgram:
     remainingProgram parameter
     | remainingProgram ppline
+    | remainingProgram EXPORTED_FUNCTION {
+            shaderInfo.exportedFunctions.append(*$2);
+            delete $2;
+        }
     | ;
 
 ppline:

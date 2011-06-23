@@ -15,6 +15,7 @@ struct ShaderInfo
     QString description;
     QStringList dependencies;
     QList<asl::ShaderParameterInfo> parameters;
+    QStringList exportedFunctions;
 };
 } /* namespace asl */
 
