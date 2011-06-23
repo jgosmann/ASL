@@ -15,6 +15,12 @@ public:
 
     QSharedPointer<Shader> getShader();
 
+    QStandardItem * clone () const;
+
+    int type() const{
+        return 1223;
+    }
+
 private:
     QSharedPointer<Shader> shader;
 
