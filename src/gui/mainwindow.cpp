@@ -16,20 +16,26 @@ MainWindow::MainWindow(QWidget *parent) :
     // share QGLContext with class GLImageRenderer
     m_sharedContext = new QGLContext( 
         ui->glDisplay->context()->format() );
-    m_sharedContext->create( ui->glDisplay->context() );
+    bool established = m_sharedContext->create( ui->glDisplay->context() );
+
     m_glImageRenderer = new GLImageRenderer(this, *m_sharedContext);
+
+
+    std::cout << ui->glDisplay->context()->isValid() << std::endl;
+    std::cout << m_sharedContext->isValid() << std::endl;
 
     connect(ui->spinBox_Zoom, SIGNAL(valueChanged(int)), 
             ui->glDisplay, SLOT(setImageZoom(int)));
     connect(ui->glDisplay, SIGNAL(zoomChanged(int)), 
             ui->spinBox_Zoom, SLOT(setValue(int)));
 
-    connect(ui->action_LoadImage, SIGNAL(changed()), 
-            m_glImageRenderer, SLOT(loadImageFile()));
-    connect(ui->action_SaveImage, SIGNAL(changed()), 
+    connect(ui->action_LoadImage, SIGNAL(triggered()),
+            this, SLOT(loadImageFile()));
+    connect(ui->action_SaveImage, SIGNAL(triggered()),
             m_glImageRenderer, SLOT(saveImageFile()));
     connect(ui->checkBox_ApplyShaders, SIGNAL(stateChanged(int)), 
             m_glImageRenderer, SLOT(enableShaders(int)));
+
     connect(m_glImageRenderer, SIGNAL(framebufferObjectChanged(
               QGLFramebufferObject*)),
             ui->glDisplay, SLOT(updateFramebufferObject(
@@ -68,4 +74,8 @@ void MainWindow::loadShaderDialog()
                                            QMessageBox::Ok);
         }
     }
+}
+
+void MainWindow::loadImageFile(){
+    m_glImageRenderer->loadImageFile( new QImage( QFileDialog::getOpenFileName()));
 }

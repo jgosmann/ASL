@@ -38,7 +38,7 @@ void GLImageRenderer::renderToFramebuffer()
 
   m_framebuffer->bind();
 
-  list<QGLShaderProgram*>::iterator shaderProgram;
+  QList<QSharedPointer<Shader> >::iterator shaderProgram;
   for(shaderProgram = m_shaderProgramList.begin();
     shaderProgram != m_shaderProgramList.end();
     shaderProgram++)
@@ -80,7 +80,7 @@ void GLImageRenderer::renderToFramebuffer()
 //-- SLOTS --------------------------------------------------------------------
 
 /** TODO: connect this one to your shaderList-Widget! */
-void GLImageRenderer::renderImage(list<QGLShaderProgram*> &shaderProgramList)
+void GLImageRenderer::renderImage(QList<QSharedPointer<Shader> > &shaderProgramList)
 {
   if( !m_sharedContext.isValid() )
     return;
@@ -102,12 +102,13 @@ void GLImageRenderer::enableShaders(const int state)
     renderToFramebuffer();
 }
 
-void GLImageRenderer::loadImageFile()
+void GLImageRenderer::loadImageFile(QImage* img)
 {
-  m_image = new QImage( QFileDialog::getOpenFileName() );
+  m_image = img;
 
   m_sharedContext.makeCurrent();
   m_framebuffer = new QGLFramebufferObject( m_image->size() );
+  renderToFramebuffer();
 }
 
 void GLImageRenderer::saveImageFile()
