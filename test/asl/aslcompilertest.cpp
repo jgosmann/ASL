@@ -752,7 +752,6 @@ public:
     {
         QScopedPointer<AnnotatedGLShader> compiled(
             shaderCompiler.compile(QGLShader::Fragment,
-                "/***/\n"
                 "void foo(int x) { /* content */ } int bar() { return 1; }"));
         QStringList expected;
         expected.append("void foo(int x);");

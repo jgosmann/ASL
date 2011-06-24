@@ -84,7 +84,7 @@ program:
 
 nonAslProgram:
     nonAslProgram leadingChars
-    | nonAslProgram EXPORTED_FUNCTION
+    | nonAslProgram exportedFunction
     | ;
 
 aslStartComment: annotationComment {
@@ -100,11 +100,13 @@ pplines: pplines ppline | ;
 remainingProgram:
     remainingProgram parameter
     | remainingProgram ppline
-    | remainingProgram EXPORTED_FUNCTION {
-            shaderInfo.exportedFunctions.append(*$2);
-            delete $2;
-        }
+    | remainingProgram exportedFunction
     | ;
+
+exportedFunction: EXPORTED_FUNCTION {
+            shaderInfo.exportedFunctions.append(*$1);
+            delete $1;
+        };
 
 ppline:
     LINE INTEGER END {
