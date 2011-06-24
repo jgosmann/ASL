@@ -5,10 +5,11 @@
 #include "annotatedglshaderprogram.h"
 #include "cachedannotatedglshadercompiler.h"
 #include "dependencylocator.h"
+#include "exportedfunctionsretriever.h"
 
 namespace asl
 {
-class ASLProgramCompiler
+class ASLProgramCompiler : public ExportedFunctionsRetriever
 {
 public:
     ASLProgramCompiler(DependencyLocator &dependencyLocator,
@@ -46,9 +47,17 @@ public:
     const QString log() const { return m_log; }
     bool success() const { return m_success; }
 
+    QStringList getExportedFunctionsForDependency(QGLShader::ShaderType type,
+            const QString &dependency, const QString &includingFile) {
+        return m_shaderCache.compileFile(type, m_dependencyLocator.locate(
+                    dependency, includingFile))->exportedFunctions();
+    }
+
 private:
     void reset();
     void compileAndAddShaderAndLoadDependencies(const QString &filename);
+    QSharedPointer<AnnotatedGLShader> compileMainShader(
+            const QString &filename);
     QSharedPointer<AnnotatedGLShader> compileShader(const QString &filename);
     void addShader(const QString &filename,
             QSharedPointer<AnnotatedGLShader> &shader);

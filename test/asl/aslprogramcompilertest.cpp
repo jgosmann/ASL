@@ -62,7 +62,7 @@ public:
         QString filename("filename");
         AnnotatedGLShader *dummyShader = createDummyShader();
 
-        EXPECT_CALL(shaderCompilerMock, compileFile(stdType, filename))
+        EXPECT_CALL(shaderCompilerMock, compileFileAsMain(stdType, filename))
             .Times(1).WillOnce(Return(dummyShader));
 
         QScopedPointer<AnnotatedGLShaderProgram> compiled(
@@ -77,7 +77,7 @@ public:
         QString filename("filename");
         AnnotatedGLShader *dummyShader = createDummyShader();
 
-        EXPECT_CALL(shaderCompilerMock, compileFile(stdType, filename))
+        EXPECT_CALL(shaderCompilerMock, compileFileAsMain(stdType, filename))
             .Times(1).WillOnce(Return(dummyShader));
 
         QScopedPointer<AnnotatedGLShaderProgram> compiled1(
@@ -105,7 +105,7 @@ public:
 
         EXPECT_CALL(dependencyLocatorMock, locate(_, filename))
             .WillRepeatedly(ReturnArgPrefixed(QString("path/to/")));
-        EXPECT_CALL(shaderCompilerMock, compileFile(stdType, filename))
+        EXPECT_CALL(shaderCompilerMock, compileFileAsMain(stdType, filename))
             .Times(1).WillOnce(Return(dummyShader));
         EXPECT_CALL(shaderCompilerMock,
                 compileFile(stdType, QString("path/to/dependency1")))
@@ -138,7 +138,7 @@ public:
 
         EXPECT_CALL(dependencyLocatorMock, locate(_, _))
             .WillRepeatedly(ReturnArgPrefixed(QString("path/to/")));
-        EXPECT_CALL(shaderCompilerMock, compileFile(stdType, filename))
+        EXPECT_CALL(shaderCompilerMock, compileFileAsMain(stdType, filename))
             .Times(1).WillOnce(Return(dummyShader));
         EXPECT_CALL(shaderCompilerMock,
                 compileFile(stdType, QString("path/to/depMain")))
@@ -156,7 +156,7 @@ public:
         CPPUNIT_ASSERT(compiled->shaders().contains(depSubmain));
     }
 
-    void logsDependencySourceStringNumbers()
+    void logsCompiledDependencies()
     {
         QStringList depsMain, depsSubmain;
         depsMain.append("depMain");
@@ -171,7 +171,7 @@ public:
 
         EXPECT_CALL(dependencyLocatorMock, locate(_, _))
             .WillRepeatedly(ReturnArgPrefixed(QString("path/to/")));
-        EXPECT_CALL(shaderCompilerMock, compileFile(stdType, filename))
+        EXPECT_CALL(shaderCompilerMock, compileFileAsMain(stdType, filename))
             .Times(1).WillOnce(Return(dummyShader));
         EXPECT_CALL(shaderCompilerMock,
                 compileFile(stdType, QString("path/to/depMain")))
@@ -185,9 +185,9 @@ public:
 
         assertCleanCompilationAndLinkage(compiled.data());
         assertLogged(LogEntry().withType(LOG_INFO).occuringIn(0)
-                .withMessageMatching(QRegExp(".*depMain.*1.*")));
-        assertLogged(LogEntry().withType(LOG_INFO).occuringIn(1)
-                .withMessageMatching(QRegExp(".*depSubmain.*2.*")));
+                .withMessageMatching(QRegExp(".*depMain.*")));
+        assertLogged(LogEntry().withType(LOG_INFO).occuringIn(0)
+                .withMessageMatching(QRegExp(".*depSubmain.*")));
     }
 
     void loadsDuplicatesOnlyOnce()
@@ -212,7 +212,7 @@ public:
 
         EXPECT_CALL(dependencyLocatorMock, locate(_, _))
             .WillRepeatedly(ReturnArg<0>());
-        EXPECT_CALL(shaderCompilerMock, compileFile(stdType, filename))
+        EXPECT_CALL(shaderCompilerMock, compileFileAsMain(stdType, filename))
             .Times(1).WillOnce(Return(dummyShader));
         EXPECT_CALL(shaderCompilerMock, compileFile(stdType, QString("deps1")))
             .Times(1).WillOnce(Return(dep1));
@@ -245,7 +245,7 @@ public:
 
         EXPECT_CALL(dependencyLocatorMock, locate(_, _))
             .WillRepeatedly(ReturnArg<0>());
-        EXPECT_CALL(shaderCompilerMock, compileFile(stdType, filename))
+        EXPECT_CALL(shaderCompilerMock, compileFileAsMain(stdType, filename))
             .WillRepeatedly(Return(mainShader));
         EXPECT_CALL(shaderCompilerMock,
             compileFile(stdType, QString("dependency")))
@@ -265,7 +265,7 @@ public:
     {
         AnnotatedGLShader *shader = createDummyShader();
 
-        EXPECT_CALL(shaderCompilerMock, compileFile(_, _))
+        EXPECT_CALL(shaderCompilerMock, compileFileAsMain(_, _))
             .WillRepeatedly(Return(shader));
         EXPECT_CALL(shaderCompilerMock, log()).WillRepeatedly(Return(QString(
                 LOG_WARNING + ": 13:37: foobaz")));
@@ -288,7 +288,7 @@ public:
 
         InSequence seq;
         EXPECT_CALL(shaderCompilerMock,
-            compileFile(_, Ne(QString("dependency"))))
+            compileFileAsMain(_, Ne(QString("dependency"))))
             .Times(1).WillRepeatedly(Return(shader));
         EXPECT_CALL(shaderCompilerMock, log())
             .WillRepeatedly(Return(QString()));
@@ -309,7 +309,7 @@ public:
     {
         AnnotatedGLShader *shader = createDummyShader();
 
-        EXPECT_CALL(shaderCompilerMock, compileFile(_, _))
+        EXPECT_CALL(shaderCompilerMock, compileFileAsMain(_, _))
             .WillRepeatedly(Return(shader));
         EXPECT_CALL(shaderCompilerMock, success())
             .WillRepeatedly(Return(false));
@@ -333,7 +333,7 @@ public:
         AnnotatedGLShader *dependency = createDummyShader("void a() { }");
 
         Expectation mainCall = EXPECT_CALL(shaderCompilerMock,
-            compileFile(_, Ne(QString("dependency"))))
+            compileFileAsMain(_, Ne(QString("dependency"))))
             .Times(1).WillOnce(Return(shader));
         EXPECT_CALL(shaderCompilerMock, log())
             .WillRepeatedly(Return(QString()));
@@ -364,7 +364,7 @@ public:
         AnnotatedGLShader *dependency = createDummyShader("void main() { }");
 
         EXPECT_CALL(shaderCompilerMock,
-            compileFile(_, Ne(QString("dependency"))))
+            compileFileAsMain(_, Ne(QString("dependency"))))
             .Times(1).WillOnce(Return(shader));
         EXPECT_CALL(shaderCompilerMock,
             compileFile(_, QString("dependency")))
@@ -377,46 +377,10 @@ public:
         assertLogContainsEntryOfType(shaderProgramCompiler->log(), LOG_ERROR);
     }
 
-    void definesAslMainMacroInMainShader()
-    {
-        Expectation prefixCall =
-            EXPECT_CALL(shaderCompilerMock, prefixSourcesWith(QString(
-                "#define ASL_MAIN\n"
-                "#line 0\n"))).Times(AtLeast(1));
-        EXPECT_CALL(shaderCompilerMock, compileFile(_, _))
-            .After(prefixCall).WillRepeatedly(Return(createDummyShader()));
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
-                shaderProgramCompiler->compileFile(stdType, "file"));
-    }
-
-    void definesSourceStringNoInDependencies()
-    {
-        QString filename("filename");
-        QString dependency("dependency");
-        QStringList dependencies;
-        dependencies.append(dependency);
-
-        Expectation mainPrefix = EXPECT_CALL(shaderCompilerMock,
-                prefixSourcesWith(_)).Times(1);
-        Expectation compileMain = EXPECT_CALL(shaderCompilerMock,
-                compileFile(_, filename))
-            .After(mainPrefix).WillRepeatedly(Return(
-                        createDummyShader("void main() { }", dependencies)));
-        Expectation dependencyPrefix = EXPECT_CALL(shaderCompilerMock,
-                prefixSourcesWith(QString("#line 0 1\n")))
-            .Times(AtLeast(1)).After(compileMain);
-        EXPECT_CALL(shaderCompilerMock, compileFile(_, dependency))
-            .After(dependencyPrefix).WillRepeatedly(Return(
-                        createDummyShader("void a() { }")));
-
-        QScopedPointer<AnnotatedGLShaderProgram> compiled(
-                shaderProgramCompiler->compileFile(stdType, filename));
-    }
-
     void resetsErrorStateAndLogBeforeCompilation()
     {
         Expectation first = EXPECT_CALL(shaderCompilerMock,
-                compileFile(_, QString("file1")))
+                compileFileAsMain(_, QString("file1")))
             .WillRepeatedly(Return(createDummyShader()));
         EXPECT_CALL(shaderCompilerMock, log()).After(first)
             .WillRepeatedly(Return(QString("ERROR: 0:0: fubar\n")));
@@ -424,7 +388,7 @@ public:
             .WillRepeatedly(Return(false));
 
         Expectation second = EXPECT_CALL(shaderCompilerMock,
-                compileFile(_, QString("file2")))
+                compileFileAsMain(_, QString("file2")))
             .Times(AtLeast(1)).After(first)
             .WillRepeatedly(Return(createDummyShader()));
         EXPECT_CALL(shaderCompilerMock, log()).After(second)
@@ -443,12 +407,27 @@ public:
         CPPUNIT_ASSERT(shaderProgramCompiler->success());
     }
 
+    void returnsExportedFunctions()
+    {
+        QStringList exportedFunctions;
+        exportedFunctions.append("f1");
+        exportedFunctions.append("f2");
+
+        EXPECT_CALL(shaderCompilerMock, compileFile(_, QString("dep")))
+            .WillRepeatedly(Return(createDummyShader("void main() { }",
+                            QStringList(), exportedFunctions)));
+
+        CPPUNIT_ASSERT_EQUAL(exportedFunctions,
+            shaderProgramCompiler->getExportedFunctionsForDependency(
+                QGLShader::Fragment, "dep", ""));
+    }
+
     CPPUNIT_TEST_SUITE(ASLProgramCompilerTest);
     CPPUNIT_TEST(addsMainShaderToProgram);
     CPPUNIT_TEST(cachesCompiledShader);
     CPPUNIT_TEST(loadsDependencies);
     CPPUNIT_TEST(loadsRecursiveDependencies);
-    CPPUNIT_TEST(logsDependencySourceStringNumbers);
+    CPPUNIT_TEST(logsCompiledDependencies);
     CPPUNIT_TEST(loadsDuplicatesOnlyOnce);
     CPPUNIT_TEST(shaderProgramInfoEqualsMainShaderInfo);
     CPPUNIT_TEST(mainShaderWarningsAppearInCompilerLog);
@@ -456,9 +435,8 @@ public:
     CPPUNIT_TEST(mainShaderErrorsAppearInCompilerLog);
     CPPUNIT_TEST(dependencyErrorsAppearInCompilerLog);
     CPPUNIT_TEST(linkerErrorsAppearInCompilerLog);
-    CPPUNIT_TEST(definesAslMainMacroInMainShader);
-    CPPUNIT_TEST(definesSourceStringNoInDependencies);
     CPPUNIT_TEST(resetsErrorStateAndLogBeforeCompilation);
+    CPPUNIT_TEST(returnsExportedFunctions);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -485,10 +463,12 @@ private:
 
     AnnotatedGLShader * createDummyShader(
             const QString &source = QString("void main() { }"),
-            const QStringList &dependencies = QStringList())
+            const QStringList &dependencies = QStringList(),
+            const QStringList &exportedFunctions = QStringList())
     {
         ShaderInfo info;
         info.dependencies = dependencies;
+        info.exportedFunctions = exportedFunctions;
         AnnotatedGLShader *shader = new AnnotatedGLShader(stdType, info);
         shader->compileSourceCode(source);
         return shader;

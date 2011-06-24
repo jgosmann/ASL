@@ -8,6 +8,7 @@
 
 #include "../testenv.h"
 
+#include "exportedfunctionsretrievermock.h"
 #include "logassertions.h"
 #include "logentry.h"
 #include "shaderparameterinfomatcher.h"
@@ -24,7 +25,13 @@ namespace asl
 class ASLCompilerTest : public TestFixture
 {
 public:
-    ASLCompilerTest() : pixelBufferForGLContext(1, 1), shaderCompiler() { }
+    ASLCompilerTest() : pixelBufferForGLContext(1, 1),
+            shaderCompiler(exportedFunctionsRetrieverMock)
+    {
+        ON_CALL(exportedFunctionsRetrieverMock,
+                getExportedFunctionsForDependency(_, _, _))
+            .WillByDefault(Return(QStringList()));
+    }
 
     void setUp()
     {
@@ -33,7 +40,8 @@ public:
 
     void tearDown()
     {
-        shaderCompiler.prefixSourcesWith("");
+        CPPUNIT_ASSERT(Mock::VerifyAndClearExpectations(
+                    &exportedFunctionsRetrieverMock));
     }
 
     void logsErrorWhenCompilingInvalidShader()
@@ -702,13 +710,77 @@ public:
         CPPUNIT_ASSERT_EQUAL(dependencies, compiled->dependencies());
     }
 
-    void prefixesSources()
+    void addsExportedFunctionsOfDependencies()
     {
-        shaderCompiler.prefixSourcesWith("/** ShaderName: foo */\n");
+        QGLShader::ShaderType type = QGLShader::Fragment;
+        QStringList exportedFunctions;
+        exportedFunctions.append("void foo();");
+
+        EXPECT_CALL(exportedFunctionsRetrieverMock,
+                getExportedFunctionsForDependency(type, QString("dep1"),
+                    QString("")))
+            .Times(1).WillOnce(Return(exportedFunctions));
+
         QScopedPointer<AnnotatedGLShader> compiled(
-            shaderCompiler.compile(QGLShader::Fragment, trivialShader));
+                shaderCompiler.compile(type,
+                    "/** Depends: dep1 */\n"
+                    "void main() { foo(); }\n"));
         assertCleanCompilation(compiled.data());
-        CPPUNIT_ASSERT_EQUAL(QString("foo"), compiled->name());
+    }
+
+    void parsesExportedFunctions()
+    {
+        QScopedPointer<AnnotatedGLShader> compiled(
+            shaderCompiler.compile(QGLShader::Fragment,
+                "void foo(int x) { /* content */ } int bar() { return 1; }"));
+        QStringList expected;
+        expected.append("void foo(int x) ;");
+        expected.append("int bar() ;");
+        assertCleanCompilation(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(expected, compiled->exportedFunctions());
+    }
+
+    void doesNotParseFunctionsCallsOrDeclarationsAsExportedFunctions()
+    {
+        QScopedPointer<AnnotatedGLShader> compiled(
+            shaderCompiler.compile(QGLShader::Fragment,
+                "void bar(); void foo(int x) { bar(); }"));
+        QStringList expected;
+        expected.append("void foo(int x) ;");
+        assertCleanCompilation(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(expected, compiled->exportedFunctions());
+    }
+
+    void compileAsMainPrefixesWithAslMainMacro() {
+        QScopedPointer<AnnotatedGLShader> compiled(
+            shaderCompiler.compileAsMain(QGLShader::Fragment,
+                "#ifdef ASL_MAIN\n"
+                "/** ShaderName: aslMainMacroIsDefined */\n"
+                "#endif\n"
+                + trivialShader));
+        assertCleanCompilation(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(QString("aslMainMacroIsDefined"),
+                compiled->name());
+    }
+
+    void compileAsMainLeavesLinenumbersUnchanged() {
+        QScopedPointer<AnnotatedGLShader> compiled(
+            shaderCompiler.compileAsMain(QGLShader::Fragment,
+                "invalid func() { }\n"));
+        assertFailedAndLogged(LogEntry().occuringAt(0, 1).withMessageMatching(
+                    QRegExp(".*syntax.*")));
+    }
+
+    void compilePrefixesNotWithAslMainMacro() {
+        QScopedPointer<AnnotatedGLShader> compiled(
+            shaderCompiler.compileAsMain(QGLShader::Fragment,
+                "#ifndef ASL_MAIN\n"
+                "/** ShaderName: aslMainMacroIsNotDefined */\n"
+                "#endif\n"
+                + trivialShader));
+        assertCleanCompilation(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(QString("aslMainMacroIsNotDefined"),
+                compiled->name());
     }
 
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
@@ -772,7 +844,12 @@ public:
     CPPUNIT_TEST(parsesControlAnnotation);
     CPPUNIT_TEST(defaultsDependciesToEmptyList);
     CPPUNIT_TEST(parsesDependencies);
-    CPPUNIT_TEST(prefixesSources);
+    CPPUNIT_TEST(addsExportedFunctionsOfDependencies);
+    CPPUNIT_TEST(parsesExportedFunctions);
+    CPPUNIT_TEST(doesNotParseFunctionsCallsOrDeclarationsAsExportedFunctions);
+    CPPUNIT_TEST(compileAsMainPrefixesWithAslMainMacro);
+    CPPUNIT_TEST(compileAsMainLeavesLinenumbersUnchanged);
+    CPPUNIT_TEST(compilePrefixesNotWithAslMainMacro);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -856,6 +933,7 @@ private:
     static const QString LOG_WARNING;
 
     QGLPixelBuffer pixelBufferForGLContext;
+    NiceMock<ExportedFunctionsRetrieverMock> exportedFunctionsRetrieverMock;
     asl::ASLCompiler shaderCompiler;
 };
 }

@@ -25,6 +25,7 @@
     {
         QString log;
         unsigned int sourceStringNo;
+        bool aslStartCommentAtBeginning;
         bool parsedFirstAslComment;
         ShaderInfo shaderInfo;
         ShaderParameterInfoBuilder parameterInfoBuilder;
@@ -68,34 +69,42 @@
 
 %token <integer> INTEGER BOOLEAN
 %token <flt> FLT
-%token <string> KEY IDENTIFIER ANNOTATION_STRING
-%token ANNOTATION_START ANNOTATION_END UNIFORM LINE END NEGATE UNEXPECTED_CHAR
-%token '(' ')' ','
+%token <string> KEY IDENTIFIER ANNOTATION_STRING EXPORTED_FUNCTION
+%token ANNOTATION_START ANNOTATION_END UNIFORM LINE END NEGATE CHAR
 
 %%
 
 program:
-    leadingChars
-    | pplines aslStartComment remainingProgram
-    | leadingChars aslStartComment remainingProgram {
-            warn("ASL program is not starting with ASL comment.");
+    nonAslProgram
+    | nonAslProgram aslStartComment remainingProgram;
+
+nonAslProgram:
+    nonAslProgram CHAR {
+            asl::parserinternal::aslStartCommentAtBeginning = false;
+        }
+    | nonAslProgram ppline
+    | nonAslProgram exportedFunction {
+            asl::parserinternal::aslStartCommentAtBeginning = false;
         }
     | ;
 
 aslStartComment: annotationComment {
+        if (!asl::parserinternal::aslStartCommentAtBeginning) {
+            warn("ASL program not starting with ASL comment.");
+        }
         asl::parserinternal::parsedFirstAslComment = true;
-    }
-
-leadingChars:
-    leadingChars UNEXPECTED_CHAR pplines
-    | UNEXPECTED_CHAR pplines;
-
-pplines: pplines ppline | ;
+    };
 
 remainingProgram:
     remainingProgram parameter
     | remainingProgram ppline
+    | remainingProgram exportedFunction
     | ;
+
+exportedFunction: EXPORTED_FUNCTION {
+            shaderInfo.exportedFunctions.append(*$1);
+            delete $1;
+        };
 
 ppline:
     LINE INTEGER END {
@@ -419,6 +428,7 @@ const ShaderInfo parse(const QString &sourcecode,
 {
     shaderInfo = ShaderInfo();
     shaderInfo.name = QFileInfo(pathOfSource).fileName();
+    aslStartCommentAtBeginning = true;
     parsedFirstAslComment = false;
     setInput(sourcecode);
     yyparse();

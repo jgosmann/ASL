@@ -1,6 +1,7 @@
 
 %option yylineno
 
+comment ("/*"([^*]("/"?[^*/]*("*"[^/])?)+)?"*/")|("//".*\n)
 whitespace [ \t\r\n]
 annotationWhitespace [ \t\r\n*]
 notAnnotationWhitespace [^ \t\r\n*]
@@ -41,7 +42,7 @@ bool true|false
 
 %%
 
-"/**" {
+<INITIAL>"/**" {
     currentIdentation = 0;
     BEGIN ANNOTATION;
     return ANNOTATION_START;
@@ -124,8 +125,7 @@ bool true|false
     return NEGATE;
 }
 
-<INITIAL,READ_UNIFORM>"/*"([^*]("/"?[^*/]*("*"[^/])?)+)?"*/" { }
-<INITIAL,READ_UNIFORM>"//".*\n { }
+<INITIAL,READ_UNIFORM>{comment} { }
 
 <INITIAL>^[ \t]*#line {
     BEGIN READ_LINE;
@@ -137,6 +137,12 @@ bool true|false
     return END;
 }
 
+<INITIAL>{identifier}({comment}|{whitespace})+{identifier}({comment}|{whitespace})*"("[^(){}]*")"({comment}|{whitespace})*"{" {
+    yytext[yyleng - 1] = ';';
+    aslparserlval.string = new QString(yytext);
+    return EXPORTED_FUNCTION;
+}
+
 
 <INITIAL>^[ \t]*#(.|\\\n)* {
     if (QString(yytext).trimmed().startsWith("#line")) {
@@ -146,7 +152,7 @@ bool true|false
 
 <INITIAL>[^ \t\r\n] {
     if (!readFirstAslComment) {
-        return UNEXPECTED_CHAR;
+        return CHAR;
     }
 }
 

@@ -11,6 +11,7 @@ HEADERS += \
     src/asl/cachedannotatedglshadercompiler.h \
     src/asl/defaultaslprogramcompiler.h \
     src/asl/dependencylocator.h \
+    src/asl/exportedfunctionsretriever.h \
     src/asl/gltypeinfo.h \
     src/asl/gltypenames.h \
     src/asl/glvariant.h \
