@@ -44,13 +44,15 @@ void GLImageViewer::paintGL()
   if(!m_framebuffer)
     return;
 
+  makeCurrent();
+
   glDisable(GL_DEPTH_TEST);
 
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // load & set initial default image
-  bindTexture( m_framebuffer->toImage() );
+  GLuint texture = bindTexture( m_framebuffer->toImage() );
 
   glLoadIdentity();
   glScalef(m_imageZoom, m_imageZoom, 1.0f);
@@ -71,14 +73,15 @@ void GLImageViewer::paintGL()
       glVertex2f(-1.0f,-m_imageRatio);
   glEnd();
 
-  deleteTexture( m_framebuffer->texture() );
+  deleteTexture( texture );
+
 
   glEnable(GL_DEPTH_TEST);
 }
 
 //-- SLOTS --------------------------------------------------------------------
 
-void GLImageViewer::updateFramebufferObject(QGLFramebufferObject *framebuffer)
+void GLImageViewer::updateFramebufferObject(QGLPixelBuffer *framebuffer)
 {
   m_framebuffer = framebuffer;
   m_imageRatio = (float) m_framebuffer->toImage().width() / 

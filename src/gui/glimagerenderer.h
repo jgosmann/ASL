@@ -9,6 +9,7 @@
 #include <QList>
 #include <QSharedPointer>
 #include <asl/annotatedglshaderprogram.h>
+#include <QGLPixelBuffer>
 
 namespace gui {
 
@@ -30,7 +31,7 @@ namespace gui {
     void saveImageFile();
 
   signals:
-    void framebufferObjectChanged(QGLFramebufferObject *framebuffer);
+    void framebufferObjectChanged(QGLPixelBuffer *framebuffer);
 
   private:
     void renderToFramebuffer();
@@ -41,6 +42,9 @@ namespace gui {
 
     QGLFramebufferObject *m_framebuffer;
     QList<QSharedPointer<Shader> > m_shaderProgramList;
+
+    QGLPixelBuffer* target;
+    QGLPixelBuffer* source;
 
     QImage *m_image;
     GLuint m_textureID;
