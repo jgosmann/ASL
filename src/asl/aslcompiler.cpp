@@ -11,18 +11,13 @@ AnnotatedGLShader * ASLCompiler::compile(QGLShader::ShaderType type,
 {
     reset();
 
-    QString prefixedSource(source);
-    prefixKeepingVersionStatementIntact(m_prefix, prefixedSource);
-
-    ShaderInfo shaderInfo = parserinternal::parse(prefixedSource, pathOfSource);
+    ShaderInfo shaderInfo = parserinternal::parse(source, pathOfSource);
     m_log += parserinternal::log;
 
-    foreach (QString dependency, shaderInfo.dependencies) {
-        prefixKeepingVersionStatementIntact(
-                m_exportedFunctionsRetriever.getExportedFunctionsForDependency(
-                    type, dependency, pathOfSource).join("\n") + "\n",
-                prefixedSource);
-    }
+    QString prefixedSource(source);
+    prefixKeepingVersionAndLineIntact(
+            getExportedFunctionsOfDependencies(type, pathOfSource, shaderInfo),
+            prefixedSource);
 
     AnnotatedGLShader *shaderPrgm = new AnnotatedGLShader(type, shaderInfo);
     m_success = shaderPrgm->compileSourceCode(prefixedSource);
@@ -31,33 +26,67 @@ AnnotatedGLShader * ASLCompiler::compile(QGLShader::ShaderType type,
     return shaderPrgm;
 }
 
+AnnotatedGLShader * ASLCompiler::compileAsMain(QGLShader::ShaderType type,
+        const QString &source, const QString &pathOfSource)
+{
+    QString prefixedSource(source);
+    prefixKeepingVersionAndLineIntact("#define ASL_MAIN\n", prefixedSource);
+    return compile(type, prefixedSource, pathOfSource);
+}
+
 asl::AnnotatedGLShader * ASLCompiler::compileFile(QGLShader::ShaderType type,
         const QString &filename)
 {
-    QFile file(filename);
-
-    if (!file.open(QIODevice::ReadOnly)) {
-        m_log += "ERROR: Could not open file \"" + filename + "\".\n";
-        return compile(type, "", filename);
-    }
-
-    QTextStream inStream(&file);
-    AnnotatedGLShader *retVal = compile(type, inStream.readAll(), filename);
-    file.close();
-    return retVal;
+    return compile(type, readFile(filename), filename);
 }
 
-void ASLCompiler::prefixKeepingVersionStatementIntact(
+asl::AnnotatedGLShader * ASLCompiler::compileFileAsMain(
+        QGLShader::ShaderType type, const QString &filename)
+{
+    return compileAsMain(type, readFile(filename), filename);
+}
+
+QString ASLCompiler::getExportedFunctionsOfDependencies(
+        QGLShader::ShaderType shaderType, const QString &pathOfSource,
+        const ShaderInfo &shaderInfo)
+{
+    QStringList exportedFunctions;
+    foreach (QString dependency, shaderInfo.dependencies) {
+        exportedFunctions.append(
+            m_exportedFunctionsRetriever.getExportedFunctionsForDependency(
+                shaderType, dependency, pathOfSource));
+    }
+    return exportedFunctions.join("\n") + "\n";
+}
+
+void ASLCompiler::prefixKeepingVersionAndLineIntact(
         const QString &prefix, QString &source)
 {
     const QRegExp versionDirectiveMatcher(
             "^\\s*#version\\s+[^\r\n]*([\r\n]+|$)");
     const int pos = versionDirectiveMatcher.indexIn(source);
     if (pos < 0) {
-        source.prepend(prefix);
+        source.prepend(prefix + "#line 0\n");
     } else {
-        source.insert(pos + versionDirectiveMatcher.matchedLength(), prefix);
+        const unsigned int matchLen = versionDirectiveMatcher.matchedLength();
+        unsigned int lineCount = source.left(matchLen).count('\n');
+        source.insert(pos + matchLen,
+                prefix + "#line " + QString::number(lineCount) + "\n");
     }
+}
+
+QString ASLCompiler::readFile(const QString &filename)
+{
+    QFile file(filename);
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        m_log += "ERROR: Could not open file \"" + filename + "\".\n";
+    }
+
+    QTextStream inStream(&file);
+    const QString contents(inStream.readAll());
+    file.close();
+    return contents;
 }
 
 void ASLCompiler::reset()

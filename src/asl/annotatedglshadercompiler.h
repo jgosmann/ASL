@@ -35,13 +35,27 @@ public:
             const QString &source, const QString &pathOfSource = "") = 0;
 
     /**
+     * Compiles an annotated shader as a main shader (a shader which was not
+     * included as dependency) and returns a pointer to it. See #compile() for
+     * further information.
+     */
+    virtual asl::AnnotatedGLShader * compileAsMain(QGLShader::ShaderType type,
+            const QString &source, const QString &pathOfSource = "") = 0;
+
+    /**
      * Reads a file and compiles the source code. See #compile() for more
-     * information
+     * information.
      */
     virtual asl::AnnotatedGLShader * compileFile(QGLShader::ShaderType type,
             const QString &filename) = 0;
 
-    virtual void prefixSourcesWith(const QString &prefix) = 0;
+    /**
+     * Reads a file and compiles the source code as main shader (a shader which
+     * was not included as dependency) and returns a pointer to it. See
+     * #compile() for further information.
+     */
+    virtual asl::AnnotatedGLShader * compileFileAsMain(
+            QGLShader::ShaderType type, const QString &filename) = 0;
 
     virtual QString log() const = 0;
 

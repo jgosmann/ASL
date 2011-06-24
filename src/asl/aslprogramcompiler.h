@@ -56,6 +56,8 @@ public:
 private:
     void reset();
     void compileAndAddShaderAndLoadDependencies(const QString &filename);
+    QSharedPointer<AnnotatedGLShader> compileMainShader(
+            const QString &filename);
     QSharedPointer<AnnotatedGLShader> compileShader(const QString &filename);
     void addShader(const QString &filename,
             QSharedPointer<AnnotatedGLShader> &shader);
