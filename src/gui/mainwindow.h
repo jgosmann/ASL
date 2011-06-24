@@ -44,6 +44,7 @@ private:
 
 public slots:
     void loadShaderDialog();
+    void loadImageFile();
 };
 }
 

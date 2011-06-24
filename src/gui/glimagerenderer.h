@@ -6,10 +6,14 @@
 #include <QGLFramebufferObject>
 #include <QGLShaderProgram>
 #include <QFileDialog>
+#include <QList>
+#include <QSharedPointer>
+#include <asl/annotatedglshaderprogram.h>
 
 namespace gui {
 
-  using std::list;
+
+  typedef class asl::AnnotatedGLShaderProgram Shader;
 
   class GLImageRenderer : public QObject
   {
@@ -20,9 +24,9 @@ namespace gui {
     ~GLImageRenderer();
 
   public slots:
-    void renderImage(list<QGLShaderProgram*> &shaderProgramList);
+    void renderImage(QList<QSharedPointer<Shader> > &shaderProgramList);
     void enableShaders(const int state);
-    void loadImageFile();
+    void loadImageFile(QImage* img);
     void saveImageFile();
 
   signals:
@@ -36,7 +40,7 @@ namespace gui {
     QGLContext &m_sharedContext;
 
     QGLFramebufferObject *m_framebuffer;
-    list<QGLShaderProgram*> m_shaderProgramList;
+    QList<QSharedPointer<Shader> > m_shaderProgramList;
 
     QImage *m_image;
     GLuint m_textureID;
