@@ -8,6 +8,6 @@
  */
 
 void main() {
-    gl_FragColor = calcJuliaSetcolor(vec2(0, 0), mapCoords(gl_FragCoord.xy));
+    gl_FragColor = calcJuliaSetColor(vec2(0, 0), mapCoords(gl_FragCoord.xy));
 }
 
