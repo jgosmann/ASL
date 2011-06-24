@@ -156,7 +156,7 @@ public:
         CPPUNIT_ASSERT(compiled->shaders().contains(depSubmain));
     }
 
-    void logsDependencySourceStringNumbers()
+    void logsCompiledDependencies()
     {
         QStringList depsMain, depsSubmain;
         depsMain.append("depMain");
@@ -185,9 +185,9 @@ public:
 
         assertCleanCompilationAndLinkage(compiled.data());
         assertLogged(LogEntry().withType(LOG_INFO).occuringIn(0)
-                .withMessageMatching(QRegExp(".*depMain.*1.*")));
-        assertLogged(LogEntry().withType(LOG_INFO).occuringIn(1)
-                .withMessageMatching(QRegExp(".*depSubmain.*2.*")));
+                .withMessageMatching(QRegExp(".*depMain.*")));
+        assertLogged(LogEntry().withType(LOG_INFO).occuringIn(0)
+                .withMessageMatching(QRegExp(".*depSubmain.*")));
     }
 
     void loadsDuplicatesOnlyOnce()
@@ -427,7 +427,7 @@ public:
     CPPUNIT_TEST(cachesCompiledShader);
     CPPUNIT_TEST(loadsDependencies);
     CPPUNIT_TEST(loadsRecursiveDependencies);
-    CPPUNIT_TEST(logsDependencySourceStringNumbers);
+    CPPUNIT_TEST(logsCompiledDependencies);
     CPPUNIT_TEST(loadsDuplicatesOnlyOnce);
     CPPUNIT_TEST(shaderProgramInfoEqualsMainShaderInfo);
     CPPUNIT_TEST(mainShaderWarningsAppearInCompilerLog);

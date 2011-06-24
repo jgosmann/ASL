@@ -54,7 +54,6 @@ QSharedPointer<AnnotatedGLShader> ASLProgramCompiler::compileMainShader(
 QSharedPointer<AnnotatedGLShader> ASLProgramCompiler::compileShader(
         const QString &filename)
 {
-
     QSharedPointer<AnnotatedGLShader> shader(
             m_shaderCache.compileFile(m_shaderType, filename));
     m_log += m_shaderCache.log();
@@ -73,7 +72,6 @@ void ASLProgramCompiler::addShader(const QString &filename,
 void ASLProgramCompiler::compileAndAddDependencies(
         const QStringList &dependencies, const QString &includingFile)
 {
-    const unsigned int includingSourceStringNo = m_addedShaders.size() - 1;
     foreach (QString dependency, dependencies) {
         const QString dependencyPath(
                 m_dependencyLocator.locate(dependency, includingFile));
@@ -82,9 +80,7 @@ void ASLProgramCompiler::compileAndAddDependencies(
             continue;
         }
 
-        m_log = m_log % "INFO: " % QString::number(includingSourceStringNo)
-            % ":0: Compiling \"" % dependency % "\" as source string number "
-            % QString::number(m_addedShaders.size()) % ".\n";
+        m_log = m_log % "INFO: 0:0: Compiling \"" % dependency % "\"\n";
 
         compileAndAddShaderAndLoadDependencies(dependencyPath);
     }
