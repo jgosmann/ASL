@@ -26,6 +26,7 @@ private:
     asl::AnnotatedGLShaderCompiler &m_compiler;
 
     QHash<QString, QWeakPointer<AnnotatedGLShader> > m_cache;
+    QHash<QString, QWeakPointer<AnnotatedGLShader> > m_mainShaderCache;
 };
 } /* namespace asl */
 
