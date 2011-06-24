@@ -25,7 +25,7 @@ namespace gui {
       virtual ~GLImageViewer();
 
   public slots:
-    void updateFramebufferObject(QGLFramebufferObject *framebuffer);
+    void updateFramebufferObject(QGLPixelBuffer *framebuffer);
     void setImageZoom(int value);
 
   signals:
@@ -41,7 +41,7 @@ namespace gui {
 
   private:
     QGLContext *m_openGLContext;
-    QGLFramebufferObject *m_framebuffer;
+    QGLPixelBuffer *m_framebuffer;
 
     float m_imageRatio;
     float m_imageZoom;

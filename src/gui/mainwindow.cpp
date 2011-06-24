@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_glImageRenderer = new GLImageRenderer(this, *m_sharedContext);
 
 
+
     std::cout << ui->glDisplay->context()->isValid() << std::endl;
     std::cout << m_sharedContext->isValid() << std::endl;
 
@@ -37,9 +38,9 @@ MainWindow::MainWindow(QWidget *parent) :
             m_glImageRenderer, SLOT(enableShaders(int)));
 
     connect(m_glImageRenderer, SIGNAL(framebufferObjectChanged(
-              QGLFramebufferObject*)),
+              QGLPixelBuffer*)),
             ui->glDisplay, SLOT(updateFramebufferObject(
-              QGLFramebufferObject*)));
+              QGLPixelBuffer*)));
 
     connect(ui->pushButton_AddShader,SIGNAL(clicked()),this,SLOT(loadShaderDialog()));
     connect(ui->pushButton_RemoveShader,SIGNAL(clicked()),ui->listView_ShaderList,SLOT(removeSelectedShader()));

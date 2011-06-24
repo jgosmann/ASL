@@ -42,6 +42,7 @@ private:
     asl::DefaultASLProgramCompiler compiler;
 
 
+
 public slots:
     void loadShaderDialog();
     void loadImageFile();

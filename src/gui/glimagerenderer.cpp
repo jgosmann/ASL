@@ -9,7 +9,9 @@ GLImageRenderer::GLImageRenderer(QObject* parent, QGLContext &sharedContext)
     m_sharedContext(sharedContext),
     m_useShaderProgram(false),
     m_framebuffer(NULL),
-    m_image(NULL)
+    m_image(NULL),
+    source(NULL),
+    target(NULL)
 {
 }
 
@@ -26,55 +28,61 @@ GLImageRenderer::~GLImageRenderer()
 void GLImageRenderer::renderToFramebuffer()
 {
   //TODO:
-  if(!m_image || !m_framebuffer)
+  if(!m_image || !source || !target)
     return;
 
   glDisable(GL_DEPTH_TEST);
 
-  m_textureID = m_sharedContext.bindTexture(*m_image);
+    bool established = source->makeCurrent();
+//  m_textureID = m_sharedContext.bindTexture(*m_image);
+    m_textureID = source->bindTexture(*m_image);
+
 
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  m_framebuffer->bind();
+//  m_framebuffer->bind();
 
-  QList<QSharedPointer<Shader> >::iterator shaderProgram;
-  for(shaderProgram = m_shaderProgramList.begin();
-    shaderProgram != m_shaderProgramList.end();
-    shaderProgram++)
-  {
-    if(!(*shaderProgram)->isLinked())
-      continue;
+//  QList<QSharedPointer<Shader> >::iterator shaderProgram;
+//  for(shaderProgram = m_shaderProgramList.begin();
+//    shaderProgram != m_shaderProgramList.end();
+//    shaderProgram++)
+//  {
+//    if(!(*shaderProgram)->isLinked())
+//      continue;
 
-    if(m_useShaderProgram)
-      (*shaderProgram)->bind();
+//    if(m_useShaderProgram)
+//      (*shaderProgram)->bind();
 
-    glBegin(GL_QUADS);
-      glNormal3f( 0.0f, 0.0f, 1.0f);
+//    glBegin(GL_QUADS);
+//      glNormal3f( 0.0f, 0.0f, 1.0f);
 
-      glTexCoord2f( 0.0f, 0.0f);
-      glVertex2f(-1.0f, 1.0f);
+//      glTexCoord2f( 0.0f, 0.0f);
+//      glVertex2f(-1.0f, 1.0f);
 
-      glTexCoord2f( 1.0f, 0.0f);
-      glVertex2f( 1.0f, 1.0f);
+//      glTexCoord2f( 1.0f, 0.0f);
+//      glVertex2f( 1.0f, 1.0f);
 
-      glTexCoord2f( 1.0f, 1.0f);
-      glVertex2f( 1.0f,-1.0f);
+//      glTexCoord2f( 1.0f, 1.0f);
+//      glVertex2f( 1.0f,-1.0f);
 
-      glTexCoord2f( 0.0f, 1.0f);
-      glVertex2f(-1.0f,-1.0f);
-    glEnd();
+//      glTexCoord2f( 0.0f, 1.0f);
+//      glVertex2f(-1.0f,-1.0f);
+//    glEnd();
 
-    if(m_useShaderProgram)
-      (*shaderProgram)->release();
-  }
-  m_framebuffer->release();
+    source->drawTexture(QPoint(0,0),m_textureID);
+    source->doneCurrent();
 
-  m_sharedContext.deleteTexture(m_textureID);
+//    if(m_useShaderProgram)
+//      (*shaderProgram)->release();
+//  }
+//  m_framebuffer->release();
+
+//  m_sharedContext.deleteTexture(m_textureID);
 
   glEnable(GL_DEPTH_TEST);
 
-  emit framebufferObjectChanged(m_framebuffer);
+  emit framebufferObjectChanged(source);
 }
 
 //-- SLOTS --------------------------------------------------------------------
@@ -106,8 +114,10 @@ void GLImageRenderer::loadImageFile(QImage* img)
 {
   m_image = img;
 
-  m_sharedContext.makeCurrent();
-  m_framebuffer = new QGLFramebufferObject( m_image->size() );
+//  m_sharedContext.makeCurrent();
+//  m_framebuffer = new QGLFramebufferObject( m_image->size() );
+  source = new QGLPixelBuffer(img->size());
+  target = new QGLPixelBuffer(img->size());
   renderToFramebuffer();
 }
 
