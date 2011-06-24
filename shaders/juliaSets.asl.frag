@@ -40,7 +40,7 @@ vec4 calcJuliaSetColor(vec2 z, vec2 c) {
 uniform vec2 c;
 
 void main() {
-    gl_FragColor = calcJuliaSetColor(mapCoords(gl_FragCoord), c);
+    gl_FragColor = calcJuliaSetColor(mapCoords(gl_FragCoord.xy), c);
 }
 #endif
 
