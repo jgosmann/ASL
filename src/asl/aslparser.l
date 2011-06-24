@@ -42,7 +42,7 @@ bool true|false
 
 %%
 
-"/**" {
+<INITIAL>"/**" {
     currentIdentation = 0;
     BEGIN ANNOTATION;
     return ANNOTATION_START;
@@ -137,9 +137,9 @@ bool true|false
     return END;
 }
 
-<INITIAL>{identifier}({comment}|{whitespace})+{identifier}({comment}|{whitespace})*"("[^)]*")" {
+<INITIAL>{identifier}({comment}|{whitespace})+{identifier}({comment}|{whitespace})*"("[^(){}]*")"({comment}|{whitespace})*"{" {
+    yytext[yyleng - 1] = ';';
     aslparserlval.string = new QString(yytext);
-    aslparserlval.string->append(";");
     return EXPORTED_FUNCTION;
 }
 
@@ -152,7 +152,7 @@ bool true|false
 
 <INITIAL>[^ \t\r\n] {
     if (!readFirstAslComment) {
-        return UNEXPECTED_CHAR;
+        return CHAR;
     }
 }
 

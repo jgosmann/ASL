@@ -754,8 +754,19 @@ public:
             shaderCompiler.compile(QGLShader::Fragment,
                 "void foo(int x) { /* content */ } int bar() { return 1; }"));
         QStringList expected;
-        expected.append("void foo(int x);");
-        expected.append("int bar();");
+        expected.append("void foo(int x) ;");
+        expected.append("int bar() ;");
+        assertCleanCompilation(compiled.data());
+        CPPUNIT_ASSERT_EQUAL(expected, compiled->exportedFunctions());
+    }
+
+    void doesNotParseFunctionsCallsOrDeclarationsAsExportedFunctions()
+    {
+        QScopedPointer<AnnotatedGLShader> compiled(
+            shaderCompiler.compile(QGLShader::Fragment,
+                "void bar(); void foo(int x) { bar(); }"));
+        QStringList expected;
+        expected.append("void foo(int x) ;");
         assertCleanCompilation(compiled.data());
         CPPUNIT_ASSERT_EQUAL(expected, compiled->exportedFunctions());
     }
@@ -825,6 +836,7 @@ public:
     CPPUNIT_TEST(prefixesSources);
     CPPUNIT_TEST(prefixSourcesKeepsVersionDirectiveAsFirstDirective);
     CPPUNIT_TEST(parsesExportedFunctions);
+    CPPUNIT_TEST(doesNotParseFunctionsCallsOrDeclarationsAsExportedFunctions);
     CPPUNIT_TEST_SUITE_END();
 
 private:
