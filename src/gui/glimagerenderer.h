@@ -21,7 +21,7 @@ namespace gui {
     Q_OBJECT
 
   public:
-    GLImageRenderer(QObject *parent, QGLContext &sharedContext);
+    GLImageRenderer(QObject *parent);
     ~GLImageRenderer();
 
   public slots:
@@ -37,8 +37,6 @@ namespace gui {
     void renderToFramebuffer();
 
     bool m_useShaderProgram;
-
-    QGLContext &m_sharedContext;
 
     QGLFramebufferObject *m_framebuffer;
     QList<QSharedPointer<Shader> > m_shaderProgramList;

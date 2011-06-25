@@ -4,9 +4,8 @@
 
 using namespace gui;
 
-GLImageRenderer::GLImageRenderer(QObject* parent, QGLContext &sharedContext)
+GLImageRenderer::GLImageRenderer(QObject* parent)
   : QObject(parent),
-    m_sharedContext(sharedContext),
     m_useShaderProgram(false),
     m_framebuffer(NULL),
     m_image(NULL),
@@ -31,15 +30,18 @@ void GLImageRenderer::renderToFramebuffer()
   if(!m_image || !source || !target)
     return;
 
-  glDisable(GL_DEPTH_TEST);
+
 
     bool established = source->makeCurrent();
 //  m_textureID = m_sharedContext.bindTexture(*m_image);
     m_textureID = source->bindTexture(*m_image);
 
+//    glDisable(GL_DEPTH_TEST);
 
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
 
 //  m_framebuffer->bind();
 
@@ -54,23 +56,28 @@ void GLImageRenderer::renderToFramebuffer()
 //    if(m_useShaderProgram)
 //      (*shaderProgram)->bind();
 
-//    glBegin(GL_QUADS);
-//      glNormal3f( 0.0f, 0.0f, 1.0f);
+    glBegin(GL_QUADS);
+      glNormal3f( 0.0f, 0.0f, 1.0f);
 
-//      glTexCoord2f( 0.0f, 0.0f);
-//      glVertex2f(-1.0f, 1.0f);
+      glTexCoord2f( 0.0f, 0.0f);
+      glVertex2f(-1.0f, 1.0f);
 
-//      glTexCoord2f( 1.0f, 0.0f);
-//      glVertex2f( 1.0f, 1.0f);
+      glTexCoord2f( 1.0f, 0.0f);
+      glVertex2f( 1.0f, 1.0f);
 
-//      glTexCoord2f( 1.0f, 1.0f);
-//      glVertex2f( 1.0f,-1.0f);
+      glTexCoord2f( 1.0f, 1.0f);
+      glVertex2f( 1.0f,-1.0f);
 
-//      glTexCoord2f( 0.0f, 1.0f);
-//      glVertex2f(-1.0f,-1.0f);
-//    glEnd();
+      glTexCoord2f( 0.0f, 1.0f);
+      glVertex2f(-1.0f,-1.0f);
+    glEnd();
 
-    source->drawTexture(QPoint(0,0),m_textureID);
+    glEnable(GL_DEPTH_TEST);
+
+    source->deleteTexture(m_textureID);
+
+
+//    source->drawTexture(QRect(QPoint(0,0),m_image->size()),m_textureID);
     source->doneCurrent();
 
 //    if(m_useShaderProgram)
@@ -80,7 +87,7 @@ void GLImageRenderer::renderToFramebuffer()
 
 //  m_sharedContext.deleteTexture(m_textureID);
 
-  glEnable(GL_DEPTH_TEST);
+//source->toImage().save("/home/denis/Programs/CPP/Computergrafik/cg/bin/test.jpg");
 
   emit framebufferObjectChanged(source);
 }
@@ -90,7 +97,7 @@ void GLImageRenderer::renderToFramebuffer()
 /** TODO: connect this one to your shaderList-Widget! */
 void GLImageRenderer::renderImage(QList<QSharedPointer<Shader> > &shaderProgramList)
 {
-  if( !m_sharedContext.isValid() )
+  if( !source->isValid() )
     return;
 
   m_shaderProgramList = shaderProgramList;
@@ -106,7 +113,7 @@ void GLImageRenderer::enableShaders(const int state)
     m_useShaderProgram = false;
   }
 
-  if( m_sharedContext.isValid() )
+  if( source->isValid() )
     renderToFramebuffer();
 }
 
@@ -117,6 +124,20 @@ void GLImageRenderer::loadImageFile(QImage* img)
 //  m_sharedContext.makeCurrent();
 //  m_framebuffer = new QGLFramebufferObject( m_image->size() );
   source = new QGLPixelBuffer(img->size());
+
+  source->makeCurrent();
+  glEnable(GL_TEXTURE_2D);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+//  glOrtho(-1.0, +1.0, -1.0, +1.0, -90.0, +90.0);
+  gluOrtho2D(-1.0, 1.0,-1.0, 1.0);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  source->doneCurrent();
+
   target = new QGLPixelBuffer(img->size());
   renderToFramebuffer();
 }

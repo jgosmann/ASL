@@ -42,6 +42,7 @@ namespace gui {
   private:
     QGLContext *m_openGLContext;
     QGLPixelBuffer *m_framebuffer;
+    QImage m_image;
 
     float m_imageRatio;
     float m_imageZoom;

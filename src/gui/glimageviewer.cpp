@@ -27,6 +27,7 @@ void GLImageViewer::initializeGL()
 
 void GLImageViewer::resizeGL(int w, int h)
 {
+  makeCurrent();
   // set the viewpoint dependent to image size
   glViewport(0, 0, w, h);//m_image->width(), m_image->height());
 
@@ -41,37 +42,71 @@ void GLImageViewer::resizeGL(int w, int h)
 
 void GLImageViewer::paintGL()
 {
-  if(!m_framebuffer)
-    return;
+//  if(!m_framebuffer)
+//    return;
+
 
   makeCurrent();
 
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+
+  gluOrtho2D(-1.0, 1.0,-1.0, 1.0);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  glEnable(GL_TEXTURE_2D);
+
   glDisable(GL_DEPTH_TEST);
+//  glEnable(GL_DEPTH_TEST);
 
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // load & set initial default image
-  GLuint texture = bindTexture( m_framebuffer->toImage() );
+//  GLuint texture = glbindTexture( m_framebuffer->toImage());
+//    GLuint texture = bindTexture(m_image, GL_TEXTURE_2D, GL_RGBA);
+//  GLuint texture = bindTexture( m_image);
+  GLuint texture = bindTexture("/home/denis/Programs/CPP/Computergrafik/cg/bin/test.jpg");
 
-  glLoadIdentity();
-  glScalef(m_imageZoom, m_imageZoom, 1.0f);
 
   glBegin(GL_QUADS);
-      glNormal3f( 0.0f, 0.0f, 1.0f);
+    glNormal3f( 0.0f, 0.0f, 1.0f);
 
-      glTexCoord2f( 0.0f, 0.0f);
-      glVertex2f(-1.0f, m_imageRatio);
+    glTexCoord2f( 0.0f, 0.0f);
+    glVertex2f(-1.0f, 1.0f);
 
-      glTexCoord2f( 1.0f, 0.0f);
-      glVertex2f( 1.0f, m_imageRatio);
+    glTexCoord2f( 1.0f, 0.0f);
+    glVertex2f( 1.0f, 1.0f);
 
-      glTexCoord2f( 1.0f, 1.0f);
-      glVertex2f( 1.0f,-m_imageRatio);
+    glTexCoord2f( 1.0f, 1.0f);
+    glVertex2f( 1.0f,-1.0f);
 
-      glTexCoord2f( 0.0f, 1.0f);
-      glVertex2f(-1.0f,-m_imageRatio);
+    glTexCoord2f( 0.0f, 1.0f);
+    glVertex2f(-1.0f,-1.0f);
   glEnd();
+
+
+//  glLoadIdentity();
+//  glScalef(m_imageZoom, m_imageZoom, 1.0f);
+
+//  glBegin(GL_QUADS);
+//      glNormal3f( 0.0f, 0.0f, 1.0f);
+
+//      glTexCoord2f( 0.0f, 0.0f);
+//      glVertex2f(-1.0f, m_imageRatio);
+
+//      glTexCoord2f( 1.0f, 0.0f);
+//      glVertex2f( 1.0f, m_imageRatio);
+
+//      glTexCoord2f( 1.0f, 1.0f);
+//      glVertex2f( 1.0f,-m_imageRatio);
+
+//      glTexCoord2f( 0.0f, 1.0f);
+//      glVertex2f(-1.0f,-m_imageRatio);
+//  glEnd();
 
   deleteTexture( texture );
 
@@ -85,7 +120,9 @@ void GLImageViewer::updateFramebufferObject(QGLPixelBuffer *framebuffer)
 {
   m_framebuffer = framebuffer;
   m_imageRatio = (float) m_framebuffer->toImage().width() / 
-    m_framebuffer->toImage().height();
+  m_framebuffer->toImage().height();
+  m_image = m_framebuffer->toImage();
+
 }
 
 void GLImageViewer::setImageZoom(int value)
