@@ -69,7 +69,9 @@ void GLImageViewer::paintGL()
 //  GLuint texture = glbindTexture( m_framebuffer->toImage());
 //    GLuint texture = bindTexture(m_image, GL_TEXTURE_2D, GL_RGBA);
 //  GLuint texture = bindTexture( m_image);
-  GLuint texture = bindTexture("data/intro.jpg");
+  const QImage testImg("../../../data/intro.jpg");
+  assert(!testImg.isNull());
+  GLuint texture = bindTexture(testImg);
 
 
   glBegin(GL_QUADS);
@@ -122,6 +124,7 @@ void GLImageViewer::updateFramebufferObject(QGLPixelBuffer *framebuffer)
   m_imageRatio = (float) m_framebuffer->toImage().width() / 
   m_framebuffer->toImage().height();
   m_image = m_framebuffer->toImage();
+  glDraw();
 
 }
 
