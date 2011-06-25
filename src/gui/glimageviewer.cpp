@@ -69,7 +69,7 @@ void GLImageViewer::paintGL()
 //  GLuint texture = glbindTexture( m_framebuffer->toImage());
 //    GLuint texture = bindTexture(m_image, GL_TEXTURE_2D, GL_RGBA);
 //  GLuint texture = bindTexture( m_image);
-  GLuint texture = bindTexture("/home/denis/Programs/CPP/Computergrafik/cg/bin/test.jpg");
+  GLuint texture = bindTexture("data/intro.jpg");
 
 
   glBegin(GL_QUADS);
