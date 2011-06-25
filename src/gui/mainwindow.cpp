@@ -13,17 +13,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-    // share QGLContext with class GLImageRenderer
-    m_sharedContext = new QGLContext( 
-        ui->glDisplay->context()->format() );
-    bool established = m_sharedContext->create( ui->glDisplay->context() );
+    m_glImageRenderer = new GLImageRenderer(this);
 
-    m_glImageRenderer = new GLImageRenderer(this, *m_sharedContext);
-
-
-
-    std::cout << ui->glDisplay->context()->isValid() << std::endl;
-    std::cout << m_sharedContext->isValid() << std::endl;
 
     connect(ui->spinBox_Zoom, SIGNAL(valueChanged(int)), 
             ui->glDisplay, SLOT(setImageZoom(int)));
@@ -53,7 +44,6 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
-    delete m_sharedContext;
     delete m_glImageRenderer;
 }
 
