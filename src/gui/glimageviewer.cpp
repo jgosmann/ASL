@@ -69,8 +69,12 @@ void GLImageViewer::paintGL()
 //  GLuint texture = glbindTexture( m_framebuffer->toImage());
 //    GLuint texture = bindTexture(m_image, GL_TEXTURE_2D, GL_RGBA);
 //  GLuint texture = bindTexture( m_image);
-  const QImage testImg("../../../data/intro.jpg");
-  assert(!testImg.isNull());
+  const QImage testImg("/home/denis/Programs/CPP/Computergrafik/cg/bin/test.jpg");
+//  assert(!testImg.isNull());
+  if(testImg.isNull()){
+
+      std::cout << " IST NULL" << std::endl;
+  }
   GLuint texture = bindTexture(testImg);
 
 
