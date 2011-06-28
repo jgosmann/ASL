@@ -36,6 +36,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton_AddShader,SIGNAL(clicked()),this,SLOT(loadShaderDialog()));
     connect(ui->pushButton_RemoveShader,SIGNAL(clicked()),ui->listView_ShaderList,SLOT(removeSelectedShader()));
 
+    connect(ui->listView_ShaderList,SIGNAL(renderShaderList(QList<QSharedPointer<Shader> >)),m_glImageRenderer,SLOT(renderImage(QList<QSharedPointer<Shader> >)));
+
 
 
 

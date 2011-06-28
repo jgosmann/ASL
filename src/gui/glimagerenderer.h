@@ -10,6 +10,8 @@
 #include <QSharedPointer>
 #include <asl/annotatedglshaderprogram.h>
 #include <QGLPixelBuffer>
+#include <algorithm>
+#include <iostream>
 
 namespace gui {
 
@@ -25,7 +27,7 @@ namespace gui {
     ~GLImageRenderer();
 
   public slots:
-    void renderImage(QList<QSharedPointer<Shader> > &shaderProgramList);
+    void renderImage(QList<QSharedPointer<Shader> > shaderProgramList);
     void enableShaders(const int state);
     void loadImageFile(QImage* img);
     void saveImageFile();
@@ -35,6 +37,7 @@ namespace gui {
 
   private:
     void renderToFramebuffer();
+    void drawTexture();
 
     bool m_useShaderProgram;
 

@@ -49,6 +49,7 @@ void ShaderListView::clickedOnShader(const QModelIndex &index){
     ShaderItem* item = (ShaderItem*)(itemModel->itemFromIndex(index));
     currentRow = index.row();
     emit shaderClicked(item->getShader());
+    emit renderShaderList(getCheckedShaders());
 
 }
 
