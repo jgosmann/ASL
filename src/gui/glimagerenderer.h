@@ -6,37 +6,43 @@
 #include <QGLFramebufferObject>
 #include <QGLShaderProgram>
 #include <QFileDialog>
+#include <QList>
+#include <QSharedPointer>
+#include <asl/annotatedglshaderprogram.h>
+#include <QGLPixelBuffer>
 
 namespace gui {
 
-  using std::list;
+
+  typedef class asl::AnnotatedGLShaderProgram Shader;
 
   class GLImageRenderer : public QObject
   {
     Q_OBJECT
 
   public:
-    GLImageRenderer(QObject *parent, QGLContext &sharedContext);
+    GLImageRenderer(QObject *parent);
     ~GLImageRenderer();
 
   public slots:
-    void renderImage(list<QGLShaderProgram*> &shaderProgramList);
+    void renderImage(QList<QSharedPointer<Shader> > &shaderProgramList);
     void enableShaders(const int state);
-    void loadImageFile();
+    void loadImageFile(QImage* img);
     void saveImageFile();
 
   signals:
-    void framebufferObjectChanged(QGLFramebufferObject *framebuffer);
+    void framebufferObjectChanged(QGLPixelBuffer *framebuffer);
 
   private:
     void renderToFramebuffer();
 
     bool m_useShaderProgram;
 
-    QGLContext &m_sharedContext;
-
     QGLFramebufferObject *m_framebuffer;
-    list<QGLShaderProgram*> m_shaderProgramList;
+    QList<QSharedPointer<Shader> > m_shaderProgramList;
+
+    QGLPixelBuffer* target;
+    QGLPixelBuffer* source;
 
     QImage *m_image;
     GLuint m_textureID;

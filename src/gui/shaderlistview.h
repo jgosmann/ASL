@@ -58,9 +58,13 @@ signals:
     void shaderClicked(QSharedPointer<Shader> shader);
 
 public slots:
+    void removeSelectedShader();
 
 private slots:
     void clickedOnShader(const QModelIndex & index);
+
+private:
+    int currentRow;
 
 };
 

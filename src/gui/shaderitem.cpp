@@ -11,3 +11,11 @@ ShaderItem::ShaderItem(QSharedPointer<Shader> pShader):
 QSharedPointer<Shader> ShaderItem::getShader(){
     return shader;
 }
+
+QStandardItem * ShaderItem::clone () const{
+
+    ShaderItem* cl = new ShaderItem(shader);
+    return (QStandardItem*) cl;
+}
+
+

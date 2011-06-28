@@ -4,12 +4,13 @@
 
 using namespace gui;
 
-GLImageRenderer::GLImageRenderer(QObject* parent, QGLContext &sharedContext)
+GLImageRenderer::GLImageRenderer(QObject* parent)
   : QObject(parent),
-    m_sharedContext(sharedContext),
     m_useShaderProgram(false),
     m_framebuffer(NULL),
-    m_image(NULL)
+    m_image(NULL),
+    source(NULL),
+    target(NULL)
 {
 }
 
@@ -26,28 +27,34 @@ GLImageRenderer::~GLImageRenderer()
 void GLImageRenderer::renderToFramebuffer()
 {
   //TODO:
-  if(!m_image || !m_framebuffer)
+  if(!m_image || !source || !target)
     return;
 
-  glDisable(GL_DEPTH_TEST);
 
-  m_textureID = m_sharedContext.bindTexture(*m_image);
+
+    bool established = source->makeCurrent();
+//  m_textureID = m_sharedContext.bindTexture(*m_image);
+    m_textureID = source->bindTexture(*m_image);
+
+//    glDisable(GL_DEPTH_TEST);
 
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  m_framebuffer->bind();
 
-  list<QGLShaderProgram*>::iterator shaderProgram;
-  for(shaderProgram = m_shaderProgramList.begin();
-    shaderProgram != m_shaderProgramList.end();
-    shaderProgram++)
-  {
-    if(!(*shaderProgram)->isLinked())
-      continue;
 
-    if(m_useShaderProgram)
-      (*shaderProgram)->bind();
+//  m_framebuffer->bind();
+
+//  QList<QSharedPointer<Shader> >::iterator shaderProgram;
+//  for(shaderProgram = m_shaderProgramList.begin();
+//    shaderProgram != m_shaderProgramList.end();
+//    shaderProgram++)
+//  {
+//    if(!(*shaderProgram)->isLinked())
+//      continue;
+
+//    if(m_useShaderProgram)
+//      (*shaderProgram)->bind();
 
     glBegin(GL_QUADS);
       glNormal3f( 0.0f, 0.0f, 1.0f);
@@ -65,24 +72,32 @@ void GLImageRenderer::renderToFramebuffer()
       glVertex2f(-1.0f,-1.0f);
     glEnd();
 
-    if(m_useShaderProgram)
-      (*shaderProgram)->release();
-  }
-  m_framebuffer->release();
+    glEnable(GL_DEPTH_TEST);
 
-  m_sharedContext.deleteTexture(m_textureID);
+    source->deleteTexture(m_textureID);
 
-  glEnable(GL_DEPTH_TEST);
 
-  emit framebufferObjectChanged(m_framebuffer);
+//    source->drawTexture(QRect(QPoint(0,0),m_image->size()),m_textureID);
+    source->doneCurrent();
+
+//    if(m_useShaderProgram)
+//      (*shaderProgram)->release();
+//  }
+//  m_framebuffer->release();
+
+//  m_sharedContext.deleteTexture(m_textureID);
+
+//source->toImage().save("/home/denis/Programs/CPP/Computergrafik/cg/bin/test.jpg");
+
+  emit framebufferObjectChanged(source);
 }
 
 //-- SLOTS --------------------------------------------------------------------
 
 /** TODO: connect this one to your shaderList-Widget! */
-void GLImageRenderer::renderImage(list<QGLShaderProgram*> &shaderProgramList)
+void GLImageRenderer::renderImage(QList<QSharedPointer<Shader> > &shaderProgramList)
 {
-  if( !m_sharedContext.isValid() )
+  if( !source->isValid() )
     return;
 
   m_shaderProgramList = shaderProgramList;
@@ -98,16 +113,33 @@ void GLImageRenderer::enableShaders(const int state)
     m_useShaderProgram = false;
   }
 
-  if( m_sharedContext.isValid() )
+  if( source->isValid() )
     renderToFramebuffer();
 }
 
-void GLImageRenderer::loadImageFile()
+void GLImageRenderer::loadImageFile(QImage* img)
 {
-  m_image = new QImage( QFileDialog::getOpenFileName() );
+  m_image = img;
 
-  m_sharedContext.makeCurrent();
-  m_framebuffer = new QGLFramebufferObject( m_image->size() );
+//  m_sharedContext.makeCurrent();
+//  m_framebuffer = new QGLFramebufferObject( m_image->size() );
+  source = new QGLPixelBuffer(img->size());
+
+  source->makeCurrent();
+  glEnable(GL_TEXTURE_2D);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+//  glOrtho(-1.0, +1.0, -1.0, +1.0, -90.0, +90.0);
+  gluOrtho2D(-1.0, 1.0,-1.0, 1.0);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  source->doneCurrent();
+
+  target = new QGLPixelBuffer(img->size());
+  renderToFramebuffer();
 }
 
 void GLImageRenderer::saveImageFile()
