@@ -6,16 +6,14 @@ using namespace gui;
 
 GLImageViewer::GLImageViewer(QWidget *parent, Qt::WindowFlags f) :
     QGLWidget(parent, NULL, f),
-    m_imageZoom(1.0f),
-    m_framebuffer(NULL)
+    m_image(NULL),
+    m_imageZoom(1.0f)
 {
 }
 
 
 GLImageViewer::~GLImageViewer()
 {
-  if(m_framebuffer)
-    delete m_framebuffer;
 }
 
 //-- OpenGL core functions ----------------------------------------------------
@@ -42,24 +40,17 @@ void GLImageViewer::resizeGL(int w, int h)
 
 void GLImageViewer::paintGL()
 {
-  if(!m_framebuffer)
+  if(m_image == 0)
     return;
-
 
   glEnable(GL_TEXTURE_2D);
 
   glDisable(GL_DEPTH_TEST);
-//  glEnable(GL_DEPTH_TEST);
 
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  m_framebuffer->makeCurrent();
-  GLuint texture = m_framebuffer->generateDynamicTexture();
-  m_framebuffer->updateDynamicTexture(texture);
-  makeCurrent();
-
-  glBindTexture(GL_TEXTURE_2D,texture);
+  bindTexture(*m_image);
 
   glLoadIdentity();
   glScalef(m_imageZoom, m_imageZoom, 1.0f);
@@ -80,20 +71,17 @@ void GLImageViewer::paintGL()
       glVertex2f(-1.0f,-m_imageRatio);
   glEnd();
 
-  m_framebuffer->deleteTexture( texture );
-
-
   glEnable(GL_DEPTH_TEST);
 }
 
 //-- SLOTS --------------------------------------------------------------------
 
-void GLImageViewer::updateFramebufferObject(QGLPixelBuffer *framebuffer)
+void GLImageViewer::setImage(const QImage &img)
 {
-  m_framebuffer = framebuffer;
-  m_imageRatio = (float) m_framebuffer->size().width() / 
-          m_framebuffer->size().height();
-  m_image = m_framebuffer->toImage();
+  m_image = &img;
+  m_imageRatio = 1.3; 
+  // FIXME set ratio to correct value, glGetTexLevelParameter can get the
+  // texture size.
   glDraw();
 
 }

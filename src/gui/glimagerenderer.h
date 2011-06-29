@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QGLContext>
-#include <QGLFramebufferObject>
 #include <QGLShaderProgram>
 #include <QGLWidget>
 #include <QFileDialog>
@@ -16,42 +15,43 @@
 
 namespace gui {
 
+typedef class asl::AnnotatedGLShaderProgram Shader;
 
-  typedef class asl::AnnotatedGLShaderProgram Shader;
-
-  class GLImageRenderer : public QObject
-  {
+class GLImageRenderer : public QObject
+{
     Q_OBJECT
 
-  public:
-    GLImageRenderer(QObject *parent, QGLWidget *shareWidget = NULL);
-    ~GLImageRenderer();
+    public:
+        GLImageRenderer(QObject *parent, QGLWidget *shareWidget = NULL);
+        ~GLImageRenderer();
 
-  public slots:
-    void renderImage(QList<QSharedPointer<Shader> > shaderProgramList);
-    void enableShaders(const int state);
-    void loadImageFile(QImage* img);
-    void saveImageFile();
+        inline const QImage & getRenderedImage() const {
+            return m_renderedImage;
+        }
 
-  signals:
-    void framebufferObjectChanged(QGLPixelBuffer *framebuffer);
+    public slots:
+        void renderImage(QList<QSharedPointer<Shader> > shaderProgramList);
+        void enableShaders(const int state);
+        void setSourceImage(const QImage &img);
 
-  private:
-    void renderToFramebuffer();
-    void drawTexture();
+    signals:
+        void updated(const QImage &image);
 
-    bool m_useShaderProgram;
+    private:
+        void render();
+        void drawImageToRenderBuffer();
+        void applyShaders();
+        void drawTexture(GLuint tex);
 
-    QGLFramebufferObject *m_framebuffer;
-    QList<QSharedPointer<Shader> > m_shaderProgramList;
+        bool m_useShaderProgram;
 
-    QGLWidget *shareWidget;
-    QGLPixelBuffer* target;
-    QGLPixelBuffer* source;
+        QList<QSharedPointer<Shader> > m_shaderProgramList;
 
-    QImage *m_image;
-    GLuint m_textureID;
-  };
+        QGLWidget *m_shareWidget;
+        QPixmap m_sourceImage;
+        QImage m_renderedImage;
+        QGLPixelBuffer* m_renderBuffer;
+};
 }
 
 #endif // GLIMAGERENDERER_H

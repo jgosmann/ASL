@@ -28,10 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->checkBox_ApplyShaders, SIGNAL(stateChanged(int)), 
             m_glImageRenderer, SLOT(enableShaders(int)));
 
-    connect(m_glImageRenderer, SIGNAL(framebufferObjectChanged(
-              QGLPixelBuffer*)),
-            ui->glDisplay, SLOT(updateFramebufferObject(
-              QGLPixelBuffer*)));
+    connect(m_glImageRenderer, SIGNAL(updated(const QImage &)),
+            ui->glDisplay, SLOT(setImage(const QImage &)));
 
     connect(ui->pushButton_AddShader,SIGNAL(clicked()),this,SLOT(loadShaderDialog()));
     connect(ui->pushButton_RemoveShader,SIGNAL(clicked()),ui->listView_ShaderList,SLOT(removeSelectedShader()));
@@ -70,5 +68,5 @@ void MainWindow::loadShaderDialog()
 }
 
 void MainWindow::loadImageFile(){
-    m_glImageRenderer->loadImageFile( new QImage( QFileDialog::getOpenFileName()));
+    m_glImageRenderer->setSourceImage(QImage(QFileDialog::getOpenFileName()));
 }
