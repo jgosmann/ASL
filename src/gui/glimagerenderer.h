@@ -23,7 +23,7 @@ class GLImageRenderer : public QObject
     Q_OBJECT
 
     public:
-        GLImageRenderer(QObject *parent, QGLWidget *shareWidget = NULL);
+        GLImageRenderer(QObject *parent);
         ~GLImageRenderer();
 
         inline const QImage & getRenderedImage() const {
@@ -48,7 +48,6 @@ class GLImageRenderer : public QObject
 
         QList<QSharedPointer<Shader> > m_shaderProgramList;
 
-        QGLWidget *m_shareWidget;
         QPixmap m_sourceImage;
         QImage m_renderedImage;
         QGLPixelBuffer* m_renderBuffer;

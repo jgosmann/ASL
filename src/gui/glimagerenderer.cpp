@@ -5,10 +5,9 @@
 
 using namespace gui;
 
-GLImageRenderer::GLImageRenderer(QObject* parent, QGLWidget *shareWidget)
+GLImageRenderer::GLImageRenderer(QObject* parent)
     : QObject(parent),
     m_useShaderProgram(true),
-    m_shareWidget(shareWidget),
     m_renderBuffer(NULL)
 {
 }
@@ -133,12 +132,7 @@ void GLImageRenderer::setSourceImage(const QImage &img)
 
     m_sourceImage.convertFromImage(img);
 
-    if (m_shareWidget) {
-        m_renderBuffer = new QGLPixelBuffer(m_sourceImage.size(),
-                m_shareWidget->format(), m_shareWidget);
-    } else {
-        m_renderBuffer = new QGLPixelBuffer(m_sourceImage.size());
-    }
+    m_renderBuffer = new QGLPixelBuffer(m_sourceImage.size());
 
     m_renderBuffer->makeCurrent();
     m_source = new QGLFramebufferObject(m_sourceImage.size());
