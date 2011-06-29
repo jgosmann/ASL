@@ -35,6 +35,9 @@ class GLImageRenderer : public QObject
         void enableShaders(const int state);
         void setSourceImage(const QImage &img);
 
+        inline void makeCurrent() { m_pixelBufferForContext.makeCurrent(); }
+        inline void doneCurrent() { m_pixelBufferForContext.doneCurrent(); }
+
     signals:
         void updated(const QImage &image);
 
@@ -48,9 +51,9 @@ class GLImageRenderer : public QObject
 
         QList<QSharedPointer<Shader> > m_shaderProgramList;
 
+        QGLPixelBuffer m_pixelBufferForContext;
         QPixmap m_sourceImage;
         QImage m_renderedImage;
-        QGLPixelBuffer* m_renderBuffer;
         QGLFramebufferObject *m_source;
         QGLFramebufferObject *m_target;
 };

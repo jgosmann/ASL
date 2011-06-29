@@ -8,16 +8,19 @@ using namespace gui;
 GLImageRenderer::GLImageRenderer(QObject* parent)
     : QObject(parent),
     m_useShaderProgram(true),
-    m_renderBuffer(NULL)
+    m_pixelBufferForContext(1, 1),
+    m_source(NULL),
+    m_target(NULL)
 {
 }
 
 GLImageRenderer::~GLImageRenderer()
 {
-    if(m_renderBuffer) {
+    if (m_source) {
         delete m_source;
+    }
+    if (m_target) {
         delete m_target;
-        delete m_renderBuffer;
     }
 }
 
@@ -25,11 +28,11 @@ GLImageRenderer::~GLImageRenderer()
 
 void GLImageRenderer::render()
 {
-    if(!m_renderBuffer) {
+    if(!m_source || !m_target) {
         return;
     }
 
-    m_renderBuffer->makeCurrent();
+    m_pixelBufferForContext.makeCurrent();
     drawImageToTarget();
 
     if (m_useShaderProgram) {
@@ -37,15 +40,15 @@ void GLImageRenderer::render()
     }
 
     m_renderedImage = m_target->toImage();
-    m_renderBuffer->doneCurrent();
+    m_pixelBufferForContext.doneCurrent();
     emit updated(m_renderedImage);
 }
 
 void GLImageRenderer::drawImageToTarget() {
     m_target->bind();
-    const GLuint imgTex = m_renderBuffer->bindTexture(m_sourceImage);
+    const GLuint imgTex = m_pixelBufferForContext.bindTexture(m_sourceImage);
     drawTexture(imgTex);
-    m_renderBuffer->deleteTexture(imgTex);
+    m_pixelBufferForContext.deleteTexture(imgTex);
     m_target->release();
 }
 
@@ -76,26 +79,20 @@ void GLImageRenderer::drawTexture(GLuint tex){
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, tex);
 
-    const GLfloat w = 2.0 * m_sourceImage.width() / m_renderBuffer->width();
-    const GLfloat h = 2.0 * m_sourceImage.height() / m_renderBuffer->height();
-
-    glLoadIdentity();
-    glTranslatef(-1, 1 - h, 0);
-
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 0.0f, 1.0f);
 
     glTexCoord2f(0.0f, 0.0f);
-    glVertex2f(0, 0);
+    glVertex2f(-1, -1);
 
     glTexCoord2f(1.0f, 0.0f);
-    glVertex2f(w, 0);
+    glVertex2f(1, -1);
 
     glTexCoord2f(1.0f, 1.0f);
-    glVertex2f(w, h);
+    glVertex2f(1, 1);
 
     glTexCoord2f(0.0f, 1.0f);
-    glVertex2f(0, h);
+    glVertex2f(-1, 1);
     glEnd();
 }
 
@@ -124,20 +121,31 @@ void GLImageRenderer::enableShaders(const int state)
 
 void GLImageRenderer::setSourceImage(const QImage &img)
 {
-    if (m_renderBuffer) {
+    if (m_source) {
         delete m_source;
+    }
+    if (m_target) {
         delete m_target;
-        delete m_renderBuffer;
     }
 
     m_sourceImage.convertFromImage(img);
 
-    m_renderBuffer = new QGLPixelBuffer(m_sourceImage.size());
+    m_pixelBufferForContext.makeCurrent();
 
-    m_renderBuffer->makeCurrent();
+    glViewport(0, 0, img.size().width(), img.size().height());
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
     m_source = new QGLFramebufferObject(m_sourceImage.size());
     m_target = new QGLFramebufferObject(m_sourceImage.size());
-    m_renderBuffer->doneCurrent();
+
+    m_pixelBufferForContext.doneCurrent();
 
     render();
 }
