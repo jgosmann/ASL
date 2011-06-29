@@ -2,7 +2,7 @@
 
 using namespace gui;
 
-ShaderParameterControlFactory::createControl()
+ShaderParameterControl<void, void> ShaderParameterControlFactory::createControl()
 {
   
 }

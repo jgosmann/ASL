@@ -33,14 +33,19 @@ MainWindow::MainWindow(QWidget *parent) :
             ui->glDisplay, SLOT(updateFramebufferObject(
               QGLPixelBuffer*)));
 
-    connect(ui->pushButton_AddShader,SIGNAL(clicked()),this,SLOT(loadShaderDialog()));
-    connect(ui->pushButton_RemoveShader,SIGNAL(clicked()),ui->listView_ShaderList,SLOT(removeSelectedShader()));
+    connect(ui->pushButton_AddShader,SIGNAL(clicked()),
+            this,SLOT(loadShaderDialog()));
+    connect(ui->pushButton_RemoveShader,SIGNAL(clicked()),
+            ui->listView_ShaderList,SLOT(removeSelectedShader()));
 
-    connect(ui->listView_ShaderList,SIGNAL(renderShaderList(QList<QSharedPointer<Shader> >)),m_glImageRenderer,SLOT(renderImage(QList<QSharedPointer<Shader> >)));
+    connect(ui->listView_ShaderList,SIGNAL(renderShaderList(
+              QList<QSharedPointer<Shader> >)),
+            m_glImageRenderer,SLOT(renderImage(
+              QList<QSharedPointer<Shader> >)));
 
-
-
-
+    connect(ui->listView_ShaderList, SIGNAL(shaderClicked(
+              QList< QSharedPointer<Shader> >)),
+            this, SLOT(showControls(QList< QSharedPointer<Shader> >)));
 }
 
 MainWindow::~MainWindow()
@@ -71,4 +76,16 @@ void MainWindow::loadShaderDialog()
 
 void MainWindow::loadImageFile(){
     m_glImageRenderer->loadImageFile( new QImage( QFileDialog::getOpenFileName()));
+}
+
+void MainWindow::showControls(QSharedPointer<QGLShader> aslShaderProgram)
+{
+  Q_FOREACH(ShaderParameterInfo info, aslShaderProgram->parameters())
+  {
+    ShaderParameterControl control = 
+      ShaderParameterControlFactory::createControl(info, aslShaderProgram);
+
+    // this automatically sets the scrollWidget as parent
+    ui->scrollWidget_ShaderOptions->addWidget(control);
+  }
 }

@@ -3,7 +3,8 @@
 namespace gui {
 
   ShaderParameterControl::ShaderParameterControl(QWidget *parent, 
-      ShaderParameterInfo &info, QGLShaderProgram &shaderProgram)
+    ShaderParameterInfo &info, 
+    QSharedPointer<QGLShaderProgram> &shaderProgram)
     : QWidget(parent),
       m_shaderProgram(shaderProgram)
   {
@@ -57,7 +58,7 @@ namespace gui {
     for(i=0; i<(m_rows*m_cols); i++) 
       values[i + j*m_cols] = m_controls[i + j*m_cols].value();
     
-    m_shaderProgram.setUniformValueArray( qPrintable( m_typeInfo.identifier ),
+    m_shaderProgram->setUniformValueArray( qPrintable( m_typeInfo.identifier ),
         values, n_rows*n_cols, 1);
 
     free(values);

@@ -14,7 +14,7 @@
 
 #include <iostream>
 
-
+// !! abbreviation
 typedef class asl::AnnotatedGLShaderProgram Shader;
 
 class ShaderListView : public QListView

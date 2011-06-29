@@ -3,6 +3,7 @@
 
 #include <limits>
 
+#include <QSharedPointer>
 #include <QGLShaderProgram>
 #include <QWidget>
 #include <QGridLayout>
@@ -21,7 +22,7 @@ public:
     // 2. Zeilen/Spalten durchgehen, Controls erstellen, Min, Max und default
     //    wert setzen und jeweils connectSingleControlSignal() aufrufen.
     ShaderParameterControl(QWidget *parent, const ShaderParameterInfo &info,
-            QGLShaderProgram &shaderProgram);
+            QSharedPointer<QGLShaderProgram> shaderProgram);
 
     // Speicher von m_controls freigeben
     virtual ~ShaderParameterControl();
@@ -43,7 +44,7 @@ private:
 */
     ControlT *m_controls;
     GLTypeInfo m_typeInfo;
-    QGLShaderProgram m_shaderProgram; 
+    QSharedPointer<QGLShaderProgram> m_shaderProgram; 
 
     unsigned short int m_rows, m_cols;
 };

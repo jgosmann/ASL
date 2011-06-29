@@ -6,8 +6,7 @@ namespace gui {
   class ShaderParameterControlFactory
   {
   public:
-    static void createControl();
-
+    static ShaderParameterControl<void, void> createControl();
   };
 
 } // namespace gui
