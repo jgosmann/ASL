@@ -89,8 +89,8 @@ void GLImageViewer::paintGL()
 void GLImageViewer::updateFramebufferObject(QGLPixelBuffer *framebuffer)
 {
   m_framebuffer = framebuffer;
-  m_imageRatio = (float) m_framebuffer->toImage().width() / 
-  m_framebuffer->toImage().height();
+  m_imageRatio = (float) m_framebuffer->size().width() / 
+          m_framebuffer->size().height();
   m_image = m_framebuffer->toImage();
   glDraw();
 
