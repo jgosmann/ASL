@@ -5,6 +5,7 @@
 #include <QGLContext>
 #include <QGLFramebufferObject>
 #include <QGLShaderProgram>
+#include <QGLWidget>
 #include <QFileDialog>
 #include <QList>
 #include <QSharedPointer>
@@ -23,7 +24,7 @@ namespace gui {
     Q_OBJECT
 
   public:
-    GLImageRenderer(QObject *parent);
+    GLImageRenderer(QObject *parent, QGLWidget *shareWidget = NULL);
     ~GLImageRenderer();
 
   public slots:
@@ -44,6 +45,7 @@ namespace gui {
     QGLFramebufferObject *m_framebuffer;
     QList<QSharedPointer<Shader> > m_shaderProgramList;
 
+    QGLWidget *shareWidget;
     QGLPixelBuffer* target;
     QGLPixelBuffer* source;
 
