@@ -54,7 +54,9 @@ void MainWindow::loadShaderDialog()
     QString s = QFileDialog::getOpenFileName(this,"Load Shader");
     std::cout << s.toStdString() << std::endl;
     if(s != QString::null){
+        m_glImageRenderer->makeCurrent();
         Shader* shader = compiler.compileFile(QGLShader::Fragment,s);
+        m_glImageRenderer->doneCurrent();
         if(compiler.success()){
             QSharedPointer<Shader> shaderPointer = QSharedPointer<Shader>(shader);
             ui->listView_ShaderList->addShader(shaderPointer);
