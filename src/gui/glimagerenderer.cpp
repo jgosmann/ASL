@@ -58,6 +58,9 @@ void GLImageRenderer::applyShaders() {
 
         m_renderBuffer->updateDynamicTexture(source);
         shaderProgram->bind();
+        shaderProgram->setUniformValue("tex", source);
+        shaderProgram->setUniformValue("texWidth", m_sourceImage.width());
+        shaderProgram->setUniformValue("texHeight", m_sourceImage.height());
         drawTexture(source);
         shaderProgram->release();
     }
