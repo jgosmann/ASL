@@ -3,44 +3,57 @@
 
 #include <QObject>
 #include <QGLContext>
-#include <QGLFramebufferObject>
 #include <QGLShaderProgram>
+#include <QGLWidget>
 #include <QFileDialog>
+#include <QList>
+#include <QSharedPointer>
+#include <asl/annotatedglshaderprogram.h>
+#include <QGLFramebufferObject>
+#include <QGLPixelBuffer>
+#include <algorithm>
+#include <iostream>
 
 namespace gui {
 
-  using std::list;
+typedef class asl::AnnotatedGLShaderProgram Shader;
 
-  class GLImageRenderer : public QObject
-  {
+class GLImageRenderer : public QObject
+{
     Q_OBJECT
 
-  public:
-    GLImageRenderer(QObject *parent, QGLContext &sharedContext);
-    ~GLImageRenderer();
+    public:
+        GLImageRenderer(QObject *parent);
+        ~GLImageRenderer();
 
-  public slots:
-    void renderImage(list<QGLShaderProgram*> &shaderProgramList);
-    void enableShaders(const int state);
-    void loadImageFile();
-    void saveImageFile();
+        inline const QImage & getRenderedImage() const {
+            return m_renderedImage;
+        }
 
-  signals:
-    void framebufferObjectChanged(QGLFramebufferObject *framebuffer);
+    public slots:
+        void renderImage(QList<QSharedPointer<Shader> > shaderProgramList);
+        void enableShaders(const int state);
+        void setSourceImage(const QImage &img);
 
-  private:
-    void renderToFramebuffer();
+    signals:
+        void updated(const QImage &image);
 
-    bool m_useShaderProgram;
+    private:
+        void render();
+        void drawImageToTarget();
+        void applyShaders();
+        void drawTexture(GLuint tex);
 
-    QGLContext &m_sharedContext;
+        bool m_useShaderProgram;
 
-    QGLFramebufferObject *m_framebuffer;
-    list<QGLShaderProgram*> m_shaderProgramList;
+        QList<QSharedPointer<Shader> > m_shaderProgramList;
 
-    QImage *m_image;
-    GLuint m_textureID;
-  };
+        QPixmap m_sourceImage;
+        QImage m_renderedImage;
+        QGLPixelBuffer* m_renderBuffer;
+        QGLFramebufferObject *m_source;
+        QGLFramebufferObject *m_target;
+};
 }
 
 #endif // GLIMAGERENDERER_H

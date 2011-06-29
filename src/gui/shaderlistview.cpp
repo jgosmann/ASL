@@ -3,7 +3,8 @@
 ShaderListView::ShaderListView(QWidget *parent) :
     QListView(parent)
 {
-
+    currentRow = -1;
+    init();
 
 }
 
@@ -33,6 +34,12 @@ void ShaderListView::addShader(QSharedPointer<Shader> shader){
     itemModel->appendRow(item);
 }
 
+void ShaderListView::removeSelectedShader(){
+    if(currentRow >= 0 && currentRow < itemModel->rowCount()){
+       itemModel->removeRow(currentRow);
+    }
+}
+
 
 void ShaderListView::clearList(){
     itemModel->clear();
@@ -40,7 +47,9 @@ void ShaderListView::clearList(){
 
 void ShaderListView::clickedOnShader(const QModelIndex &index){
     ShaderItem* item = (ShaderItem*)(itemModel->itemFromIndex(index));
+    currentRow = index.row();
     emit shaderClicked(item->getShader());
+    emit renderShaderList(getCheckedShaders());
 
 }
 
