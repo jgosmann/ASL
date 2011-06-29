@@ -1,6 +1,10 @@
 #version 120
 
+<<<<<<< HEAD
 /*
+=======
+/**
+>>>>>>> shader
  * ShaderName: Julia Sets
  * ShaderDescription: Calculates Julia set fractals using the picture loaded as
  *     basis for the color palette.
