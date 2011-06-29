@@ -382,7 +382,7 @@
  <customwidgets>
   <customwidget>
    <class>gui::GLImageViewer</class>
-   <extends>QWidget</extends>
+   <extends>QGraphicsView</extends>
    <header>gui/glimageviewer.h</header>
    <container>1</container>
   </customwidget>

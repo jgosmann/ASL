@@ -128,8 +128,12 @@ void GLImageRenderer::setSourceImage(const QImage &img)
 
     const unsigned int width = nextPowerOf2GTE(m_sourceImage.width());
     const unsigned int height = nextPowerOf2GTE(m_sourceImage.height());
-    m_renderBuffer = new QGLPixelBuffer(width, height, m_shareWidget->format(),
-            m_shareWidget);
+    if (m_shareWidget) {
+        m_renderBuffer = new QGLPixelBuffer(width, height,
+                m_shareWidget->format(), m_shareWidget);
+    } else {
+        m_renderBuffer = new QGLPixelBuffer(width, height);
+    }
 
     render();
 }
