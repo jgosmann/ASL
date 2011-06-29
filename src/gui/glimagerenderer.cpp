@@ -36,14 +36,16 @@ void GLImageRenderer::render()
     }
 
     m_renderBuffer->doneCurrent();
-    emit updated(m_renderBuffer->toImage());
+    m_renderedImage = m_renderBuffer->toImage().copy(0, 0,
+            m_sourceImage.width(), m_sourceImage.height());
+    m_renderedImage.save("/Users/blubb/Desktop/test2.png");
+    emit updated(m_renderedImage);
 }
 
 void GLImageRenderer::drawImageToRenderBuffer() {
     const GLuint imgTex = m_renderBuffer->bindTexture(m_sourceImage);
     drawTexture(imgTex);
     m_renderBuffer->deleteTexture(imgTex);
-    m_renderBuffer->toImage().save("/Users/blubb/Desktop/test2.png");
 }
 
 void GLImageRenderer::applyShaders() {
@@ -70,10 +72,8 @@ void GLImageRenderer::drawTexture(GLuint tex){
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, tex);
 
-    const GLfloat w = static_cast<float>(m_sourceImage.width())
-        / m_renderBuffer->width();
-    const GLfloat h = static_cast<float>(m_sourceImage.height())
-        / m_renderBuffer->height();
+    const GLfloat w = 2.0 * m_sourceImage.width() / m_renderBuffer->width();
+    const GLfloat h = 2.0 * m_sourceImage.height() / m_renderBuffer->height();
 
     glLoadIdentity();
     glTranslatef(-1, 1 - h, 0);
