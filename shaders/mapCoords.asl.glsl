@@ -23,6 +23,6 @@ uniform int texHeight;
 /* uniform */ vec2 translation = vec2(0, 0);
 
 vec2 mapCoords(vec2 coords) {
-    return (2 * coords / vec2(texWidth, texHeight) - 1) / zoomFactor + translation;
+    return (2 * coords / vec2(texWidth, texHeight) - 1);
 }
 

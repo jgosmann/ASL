@@ -1,10 +1,6 @@
 #version 120
 
-<<<<<<< HEAD
-/*
-=======
 /**
->>>>>>> shader
  * ShaderName: Julia Sets
  * ShaderDescription: Calculates Julia set fractals using the picture loaded as
  *     basis for the color palette.
@@ -33,10 +29,10 @@ vec4 calcJuliaSetColor(vec2 z, vec2 c) {
             return texture2D(tex, vec2(texCoord));
         }
     }
-    return vec4(0, 0, 0, 1);
+    return texture2D(tex, gl_TexCoord[0].xy);
 }
 
-//#ifdef ASL_MAIN
+#ifdef ASL_MAIN
 /*
  * Name: c
  * Description: Parameter to vary the Julia set.
@@ -46,5 +42,5 @@ vec4 calcJuliaSetColor(vec2 z, vec2 c) {
 void main() {
     gl_FragColor = calcJuliaSetColor(mapCoords(gl_FragCoord.xy), c);
 }
-//#endif
+#endif
 
