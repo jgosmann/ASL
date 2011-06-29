@@ -54,8 +54,10 @@ void GLImageViewer::paintGL()
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+  m_framebuffer->makeCurrent();
   GLuint texture = m_framebuffer->generateDynamicTexture();
   m_framebuffer->updateDynamicTexture(texture);
+  makeCurrent();
 
   glBindTexture(GL_TEXTURE_2D,texture);
 
@@ -80,8 +82,6 @@ void GLImageViewer::paintGL()
 
   m_framebuffer->deleteTexture( texture );
 
-  m_framebuffer->toImage().save("/Users/blubb/Desktop/blubb.jpg");
-
 
   glEnable(GL_DEPTH_TEST);
 }
@@ -91,8 +91,8 @@ void GLImageViewer::paintGL()
 void GLImageViewer::updateFramebufferObject(QGLPixelBuffer *framebuffer)
 {
   m_framebuffer = framebuffer;
-  m_imageRatio = (float) m_framebuffer->toImage().width() / 
-  m_framebuffer->toImage().height();
+  m_imageRatio = (float) m_framebuffer->size().width() / 
+          m_framebuffer->size().height();
   m_image = m_framebuffer->toImage();
   glDraw();
 
