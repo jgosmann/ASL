@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-    m_glImageRenderer = new GLImageRenderer(this);
+    m_glImageRenderer = new GLImageRenderer(this, ui->glDisplay);
 
 
     connect(ui->spinBox_Zoom, SIGNAL(valueChanged(int)), 

@@ -80,7 +80,7 @@ void GLImageViewer::paintGL()
 
   m_framebuffer->deleteTexture( texture );
 
-//  m_framebuffer->toImage().save("/home/denis/Programs/Computergrafik/cg/bin/test.jpg");
+  m_framebuffer->toImage().save("/Users/blubb/Desktop/blubb.jpg");
 
 
   glEnable(GL_DEPTH_TEST);

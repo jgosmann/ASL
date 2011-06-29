@@ -4,13 +4,14 @@
 
 using namespace gui;
 
-GLImageRenderer::GLImageRenderer(QObject* parent)
+GLImageRenderer::GLImageRenderer(QObject* parent, QGLWidget *shareWidget)
   : QObject(parent),
     m_useShaderProgram(false),
     m_framebuffer(NULL),
     m_image(NULL),
     source(NULL),
-    target(NULL)
+    target(NULL),
+    shareWidget(shareWidget)
 {
 }
 
@@ -141,7 +142,7 @@ void GLImageRenderer::loadImageFile(QImage* img)
 
 //  m_sharedContext.makeCurrent();
 //  m_framebuffer = new QGLFramebufferObject( m_image->size() );
-  source = new QGLPixelBuffer(img->size());
+  source = new QGLPixelBuffer(img->size(), QGLFormat::defaultFormat(), shareWidget);
 
   source->makeCurrent();
   glEnable(GL_TEXTURE_2D);
@@ -156,7 +157,7 @@ void GLImageRenderer::loadImageFile(QImage* img)
 
   source->doneCurrent();
 
-  target = new QGLPixelBuffer(img->size());
+  target = new QGLPixelBuffer(img->size(), QGLFormat::defaultFormat(), shareWidget);
 
   target->makeCurrent();
 
