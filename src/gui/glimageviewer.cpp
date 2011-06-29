@@ -42,20 +42,9 @@ void GLImageViewer::resizeGL(int w, int h)
 
 void GLImageViewer::paintGL()
 {
-//  if(!m_framebuffer)
-//    return;
+  if(!m_framebuffer)
+    return;
 
-
-  makeCurrent();
-
-
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-
-  gluOrtho2D(-1.0, 1.0,-1.0, 1.0);
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
 
   glEnable(GL_TEXTURE_2D);
 
@@ -65,56 +54,33 @@ void GLImageViewer::paintGL()
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // load & set initial default image
-//  GLuint texture = glbindTexture( m_framebuffer->toImage());
-//    GLuint texture = bindTexture(m_image, GL_TEXTURE_2D, GL_RGBA);
-//  GLuint texture = bindTexture( m_image);
-  const QImage testImg("/home/denis/Programs/CPP/Computergrafik/cg/bin/test.jpg");
-//  assert(!testImg.isNull());
-  if(testImg.isNull()){
+  GLuint texture = m_framebuffer->generateDynamicTexture();
+  m_framebuffer->updateDynamicTexture(texture);
 
-      std::cout << " IST NULL" << std::endl;
-  }
-  GLuint texture = bindTexture(testImg);
+  glBindTexture(GL_TEXTURE_2D,texture);
 
+  glLoadIdentity();
+  glScalef(m_imageZoom, m_imageZoom, 1.0f);
 
   glBegin(GL_QUADS);
-    glNormal3f( 0.0f, 0.0f, 1.0f);
+      glNormal3f( 0.0f, 0.0f, 1.0f);
 
-    glTexCoord2f( 0.0f, 0.0f);
-    glVertex2f(-1.0f, 1.0f);
+      glTexCoord2f( 0.0f, 0.0f);
+      glVertex2f(-1.0f, m_imageRatio);
 
-    glTexCoord2f( 1.0f, 0.0f);
-    glVertex2f( 1.0f, 1.0f);
+      glTexCoord2f( 1.0f, 0.0f);
+      glVertex2f( 1.0f, m_imageRatio);
 
-    glTexCoord2f( 1.0f, 1.0f);
-    glVertex2f( 1.0f,-1.0f);
+      glTexCoord2f( 1.0f, 1.0f);
+      glVertex2f( 1.0f,-m_imageRatio);
 
-    glTexCoord2f( 0.0f, 1.0f);
-    glVertex2f(-1.0f,-1.0f);
+      glTexCoord2f( 0.0f, 1.0f);
+      glVertex2f(-1.0f,-m_imageRatio);
   glEnd();
 
+  m_framebuffer->deleteTexture( texture );
 
-//  glLoadIdentity();
-//  glScalef(m_imageZoom, m_imageZoom, 1.0f);
-
-//  glBegin(GL_QUADS);
-//      glNormal3f( 0.0f, 0.0f, 1.0f);
-
-//      glTexCoord2f( 0.0f, 0.0f);
-//      glVertex2f(-1.0f, m_imageRatio);
-
-//      glTexCoord2f( 1.0f, 0.0f);
-//      glVertex2f( 1.0f, m_imageRatio);
-
-//      glTexCoord2f( 1.0f, 1.0f);
-//      glVertex2f( 1.0f,-m_imageRatio);
-
-//      glTexCoord2f( 0.0f, 1.0f);
-//      glVertex2f(-1.0f,-m_imageRatio);
-//  glEnd();
-
-  deleteTexture( texture );
+  m_framebuffer->toImage().save("/Users/blubb/Desktop/blubb.jpg");
 
 
   glEnable(GL_DEPTH_TEST);

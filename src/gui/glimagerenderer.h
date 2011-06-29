@@ -5,11 +5,14 @@
 #include <QGLContext>
 #include <QGLFramebufferObject>
 #include <QGLShaderProgram>
+#include <QGLWidget>
 #include <QFileDialog>
 #include <QList>
 #include <QSharedPointer>
 #include <asl/annotatedglshaderprogram.h>
 #include <QGLPixelBuffer>
+#include <algorithm>
+#include <iostream>
 
 namespace gui {
 
@@ -21,11 +24,11 @@ namespace gui {
     Q_OBJECT
 
   public:
-    GLImageRenderer(QObject *parent);
+    GLImageRenderer(QObject *parent, QGLWidget *shareWidget = NULL);
     ~GLImageRenderer();
 
   public slots:
-    void renderImage(QList<QSharedPointer<Shader> > &shaderProgramList);
+    void renderImage(QList<QSharedPointer<Shader> > shaderProgramList);
     void enableShaders(const int state);
     void loadImageFile(QImage* img);
     void saveImageFile();
@@ -35,12 +38,14 @@ namespace gui {
 
   private:
     void renderToFramebuffer();
+    void drawTexture();
 
     bool m_useShaderProgram;
 
     QGLFramebufferObject *m_framebuffer;
     QList<QSharedPointer<Shader> > m_shaderProgramList;
 
+    QGLWidget *shareWidget;
     QGLPixelBuffer* target;
     QGLPixelBuffer* source;
 
