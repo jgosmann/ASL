@@ -70,20 +70,28 @@ void GLImageRenderer::drawTexture(GLuint tex){
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, tex);
 
+    const GLfloat w = static_cast<float>(m_sourceImage.width())
+        / m_renderBuffer->width();
+    const GLfloat h = static_cast<float>(m_sourceImage.height())
+        / m_renderBuffer->height();
+
+    glLoadIdentity();
+    glTranslatef(-1, 1 - h, 0);
+
     glBegin(GL_QUADS);
-    glNormal3f( 0.0f, 0.0f, 1.0f);
+    glNormal3f(0.0f, 0.0f, 1.0f);
 
-    glTexCoord2f( 0.0f, 0.0f);
-    glVertex2f(-1.0f, 1.0f);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2f(0, 0);
 
-    glTexCoord2f( 1.0f, 0.0f);
-    glVertex2f( 1.0f, 1.0f);
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex2f(w, 0);
 
-    glTexCoord2f( 1.0f, 1.0f);
-    glVertex2f( 1.0f,-1.0f);
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex2f(w, h);
 
-    glTexCoord2f( 0.0f, 1.0f);
-    glVertex2f(-1.0f,-1.0f);
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex2f(0, h);
     glEnd();
 }
 
@@ -118,9 +126,23 @@ void GLImageRenderer::setSourceImage(const QImage &img)
 
     m_sourceImage.convertFromImage(img);
 
-    // FIXME use powers of 2
-    m_renderBuffer = new QGLPixelBuffer(512, 512, m_shareWidget->format(), m_shareWidget);
+    const unsigned int width = nextPowerOf2GTE(m_sourceImage.width());
+    const unsigned int height = nextPowerOf2GTE(m_sourceImage.height());
+    m_renderBuffer = new QGLPixelBuffer(width, height, m_shareWidget->format(),
+            m_shareWidget);
 
     render();
+}
+
+inline quint32 GLImageRenderer::nextPowerOf2GTE(register quint32 x) {
+    /* Algorithm based on 
+     * <http://aggregate.org/MAGIC/#Next%20Largest%20Power%20of%202> */
+    --x;
+    x |= (x >> 1);
+    x |= (x >> 2);
+    x |= (x >> 4);
+    x |= (x >> 8);
+    x |= (x >> 16);
+    return x + 1;
 }
 

@@ -43,6 +43,8 @@ class GLImageRenderer : public QObject
         void applyShaders();
         void drawTexture(GLuint tex);
 
+        static inline quint32 nextPowerOf2GTE(register quint32 x);
+
         bool m_useShaderProgram;
 
         QList<QSharedPointer<Shader> > m_shaderProgramList;
