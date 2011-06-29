@@ -16,6 +16,8 @@ GLImageRenderer::GLImageRenderer(QObject* parent, QGLWidget *shareWidget)
 GLImageRenderer::~GLImageRenderer()
 {
     if(m_renderBuffer) {
+        delete m_source;
+        delete m_target;
         delete m_renderBuffer;
     }
 }
@@ -29,43 +31,43 @@ void GLImageRenderer::render()
     }
 
     m_renderBuffer->makeCurrent();
-    drawImageToRenderBuffer();
+    drawImageToTarget();
 
     if (m_useShaderProgram) {
         applyShaders();
     }
 
+    m_renderedImage = m_target->toImage();
     m_renderBuffer->doneCurrent();
-    m_renderedImage = m_renderBuffer->toImage().copy(0, 0,
-            m_sourceImage.width(), m_sourceImage.height());
-    m_renderedImage.save("/Users/blubb/Desktop/test2.png");
     emit updated(m_renderedImage);
 }
 
-void GLImageRenderer::drawImageToRenderBuffer() {
+void GLImageRenderer::drawImageToTarget() {
+    m_target->bind();
     const GLuint imgTex = m_renderBuffer->bindTexture(m_sourceImage);
     drawTexture(imgTex);
     m_renderBuffer->deleteTexture(imgTex);
+    m_target->release();
 }
 
 void GLImageRenderer::applyShaders() {
-    GLuint source = m_renderBuffer->generateDynamicTexture();
-
     foreach (QSharedPointer<Shader> shaderProgram, m_shaderProgramList) {
         if(!shaderProgram->isLinked()) {
             continue;
         }
 
-        m_renderBuffer->updateDynamicTexture(source);
+        std::swap(m_target, m_source);
+
+        m_target->bind();
+        GLuint sourceTexId = m_source->texture();
         shaderProgram->bind();
-        shaderProgram->setUniformValue("tex", source);
+        shaderProgram->setUniformValue("tex", sourceTexId);
         shaderProgram->setUniformValue("texWidth", m_sourceImage.width());
         shaderProgram->setUniformValue("texHeight", m_sourceImage.height());
-        drawTexture(source);
+        drawTexture(sourceTexId);
         shaderProgram->release();
+        m_target->release();
     }
-
-    m_renderBuffer->deleteTexture(source);
 }
 
 void GLImageRenderer::drawTexture(GLuint tex){
@@ -124,32 +126,25 @@ void GLImageRenderer::enableShaders(const int state)
 void GLImageRenderer::setSourceImage(const QImage &img)
 {
     if (m_renderBuffer) {
+        delete m_source;
+        delete m_target;
         delete m_renderBuffer;
     }
 
     m_sourceImage.convertFromImage(img);
 
-    const unsigned int width = nextPowerOf2GTE(m_sourceImage.width());
-    const unsigned int height = nextPowerOf2GTE(m_sourceImage.height());
     if (m_shareWidget) {
-        m_renderBuffer = new QGLPixelBuffer(width, height,
+        m_renderBuffer = new QGLPixelBuffer(m_sourceImage.size(),
                 m_shareWidget->format(), m_shareWidget);
     } else {
-        m_renderBuffer = new QGLPixelBuffer(width, height);
+        m_renderBuffer = new QGLPixelBuffer(m_sourceImage.size());
     }
 
-    render();
-}
+    m_renderBuffer->makeCurrent();
+    m_source = new QGLFramebufferObject(m_sourceImage.size());
+    m_target = new QGLFramebufferObject(m_sourceImage.size());
+    m_renderBuffer->doneCurrent();
 
-inline quint32 GLImageRenderer::nextPowerOf2GTE(register quint32 x) {
-    /* Algorithm based on 
-     * <http://aggregate.org/MAGIC/#Next%20Largest%20Power%20of%202> */
-    --x;
-    x |= (x >> 1);
-    x |= (x >> 2);
-    x |= (x >> 4);
-    x |= (x >> 8);
-    x |= (x >> 16);
-    return x + 1;
+    render();
 }
 

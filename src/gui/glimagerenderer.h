@@ -9,6 +9,7 @@
 #include <QList>
 #include <QSharedPointer>
 #include <asl/annotatedglshaderprogram.h>
+#include <QGLFramebufferObject>
 #include <QGLPixelBuffer>
 #include <algorithm>
 #include <iostream>
@@ -39,11 +40,9 @@ class GLImageRenderer : public QObject
 
     private:
         void render();
-        void drawImageToRenderBuffer();
+        void drawImageToTarget();
         void applyShaders();
         void drawTexture(GLuint tex);
-
-        static inline quint32 nextPowerOf2GTE(register quint32 x);
 
         bool m_useShaderProgram;
 
@@ -53,6 +52,8 @@ class GLImageRenderer : public QObject
         QPixmap m_sourceImage;
         QImage m_renderedImage;
         QGLPixelBuffer* m_renderBuffer;
+        QGLFramebufferObject *m_source;
+        QGLFramebufferObject *m_target;
 };
 }
 
