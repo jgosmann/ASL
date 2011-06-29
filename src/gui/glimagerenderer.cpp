@@ -60,7 +60,7 @@ void GLImageRenderer::applyShaders() {
         m_target->bind();
         GLuint sourceTexId = m_source->texture();
         shaderProgram->bind();
-        shaderProgram->setUniformValue("tex", sourceTexId);
+        shaderProgram->setUniformValue("tex", 0);
         shaderProgram->setUniformValue("texWidth", m_sourceImage.width());
         shaderProgram->setUniformValue("texHeight", m_sourceImage.height());
         drawTexture(sourceTexId);
