@@ -1,15 +1,23 @@
 #include "shaderlistview.h"
 
 ShaderListView::ShaderListView(QWidget *parent) :
-    QListView(parent)
+    QListView(parent) ,
+    currentID(0)
 {
     currentRow = -1;
     init();
 
 }
 
+ShaderListView::~ShaderListView(){
+    shaderMap.clear();
+    if(itemModel)
+        delete itemModel;
+}
+
 void ShaderListView::init(){
 
+    shaderMap = QMap<int,QSharedPointer<Shader> >();
     //Initializes the model
     itemModel = new ShaderItemList();
     this->setModel(itemModel);
@@ -29,26 +37,35 @@ void ShaderListView::init(){
 }
 
 void ShaderListView::addShader(QSharedPointer<Shader> shader){
-    QStandardItem* item = new ShaderItem(shader);
+    QStandardItem* item = new QStandardItem(shader->name());
     item->setCheckable(true);
+    item->setData(QVariant(currentID));
+    shaderMap.insert(currentID,shader);
     itemModel->appendRow(item);
+
+    ++currentID;
 }
 
 void ShaderListView::removeSelectedShader(){
     if(currentRow >= 0 && currentRow < itemModel->rowCount()){
-       itemModel->removeRow(currentRow);
+        int key = itemModel->item(currentRow)->data().value<int>();
+        shaderMap.remove(key);
+        itemModel->removeRow(currentRow);
     }
 }
 
 
 void ShaderListView::clearList(){
     itemModel->clear();
+    shaderMap.clear();
 }
 
 void ShaderListView::clickedOnShader(const QModelIndex &index){
-    ShaderItem* item = (ShaderItem*)(itemModel->itemFromIndex(index));
+    QStandardItem* item = itemModel->itemFromIndex(index);
     currentRow = index.row();
-    emit shaderClicked(item->getShader());
+
+    int key = item->data().value<int>();
+    emit shaderClicked(shaderMap.value(key));
     emit renderShaderList(getCheckedShaders());
 
 }
@@ -56,9 +73,10 @@ void ShaderListView::clickedOnShader(const QModelIndex &index){
 QList<QSharedPointer<Shader> > ShaderListView::getCheckedShaders(){
     QList<QSharedPointer<Shader> > list;
     for(int i = 0; i < itemModel->rowCount();i++){
-        ShaderItem* item = (ShaderItem*)(itemModel->item(i));
+        QStandardItem* item = itemModel->item(i);
         if(item->checkState()){
-           list.append(item->getShader());
+            int key = item->data().value<int>();
+            list.append(shaderMap.value(key));
         }
     }
     return list;
@@ -67,71 +85,11 @@ QList<QSharedPointer<Shader> > ShaderListView::getCheckedShaders(){
 QList<QSharedPointer<Shader> > ShaderListView::getAllShaders(){
     QList<QSharedPointer<Shader> > list;
     for(int i = 0; i < itemModel->rowCount();i++){
-        ShaderItem* item = (ShaderItem*)(itemModel->item(i));
-           list.append(item->getShader());
+        QStandardItem* item = itemModel->item(i);
+        int key = item->data().value<int>();
+           list.append(shaderMap.value(key));
     }
 
     return list;
 }
 
-
-void ShaderListView::dragEnterEvent(QDragEnterEvent *event)
- {
-     if (event->mimeData()->hasFormat("shaderitem"))
-         event->accept();
-     else
-         event->ignore();
- }
-
- void ShaderListView::dragMoveEvent(QDragMoveEvent *event)
- {
-     if (event->mimeData()->hasFormat("shaderitem")) {
-         event->setDropAction(Qt::MoveAction);
-         event->accept();
-     } else
-         event->ignore();
- }
-
- void ShaderListView::dropEvent(QDropEvent *event)
- {
-//     if (event->mimeData()->hasFormat("shaderitem")) {
-//         QByteArray pieceData = event->mimeData()->data("shaderitem");
-//         QDataStream dataStream(&pieceData, QIODevice::ReadOnly);
-//         QPixmap pixmap;
-//         QPoint location;
-//         dataStream >> pixmap >> location;
-
-//         addPiece(pixmap, location);
-
-//         event->setDropAction(Qt::MoveAction);
-//         event->accept();
-//     } else
-//         event->ignore();
- }
-
-
- void ShaderListView::startDrag(Qt::DropActions /*supportedActions*/)
- {
-//     QListWidgetItem *item = currentItem();
-
-     ShaderItem* item = (ShaderItem*)(itemModel->item(currentRow));
-
-
-     QByteArray itemData;
-     QDataStream dataStream(&itemData, QIODevice::WriteOnly);
-//     QPixmap pixmap = qVariantValue<QPixmap>(item->data(Qt::UserRole));
-//     QPoint location = item->data(Qt::UserRole+1).toPoint();
-
-     dataStream << *item;
-
-     QMimeData *mimeData = new QMimeData;
-     mimeData->setData("shaderitem", itemData);
-
-     QDrag *drag = new QDrag(this);
-     drag->setMimeData(mimeData);
-//     drag->setHotSpot(QPoint(pixmap.width()/2, pixmap.height()/2));
-//     drag->setPixmap(pixmap);
-
-//     if (drag->exec(Qt::MoveAction) == Qt::MoveAction)
-//         delete takeItem(row(item));
- }

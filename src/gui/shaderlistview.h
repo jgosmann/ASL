@@ -23,10 +23,10 @@ class ShaderListView : public QListView
     Q_OBJECT
 public:
     explicit ShaderListView(QWidget *parent = 0);
+
+    ~ShaderListView();
     void init();
-//    ShaderListModel *itemModel;
-    ShaderItemList *itemModel;
-    QList< QSharedPointer<Shader> > shaderList;
+
 
     /**
       * Clears the current shader List and replaces it with the given pShaderList
@@ -51,13 +51,7 @@ public:
       */
     QList<QSharedPointer<Shader> > getAllShaders();
 
-protected:
 
-    void dragEnterEvent(QDragEnterEvent *event);
-//    void dragLeaveEvent(QDragLeaveEvent *event);
-    void dragMoveEvent(QDragMoveEvent *event);
-    void dropEvent(QDropEvent *event);
-    void startDrag(Qt::DropActions supportedActions);
 
 
 signals:
@@ -71,8 +65,13 @@ private slots:
     void clickedOnShader(const QModelIndex & index);
 
 private:
+    ShaderItemList *itemModel;
+    int currentID;
     int currentRow;
+    QMap<int,QSharedPointer<Shader> > shaderMap;
 
 };
+
+
 
 #endif // SHADERLISTVIEW_H
