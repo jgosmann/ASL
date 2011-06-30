@@ -1,52 +1,40 @@
 #ifndef GLIMAGEVIEWER_H
 #define GLIMAGEVIEWER_H
 
-#include <QGLContext>
-#include <QGLWidget>
+#include <QGraphicsScene>
+#include <QGraphicsView>
 #include <QImage>
-#include <QWidget>
-#include <QRectF>
-#include <QKeyEvent>
-#include <QWheelEvent>
-#include <QFileDialog>
-#include <QString>
-#include <QGLFramebufferObject>
+//#include <QRectF>
+//#include <QKeyEvent>
+//#include <QWheelEvent>
 
 #include "mainwindow.h"
 
 namespace gui {
 
-  class GLImageViewer : public QGLWidget
-  {
-      Q_OBJECT
+class GLImageViewer : public QGraphicsView
+{
+    Q_OBJECT
 
-  public:
-      GLImageViewer(QWidget *parent=NULL, Qt::WindowFlags f=0);
-      virtual ~GLImageViewer();
+    public:
+        GLImageViewer(QWidget *parent = NULL);
+        virtual ~GLImageViewer();
 
-  public slots:
-    void updateFramebufferObject(QGLPixelBuffer *framebuffer);
-    void setImageZoom(int value);
+    public slots:
+        void setImage(const QImage &img);
+        void setImageZoom(int value);
 
-  signals:
-    void zoomChanged(int value);
+    signals:
+        void zoomChanged(int value);
 
-  protected:
-    void virtual initializeGL();
-    void virtual resizeGL(int w, int h);
-    void virtual paintGL();
+    protected:
+        //void virtual keyPressEvent(QKeyEvent *event);
+        //void virtual wheelEvent(QWheelEvent *event);
 
-    void virtual keyPressEvent(QKeyEvent *event);
-    void virtual wheelEvent(QWheelEvent *event);
+    private:
+        QGraphicsScene m_scene;
 
-  private:
-    QGLContext *m_openGLContext;
-    QGLPixelBuffer *m_framebuffer;
-    QImage m_image;
-
-    float m_imageRatio;
-    float m_imageZoom;
-  };
+};
 
 }
 

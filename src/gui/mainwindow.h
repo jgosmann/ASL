@@ -11,7 +11,6 @@
 
 #include <asl/annotatedglshaderprogram.h>
 #include <asl/defaultaslprogramcompiler.h>
-#include <asl/shaderparameterinfo.h>
 
 #include <iostream>
 
@@ -47,7 +46,6 @@ private:
 public slots:
     void loadShaderDialog();
     void loadImageFile();
-    void showControls(QSharedPointer<QGLShader>);
 };
 }
 
