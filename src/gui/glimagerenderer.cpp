@@ -128,7 +128,11 @@ void GLImageRenderer::setSourceImage(const QImage &img)
         delete m_target;
     }
 
+#if __QT_VERSION__ >= 0x040700
     m_sourceImage.convertFromImage(img);
+#else
+    m_sourceImage = QPixmap::fromImage(img);
+#endif
 
     m_pixelBufferForContext.makeCurrent();
 
