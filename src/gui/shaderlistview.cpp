@@ -73,3 +73,65 @@ QList<QSharedPointer<Shader> > ShaderListView::getAllShaders(){
 
     return list;
 }
+
+
+void ShaderListView::dragEnterEvent(QDragEnterEvent *event)
+ {
+     if (event->mimeData()->hasFormat("shaderitem"))
+         event->accept();
+     else
+         event->ignore();
+ }
+
+ void ShaderListView::dragMoveEvent(QDragMoveEvent *event)
+ {
+     if (event->mimeData()->hasFormat("shaderitem")) {
+         event->setDropAction(Qt::MoveAction);
+         event->accept();
+     } else
+         event->ignore();
+ }
+
+ void ShaderListView::dropEvent(QDropEvent *event)
+ {
+//     if (event->mimeData()->hasFormat("shaderitem")) {
+//         QByteArray pieceData = event->mimeData()->data("shaderitem");
+//         QDataStream dataStream(&pieceData, QIODevice::ReadOnly);
+//         QPixmap pixmap;
+//         QPoint location;
+//         dataStream >> pixmap >> location;
+
+//         addPiece(pixmap, location);
+
+//         event->setDropAction(Qt::MoveAction);
+//         event->accept();
+//     } else
+//         event->ignore();
+ }
+
+
+ void ShaderListView::startDrag(Qt::DropActions /*supportedActions*/)
+ {
+//     QListWidgetItem *item = currentItem();
+
+     ShaderItem* item = (ShaderItem*)(itemModel->item(currentRow));
+
+
+     QByteArray itemData;
+     QDataStream dataStream(&itemData, QIODevice::WriteOnly);
+//     QPixmap pixmap = qVariantValue<QPixmap>(item->data(Qt::UserRole));
+//     QPoint location = item->data(Qt::UserRole+1).toPoint();
+
+     dataStream << *item;
+
+     QMimeData *mimeData = new QMimeData;
+     mimeData->setData("shaderitem", itemData);
+
+     QDrag *drag = new QDrag(this);
+     drag->setMimeData(mimeData);
+//     drag->setHotSpot(QPoint(pixmap.width()/2, pixmap.height()/2));
+//     drag->setPixmap(pixmap);
+
+//     if (drag->exec(Qt::MoveAction) == Qt::MoveAction)
+//         delete takeItem(row(item));
+ }

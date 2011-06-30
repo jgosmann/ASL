@@ -41,11 +41,18 @@ private:
 
     asl::DefaultASLProgramCompiler compiler;
 
+signals:
+    void exitProgram();
+
+private slots:
+    void emitExit();
+
 
 
 public slots:
     void loadShaderDialog();
     void loadImageFile();
+    void saveImage();
 };
 }
 

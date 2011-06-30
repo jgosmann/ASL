@@ -7,6 +7,7 @@
 #include <QStandardItem>
 #include <QList>
 #include <QSharedPointer>
+#include <QDragEnterEvent>
 
 #include <asl/annotatedglshaderprogram.h>
 #include <gui/shaderitemlist.h>
@@ -50,8 +51,13 @@ public:
       */
     QList<QSharedPointer<Shader> > getAllShaders();
 
+protected:
 
-
+    void dragEnterEvent(QDragEnterEvent *event);
+//    void dragLeaveEvent(QDragLeaveEvent *event);
+    void dragMoveEvent(QDragMoveEvent *event);
+    void dropEvent(QDropEvent *event);
+    void startDrag(Qt::DropActions supportedActions);
 
 
 signals:
