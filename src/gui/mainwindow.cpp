@@ -76,7 +76,13 @@ void MainWindow::loadShaderDialog()
 }
 
 void MainWindow::loadImageFile(){
-    m_glImageRenderer->setSourceImage(QImage(QFileDialog::getOpenFileName()));
+    QString s = QFileDialog::getOpenFileName();
+
+    if(s != QString::null){
+        m_glImageRenderer->setSourceImage(QImage(s));
+    }
+
+
 }
 
 void MainWindow::saveImage(){
