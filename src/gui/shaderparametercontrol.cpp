@@ -2,30 +2,30 @@
 
 namespace gui {
 
-  ShaderParameterControl::ShaderParameterControl(QWidget *parent, 
-    ShaderParameterInfo &info, 
-    QSharedPointer<QGLShaderProgram> &shaderProgram)
-    : QWidget(parent),
+  template<class ControlT, class ParamT>
+  ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(QWidget *parent, 
+    const asl::ShaderParameterInfo &info, 
+    QSharedPointer<QGLShaderProgram> shaderProgram)
+    : m_widget(parent),
+      m_info(info),
       m_shaderProgram(shaderProgram)
   {
-    m_typeInfo = *info.type();
-
     unsigned short int i, j;
-    m_rows = m_typeInfo.rowDimensionality();
-    m_cols = m_typeInfo.columnDimensionality();
+    m_rows = m_info.type->rowDimensionality();
+    m_cols = m_info.type->columnDimensionality();
 
-    QGridLayout gridLayout = QGridLayout(this);
+    QGridLayout *gridLayout = new QGridLayout(this);
 
-    m_controls = static_cast< ControlT* > malloc( 
-        sizeof(ControlT)*m_rows*m_cols );
+    m_controls = static_cast< ControlT* >(malloc( 
+        sizeof(ControlT)*m_rows*m_cols ));
     for(i=0; i<m_rows; i++) {
 
       for(j=0; j<m_cols; j++) {
 
         ControlT control = new ControlT(this);
         // set Minimum and Maximum value dependent to ParamT
-        control.setRange(numeric_limits<ParamType>::min(), 
-            numeric_limits<ParamType>::min());
+        control.setRange(std::numeric_limits<ParamT>::min(), 
+            std::numeric_limits<ParamT>::min());
         // set initial value
         control.setValue( static_cast<ParamT>(0) );
 
@@ -34,32 +34,34 @@ namespace gui {
             this, SLOT( setParameterFromControls(ParamT) ));
 
         // add control - layout will resize automatically
-        gridLayout.addWidget(&control, i, j);
+        gridLayout->addWidget(&control, i, j);
 
         // create row major array
         m_controls[i + j*m_cols] = control;
       }
     }
 
-    setLayout(gridLayout);
+    m_widget->setLayout(gridLayout);
   }
 
-  ShaderParameterControl::~ShaderParameterControl()
+  template<class ControlT, class ParamT>
+  ShaderParameterControl<ControlT, ParamT>::~ShaderParameterControl()
   {
     free(m_controls);
   }
 
-  ShaderParameterControl::setParameterFromControls(ParamT value)
+  template<class ControlT, class ParamT>
+  void ShaderParameterControl<ControlT, ParamT>::setParameterFromControls(ParamT value)
   {
-    ParamT *values = static_cast< ParamtT* > malloc( 
-        sizeof(ParamT)*m_rows*m_cols );
+    ParamT *values = static_cast< ParamT* >(malloc( 
+        sizeof(ParamT)*m_rows*m_cols ));
 
     unsigned short int i;
     for(i=0; i<(m_rows*m_cols); i++) 
-      values[i + j*m_cols] = m_controls[i + j*m_cols].value();
+      values[i] = m_controls[i].value();
     
-    m_shaderProgram->setUniformValueArray( qPrintable( m_typeInfo.identifier ),
-        values, n_rows*n_cols, 1);
+    m_shaderProgram->setUniformValueArray( qPrintable( m_info.identifier ),
+        values, m_rows*m_cols, 1);
 
     free(values);
   }

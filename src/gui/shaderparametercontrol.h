@@ -9,19 +9,18 @@
 #include <QGridLayout>
 
 #include "../asl/shaderparameterinfo.h"
+#include "../asl/gltypeinfo.h"
 
 namespace gui
 {
 template<class ControlT, class ParamT> class ShaderParameterControl
-        : public QWidget
 {
-    Q_OBJECT
 
 public:
     // 1. m_controls als Array mit genug Elementen initialisieren
     // 2. Zeilen/Spalten durchgehen, Controls erstellen, Min, Max und default
     //    wert setzen und jeweils connectSingleControlSignal() aufrufen.
-    ShaderParameterControl(QWidget *parent, const ShaderParameterInfo &info,
+    ShaderParameterControl(QWidget *parent, const asl::ShaderParameterInfo &info,
             QSharedPointer<QGLShaderProgram> shaderProgram);
 
     // Speicher von m_controls freigeben
@@ -42,8 +41,9 @@ private:
     // "valueChanged" signal von control mit setParaemterFromControlsVerbinden()
     void connectSingleControlSignal(const ControlT &control);
 */
+    QWidget *m_widget;
     ControlT *m_controls;
-    GLTypeInfo m_typeInfo;
+    asl::ShaderParameterInfo m_info;
     QSharedPointer<QGLShaderProgram> m_shaderProgram; 
 
     unsigned short int m_rows, m_cols;
