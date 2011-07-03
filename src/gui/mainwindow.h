@@ -15,6 +15,7 @@
 #include <iostream>
 
 #include "glimagerenderer.h"
+#include "shaderparametercontrol.h"
 
 typedef class asl::AnnotatedGLShaderProgram Shader;
 
@@ -53,6 +54,7 @@ public slots:
     void loadShaderDialog();
     void loadImageFile();
     void saveImage();
+    void showControls(QSharedPointer<Shader>);
 };
 }
 

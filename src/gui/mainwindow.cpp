@@ -31,16 +31,22 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_glImageRenderer, SIGNAL(updated(const QImage &)),
             ui->glDisplay, SLOT(setImage(const QImage &)));
 
-    connect(ui->pushButton_AddShader,SIGNAL(clicked()),this,SLOT(loadShaderDialog()));
-    connect(ui->pushButton_RemoveShader,SIGNAL(clicked()),ui->listView_ShaderList,SLOT(removeSelectedShader()));
+    connect(ui->pushButton_AddShader,SIGNAL(clicked()),
+            this,SLOT(loadShaderDialog()));
+    connect(ui->pushButton_RemoveShader,SIGNAL(clicked()),
+            ui->listView_ShaderList,SLOT(removeSelectedShader()));
 
-    connect(ui->listView_ShaderList,SIGNAL(renderShaderList(QList<QSharedPointer<Shader> >)),m_glImageRenderer,SLOT(renderImage(QList<QSharedPointer<Shader> >)));
+    connect(ui->listView_ShaderList,SIGNAL(
+              renderShaderList(QList<QSharedPointer<Shader> >)),
+            m_glImageRenderer,SLOT(
+              renderImage(QList<QSharedPointer<Shader> >)));
+
+    connect(ui->listView_ShaderList, SIGNAL(
+              shaderClicked(QSharedPointer<QGLShader> shader)),
+            this, SLOT(
+              showControls(QSharedPointer<QGLShader> shader)));
 
     connect(ui->action_Exit,SIGNAL(triggered()),this,SLOT(emitExit()));
-
-
-
-
 }
 
 MainWindow::~MainWindow()
@@ -93,4 +99,26 @@ void MainWindow::saveImage(){
         tmpImg.save(s);
     }
 
+}
+
+void MainWindow::showControls(QSharedPointer<Shader> aslShaderProgram)
+{
+  std::cout << "SHOW CONTROLS" << std::endl;
+  Q_FOREACH( asl::ShaderParameterInfo info, aslShaderProgram->parameters() )
+  {
+    if(info.type->isFloat())
+    {
+      ShaderParameterControl<QDoubleSpinBox, GLfloat> *control = 
+        new ShaderParameterControl<QDoubleSpinBox, GLfloat>(
+            info, aslShaderProgram);
+      ui->scrollArea_ShaderOptions->setWidget(control->widget());
+    }
+    else // if (info->isInt())
+    {
+      ShaderParameterControl<QSpinBox, GLint> *control = 
+        new ShaderParameterControl<QSpinBox, GLint>(
+            info, aslShaderProgram);
+      ui->scrollArea_ShaderOptions->setWidget(control->widget());
+    }
+  }
 }

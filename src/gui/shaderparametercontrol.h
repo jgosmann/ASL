@@ -20,11 +20,13 @@ public:
     // 1. m_controls als Array mit genug Elementen initialisieren
     // 2. Zeilen/Spalten durchgehen, Controls erstellen, Min, Max und default
     //    wert setzen und jeweils connectSingleControlSignal() aufrufen.
-    ShaderParameterControl(QWidget *parent, const asl::ShaderParameterInfo &info,
+    ShaderParameterControl(const asl::ShaderParameterInfo &info,
             QSharedPointer<QGLShaderProgram> shaderProgram);
 
     // Speicher von m_controls freigeben
     virtual ~ShaderParameterControl();
+
+    inline QWidget* widget() { return m_widget; }
 
 private slots:
     // Array mit genug Elementen vom Typ ParamT anlegen (sicherstellen das
