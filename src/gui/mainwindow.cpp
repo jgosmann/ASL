@@ -111,14 +111,14 @@ void MainWindow::showControls(QSharedPointer<Shader> aslShaderProgram)
       ShaderParameterControl<QDoubleSpinBox, GLfloat> *control = 
         new ShaderParameterControl<QDoubleSpinBox, GLfloat>(
             info, aslShaderProgram);
-      ui->scrollArea_ShaderOptions->setWidget(control->widget());
+      ui->scrollArea_ShaderOptions->setWidget(&control->widget());
     }
     else // if (info->isInt())
     {
       ShaderParameterControl<QSpinBox, GLint> *control = 
         new ShaderParameterControl<QSpinBox, GLint>(
             info, aslShaderProgram);
-      ui->scrollArea_ShaderOptions->setWidget(control->widget());
+      ui->scrollArea_ShaderOptions->setWidget(&control->widget());
     }
   }
 }

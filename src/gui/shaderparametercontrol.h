@@ -26,7 +26,7 @@ public:
     // Speicher von m_controls freigeben
     virtual ~ShaderParameterControl();
 
-    inline QWidget* widget() { return m_widget; }
+    inline QWidget & widget() { return m_widget; }
 
 private slots:
     // Array mit genug Elementen vom Typ ParamT anlegen (sicherstellen das
@@ -43,14 +43,16 @@ private:
     // "valueChanged" signal von control mit setParaemterFromControlsVerbinden()
     void connectSingleControlSignal(const ControlT &control);
 */
-    QWidget *m_widget;
-    ControlT *m_controls;
+    QWidget m_widget;
+    ControlT **m_controls;
     asl::ShaderParameterInfo m_info;
     QSharedPointer<QGLShaderProgram> m_shaderProgram; 
 
     unsigned short int m_rows, m_cols;
 };
-}
+} 
+
+#include "shaderparametercontrol.cpp"
 
 #endif /* SHADERPARAMETERCONTROL_H */
 
