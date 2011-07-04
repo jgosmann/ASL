@@ -1,8 +1,6 @@
 #ifndef SHADERPARAMETERCONTROL_H
 #define SHADERPARAMETERCONTROL_H
 
-#include <limits>
-
 #include <QSharedPointer>
 #include <QGLShaderProgram>
 #include <QWidget>
@@ -49,6 +47,19 @@ private:
     QSharedPointer<QGLShaderProgram> m_shaderProgram; 
 
     unsigned short int m_rows, m_cols;
+
+    class ParameterUpdater : public QObject
+    {
+    public:
+      ParameterUpdater();
+      ~ParameterUpdater();
+
+    public slots:
+      void setParameterFromControls();
+
+    signals:
+      void updatedParameters();
+    };
 };
 } 
 
