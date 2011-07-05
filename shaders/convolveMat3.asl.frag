@@ -1,26 +1,25 @@
-#version 120
-
-/∗∗
- ∗ ShaderName: ConvolveMat3
- ∗ ShaderDescription: Convolves a 3x3 matrix with the 2Dtexture.
- ∗/
 
 
-/∗
- ∗ Name: Convolution Matrix
- * Default: mat3(1, 2, 1, 2, 4, 2, 1, 2, 1)
- ∗/
-/* uniform */ mat3 convolutionMatrix = mat3(1, 2, 1, 2, 4, 2, 1, 2, 1);
+/**
+ * ShaderName: ConvolveMat3
+ * ShaderDescription: Convolves a matrix with the texture
+ */
+
+/*
+* Name: Convolution Matrix
+* Default: mat3(1, 2, 1, 2, 4, 2, 1, 2, 1)
+*
+/* uniform */ mat3 convolutionMatrix = mat3(0, 1, 0, 1, 2, 1, 0, 1, 0);
 
 
 uniform sampler2D tex;
-uniform float texWidth;
-uniform float texHeight;
+/*uniform*/ float texWidth = 512.0;
+/*uniform*/ float texHeight = 512.0;
 
 
 void convolute(mat3 convMat) {
 
-	int sum = 0;
+	float sum = 0;
 	vec3 xt = vec3( -1.0 / texWidth, 0, 1.0 / texWidth );
 	vec3 yt = vec3( -1.0 / texHeight, 0, 1.0 / texHeight );
 
@@ -34,7 +33,7 @@ void convolute(mat3 convMat) {
 	}
 
 	gl_FragColor = vec4(0, 0, 0, 1);
-	gl_FragColor.rgb = color.rgb / float(sum);
+	gl_FragColor.rgb = color.rgb / sum;
 
 }
 
