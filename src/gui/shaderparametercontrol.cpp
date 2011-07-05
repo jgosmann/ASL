@@ -1,6 +1,6 @@
 
 template<class ControlT, class ParamT>
-gui::ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(
+ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(
   const asl::ShaderParameterInfo &info, 
   QSharedPointer<QGLShaderProgram> shaderProgram)
   : m_info(info),
@@ -20,7 +20,8 @@ gui::ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(
 
       ControlT *control = new ControlT(&m_widget);
       // set Minimum and Maximum value dependent to ParamT
-      control->setRange(m_info.minimum.as<ParamT>(), m_info.maximum.as<ParamT>());
+      control->setRange(*m_info.minimum.as<ParamT>(), 
+          *m_info.maximum.as<ParamT>());
 
       // set initial value
       control->setValue( static_cast<ParamT>(0) );
@@ -52,39 +53,7 @@ gui::ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(
 }
 
 template<class ControlT, class ParamT>
-gui::ShaderParameterControl<ControlT, ParamT>::~ShaderParameterControl()
+ShaderParameterControl<ControlT, ParamT>::~ShaderParameterControl()
 {
   free(m_controls);
-}
-
-//-- PRIVATE INNER CLASS ------------------------------------------------------
-
-template<class ControlT, class ParamT>
-void gui::ShaderParameterControl<ControlT, ParamT>
-  ::ParameterUpdater::ParameterUpdater()
-{
-
-}
-
-template<class ControlT, class ParamT>
-void gui::ShaderParameterControl<ControlT, ParamT>
-  ::ParameterUpdater::~ParameterUpdater()
-{
-  
-}
-
-template<class ControlT, class ParamT>
-void gui::ShaderParameterControl<ControlT, ParamT>
-  ::ParameterUpdater::setParameterFromControls(ParamT value)
-{
-  ParamT *values = new ParamT[m_rows*m_cols];
-
-  unsigned short int i;
-  for(i=0; i<(m_rows*m_cols); i++) 
-    values[i] = m_controls[i].value();
-  
-  m_shaderProgram->setUniformValueArray( qPrintable( m_info.identifier ),
-      values, m_rows*m_cols, 1);
-
-  delete values;
 }

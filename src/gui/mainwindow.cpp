@@ -11,6 +11,9 @@ MainWindow::MainWindow(QWidget *parent) :
     // set working directory to execution directory
     QDir::setCurrent(QCoreApplication::applicationDirPath());
 
+    // clear the set
+    m_shaderProgramIDs = QList<int>();
+
     ui->setupUi(this);
 
     m_glImageRenderer = new GLImageRenderer(this);
@@ -42,9 +45,9 @@ MainWindow::MainWindow(QWidget *parent) :
               renderImage(QList<QSharedPointer<Shader> >)));
 
     connect(ui->listView_ShaderList, SIGNAL(
-              shaderClicked(QSharedPointer<QGLShader> shader)),
+              shaderClicked(QSharedPointer<Shader>)),
             this, SLOT(
-              showControls(QSharedPointer<QGLShader> shader)));
+              showControls(QSharedPointer<Shader>)));
 
     connect(ui->action_Exit,SIGNAL(triggered()),this,SLOT(emitExit()));
 }
@@ -55,14 +58,13 @@ MainWindow::~MainWindow()
     delete m_glImageRenderer;
 }
 
-void MainWindow::emitExit(){
+void MainWindow::emitExit()
+{
     emit exitProgram();
 }
 
 void MainWindow::loadShaderDialog()
 {
-
-
     QString s = QFileDialog::getOpenFileName(this,"Load Shader");
     std::cout << s.toStdString() << std::endl;
     if(s != QString::null){
@@ -81,44 +83,86 @@ void MainWindow::loadShaderDialog()
     }
 }
 
-void MainWindow::loadImageFile(){
+void MainWindow::loadImageFile()
+{
     QString s = QFileDialog::getOpenFileName();
 
     if(s != QString::null){
         m_glImageRenderer->setSourceImage(QImage(s));
     }
-
-
 }
 
-void MainWindow::saveImage(){
+void MainWindow::saveImage()
+{
     QString s = QFileDialog::getSaveFileName(this,"Chose a file to save the image");
 
     if(s != QString::null){
         const QImage tmpImg = m_glImageRenderer->getRenderedImage();
         tmpImg.save(s);
     }
-
 }
 
 void MainWindow::showControls(QSharedPointer<Shader> aslShaderProgram)
 {
-  std::cout << "SHOW CONTROLS" << std::endl;
-  Q_FOREACH( asl::ShaderParameterInfo info, aslShaderProgram->parameters() )
+  int ref = (int) &(*aslShaderProgram);
+  if( !m_shaderProgramIDs.contains( ref ) )
   {
-    if(info.type->isFloat())
+    m_shaderProgramIDs.append( ref );
+
+    QVBoxLayout *vBoxLayout = new QVBoxLayout();
+    QScrollArea *scrollArea = new QScrollArea();
+    scrollArea->setLayout( vBoxLayout );
+
+    foreach(asl::ShaderParameterInfo info, aslShaderProgram->parameters())
     {
-      ShaderParameterControl<QDoubleSpinBox, GLfloat> *control = 
-        new ShaderParameterControl<QDoubleSpinBox, GLfloat>(
-            info, aslShaderProgram);
-      ui->scrollArea_ShaderOptions->setWidget(&control->widget());
+      switch( info.type->type() )
+      {
+      case asl::GLTypeInfo::FLOAT:
+        {
+        ShaderParameterControl<QDoubleSpinBox, GLfloat> *control = 
+          new ShaderParameterControl<QDoubleSpinBox, GLfloat>( info, aslShaderProgram);
+        vBoxLayout->addWidget( &control->widget() );
+        break;
+        }
+
+      case asl::GLTypeInfo::INT:
+        {
+        ShaderParameterControl<QSpinBox, GLint> *control = 
+          new ShaderParameterControl<QSpinBox, GLint>( info, aslShaderProgram);
+        vBoxLayout->addWidget( &control->widget() );
+        break;
+        }
+
+      case asl::GLTypeInfo::UINT:
+        {
+        ShaderParameterControl<QSpinBox, GLuint> *control = 
+          new ShaderParameterControl<QSpinBox, GLuint>( info, aslShaderProgram);
+        vBoxLayout->addWidget( &control->widget() );
+        break;
+        }
+
+      case asl::GLTypeInfo::BOOL:
+        {
+        ShaderParameterControl<QSpinBox, GLuint> *control = 
+          new ShaderParameterControl<QSpinBox, GLuint>( info, aslShaderProgram);
+        vBoxLayout->addWidget( &control->widget() );
+        //ShaderParameterControl<QCheckBox, GLuint> *control = 
+          //new ShaderParameterControl<QCheckBox, GLuint>( info, aslShaderProgram);
+        break;
+        }
+
+      default:
+        {
+        ShaderParameterControl<QSpinBox, GLint> *control = 
+          new ShaderParameterControl<QSpinBox, GLint>( info, aslShaderProgram);
+        vBoxLayout->addWidget( &control->widget() );
+        }
+      }
     }
-    else // if (info->isInt())
-    {
-      ShaderParameterControl<QSpinBox, GLint> *control = 
-        new ShaderParameterControl<QSpinBox, GLint>(
-            info, aslShaderProgram);
-      ui->scrollArea_ShaderOptions->setWidget(&control->widget());
-    }
+
+    int index = ui->stackedWidget_ShaderOptions->addWidget( scrollArea );
+    assert(index == m_shaderProgramIDs.indexOf(ref));
   }
+
+  ui->stackedWidget_ShaderOptions->setCurrentIndex( m_shaderProgramIDs.indexOf(ref) );
 }

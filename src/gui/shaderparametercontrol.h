@@ -26,12 +26,11 @@ public:
 
     inline QWidget & widget() { return m_widget; }
 
-private slots:
     // Array mit genug Elementen vom Typ ParamT anlegen (sicherstellen das
     // dieses beim Verlassen der Funktion wieder freigegeben wird)
     // m_controls durchgehen und mit getSingelValueFromControl() Wert auslesen
     // und in das Array schreiben. Uniform von m_prgm setzen.
-    void setParameterFromControls(ParamT value);
+    //void setParameterFromControls(ParamT value);
 
 private:
 /*
@@ -47,23 +46,12 @@ private:
     QSharedPointer<QGLShaderProgram> m_shaderProgram; 
 
     unsigned short int m_rows, m_cols;
-
-    class ParameterUpdater : public QObject
-    {
-    public:
-      ParameterUpdater();
-      ~ParameterUpdater();
-
-    public slots:
-      void setParameterFromControls();
-
-    signals:
-      void updatedParameters();
-    };
 };
-} 
 
 #include "shaderparametercontrol.cpp"
+
+} 
+
 
 #endif /* SHADERPARAMETERCONTROL_H */
 
