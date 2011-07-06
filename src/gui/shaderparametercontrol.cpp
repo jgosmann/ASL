@@ -15,13 +15,13 @@ ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(
   QGridLayout *gridLayout = new QGridLayout(&m_widget);
   m_widget.setLayout(gridLayout); // necessary?
 
-  m_controls = new ControlT*[m_rows*m_cols];
+  m_controls = new WidgetWrapper*[m_rows*m_cols];
 
   for(j=0; j<m_cols; i++) 
   { 
     for(i=0; i<m_rows; i++)
     {
-      ControlT *control = new ControlT(&m_widget);
+      WidgetWrapper *control = new WidgetWrapper( &ControlT );
 
       // set Minimum and Maximum value dependent to ParamT
       control->setRange(*m_info.minimum.as<ParamT>(), 

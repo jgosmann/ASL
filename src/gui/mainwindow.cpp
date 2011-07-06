@@ -100,7 +100,6 @@ void MainWindow::saveImage()
 
 void MainWindow::showControls(QSharedPointer<Shader> aslShaderProgram)
 {
-
   if( !m_shaderProgramIDs.contains( aslShaderProgram ) )
   {
     m_shaderProgramIDs.append( aslShaderProgram );

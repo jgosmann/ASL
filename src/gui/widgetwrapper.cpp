@@ -1,21 +1,20 @@
 
 using namespace gui;
 
-template<class ControlT, class ParamT>
+// FIXME
 WidgetWrapper::WidgetWrapper(void *widget)
   : m_widget(widget)
 {}
 
-template<class ControlT, class ParamT>
-WidgetWrapper::~WidgetWrapper(ControlT *widget)
+WidgetWrapper::~WidgetWrapper()
 {
   delete m_widget;
 }
 
 template<class ControlT, class ParamT>
-const ParamT& WidgetWrapper::value<QSpinBox>() const
+const ParamT& WidgetWrapper::value() const
 {
-  QSpinBox *widget = static_cast<QSpinBox*>( m_widget );
+  ControlT *widget = static_cast<ControlT*>( m_widget );
 
   return static_cast<ParamT>( widget->value() );
 }
@@ -25,9 +24,10 @@ const ParamT& WidgetWrapper::value<QSpinBox>() const
  * getter for the value is not equal to "value()".
  */
 template<>
-const GLuint WidgetWrapper::value<QCheckBox>() const
+const GLuint WidgetWrapper::value() const
 {
-  GLuint value = m_widget->checkState();
+  QCheckBox *widget = static_cast<QCheckBox*>( m_widget );
+  GLuint value = widget->checkState();
 
   if( value == Qt::Checked )
     value = 1; // = true
@@ -37,7 +37,7 @@ const GLuint WidgetWrapper::value<QCheckBox>() const
 
 
 template<class ControlT, class ParamT>
-void setValue<ControlT>(ParamT &value)
+void setValue(ParamT &value)
 {
   ControlT *widget = static_cast<ControlT*>( m_widget );
 
@@ -48,7 +48,7 @@ void setValue<ControlT>(ParamT &value)
  * there is no setValue() procedure, but a setCheckState() procedure instead.
  */
 template<class ParamT>
-void setValue<QCheckBox>(ParamT &value)
+void setValue(ParamT &value)
 {
   QCheckBox *widget = static_cast<QCheckBox*>( m_widget );
 
@@ -57,7 +57,7 @@ void setValue<QCheckBox>(ParamT &value)
 
 
 template<class ControlT, class ParamT>
-void setRange<ControlT>(ParamT &min, ParamT &max)
+void setRange(ParamT &min, ParamT &max)
 {
   ControlT *widget = static_cast<ControlT*>( m_widget );
   widget->setRange(min, max);
@@ -67,7 +67,7 @@ void setRange<ControlT>(ParamT &min, ParamT &max)
  * is no range but a boolean state.
  */
 template<class ParamT>
-void setRange<QCheckBox>(ParamT &min, ParamT &max)
+void setRange(ParamT &min, ParamT &max)
 {
   QCheckBox *widget = static_cast<QCheckBox*>( m_widget );
   widget->setTristate( false );
