@@ -16,11 +16,15 @@ QSharedPointer<AnnotatedGLShader> CachedAnnotatedGLShaderCompiler::compileFile(
 
     if (m_cache.contains(filename)) {
         shader = m_cache[filename];
+        m_success = true;
+        m_log.clear();
     }
 
     if (shader.isNull()) {
         shader = QSharedPointer<AnnotatedGLShader>(
                 m_compiler.compileFile(type, filename));
+        m_success = m_compiler.success();
+        m_log = m_compiler.log();
         if (m_compiler.success()) {
             m_cache[filename] = shader;
         }
@@ -37,11 +41,15 @@ CachedAnnotatedGLShaderCompiler::compileFileAsMain(
 
     if (m_mainShaderCache.contains(filename)) {
         shader = m_mainShaderCache[filename];
+        m_success = true;
+        m_log.clear();
     }
 
     if (shader.isNull()) {
         shader = QSharedPointer<AnnotatedGLShader>(
                 m_compiler.compileFileAsMain(type, filename));
+        m_success = m_compiler.success();
+        m_log = m_compiler.log();
         if (m_compiler.success()) {
             m_mainShaderCache[filename] = shader;
         }

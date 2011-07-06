@@ -19,14 +19,17 @@ public:
     QSharedPointer<AnnotatedGLShader> compileFileAsMain(
             QGLShader::ShaderType type, const QString &filename);
 
-    QString log() const { return m_compiler.log(); }
-    const bool success() const { return m_compiler.success(); }
+    QString log() const { return m_log; }
+    const bool success() const { return m_success; }
 
 private:
     asl::AnnotatedGLShaderCompiler &m_compiler;
 
     QHash<QString, QWeakPointer<AnnotatedGLShader> > m_cache;
     QHash<QString, QWeakPointer<AnnotatedGLShader> > m_mainShaderCache;
+
+    bool m_success;
+    QString m_log;
 };
 } /* namespace asl */
 
