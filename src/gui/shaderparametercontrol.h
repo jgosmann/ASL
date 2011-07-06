@@ -9,9 +9,12 @@
 #include "../asl/shaderparameterinfo.h"
 #include "../asl/gltypeinfo.h"
 
+#include "shaderparametercontrolhandle.h"
+
 namespace gui
 {
-template<class ControlT, class ParamT> class ShaderParameterControl
+template<class ControlT, class ParamT> 
+class ShaderParameterControl : public ShaderParameterConrolHandle
 {
 
 public:
@@ -24,7 +27,9 @@ public:
     // Speicher von m_controls freigeben
     virtual ~ShaderParameterControl();
 
-    inline QWidget & widget() { return m_widget; }
+    QWidget &widget() { return m_widget; }
+
+    void setUniforms();
 
     // Array mit genug Elementen vom Typ ParamT anlegen (sicherstellen das
     // dieses beim Verlassen der Funktion wieder freigegeben wird)

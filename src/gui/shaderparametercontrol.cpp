@@ -57,3 +57,9 @@ ShaderParameterControl<ControlT, ParamT>::~ShaderParameterControl()
 {
   free(m_controls);
 }
+
+template<class ControlT, class ParamT>
+ShaderParameterControl<ControlT, ParamT>::setUniforms()
+{
+
+}

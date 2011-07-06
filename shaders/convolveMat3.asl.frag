@@ -1,5 +1,3 @@
-
-
 /**
  * ShaderName: ConvolveMat3
  * ShaderDescription: Convolves a matrix with the texture
@@ -8,20 +6,18 @@
 /*
 * Name: Convolution Matrix
 * Default: mat3(1, 2, 1, 2, 4, 2, 1, 2, 1)
-*
-/* uniform */ mat3 convolutionMatrix = mat3(0, 1, 0, 1, 2, 1, 0, 1, 0);
-
+*/
+uniform mat3 convolutionMatrix = mat3(0, 1, 0, 1, 2, 1, 0, 1, 0);
 
 uniform sampler2D tex;
-/*uniform*/ float texWidth = 512.0;
-/*uniform*/ float texHeight = 512.0;
-
+uniform float texWidth = 512.0;
+uniform float texHeight = 512.0;
 
 void convolute(mat3 convMat) {
 
 	float sum = 0;
-	vec3 xt = vec3( -1.0 / texWidth, 0, 1.0 / texWidth );
-	vec3 yt = vec3( -1.0 / texHeight, 0, 1.0 / texHeight );
+	vec3 xt = vec3( -1.0 / texWidth, 0.0, 1.0 / texWidth );
+	vec3 yt = vec3( -1.0 / texHeight, 0.0, 1.0 / texHeight );
 
 	vec3 color = vec3(0, 0, 0);
 	for (int i = 0; i < 3; ++i) {
@@ -37,11 +33,8 @@ void convolute(mat3 convMat) {
 
 }
 
-
-
 void main() {
 
-convolute(convolutionMatrix);
-
+  convolute(convolutionMatrix);
 }
 

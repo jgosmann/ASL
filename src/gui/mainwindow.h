@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QList>
+#include <QHash>
 #include <QMainWindow>
 #include <QCoreApplication>
 #include <QScrollArea>
@@ -54,7 +54,8 @@ private:
 
     asl::DefaultASLProgramCompiler compiler;
 
-    QList<int> m_shaderProgramIDs;
+    QHash< Shader*, ShaderParameterControlHandle* > m_shaderParameterControls;
+    QList< QSharedPointer<Shader> > m_shaderProgramIDs;
 
 private slots:
     void emitExit();
