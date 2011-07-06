@@ -14,7 +14,7 @@ namespace gui {
     virtual ~ShaderParameterControlHandle() {}
 
     virtual QWidget& widget() = 0;
-    virtual void setUniforms() = 0;
+    virtual void setParametersFromControls() = 0;
   };
   
 } // namespace gui

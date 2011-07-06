@@ -10,11 +10,12 @@
 #include "../asl/gltypeinfo.h"
 
 #include "shaderparametercontrolhandle.h"
+#include "widgetwrapper.h"
 
 namespace gui
 {
-template<class ControlT, class ParamT> 
-class ShaderParameterControl : public ShaderParameterConrolHandle
+template<class ParamT> 
+class ShaderParameterControl : public ShaderParameterControlHandle
 {
 
 public:
@@ -29,7 +30,7 @@ public:
 
     QWidget &widget() { return m_widget; }
 
-    void setUniforms();
+    void setParametersFromControls();
 
     // Array mit genug Elementen vom Typ ParamT anlegen (sicherstellen das
     // dieses beim Verlassen der Funktion wieder freigegeben wird)
@@ -46,7 +47,7 @@ private:
     void connectSingleControlSignal(const ControlT &control);
 */
     QWidget m_widget;
-    ControlT **m_controls;
+    WidgetWrapper **m_controls;
     asl::ShaderParameterInfo m_info;
     QSharedPointer<QGLShaderProgram> m_shaderProgram; 
 

@@ -9,7 +9,7 @@
 #include <QGLFormat>
 #include <QSharedPointer>
 #include <QMessageBox>
-
+#include <QLabel>
 
 #include <asl/annotatedglshaderprogram.h>
 #include <asl/defaultaslprogramcompiler.h>
@@ -19,6 +19,7 @@
 
 #include "glimagerenderer.h"
 #include "shaderparametercontrol.h"
+#include "shaderparametercontrolhandle.h"
 
 typedef class asl::AnnotatedGLShaderProgram Shader;
 

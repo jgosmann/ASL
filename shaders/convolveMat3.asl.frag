@@ -3,10 +3,10 @@
  * ShaderDescription: Convolves a matrix with the texture
  */
 
-/*
-* Name: Convolution Matrix
-* Default: mat3(1, 2, 1, 2, 4, 2, 1, 2, 1)
-*/
+/**
+ * Name: Convolution Matrix
+ * Default: mat3(1, 2, 1, 2, 4, 2, 1, 2, 1)
+ */
 uniform mat3 convolutionMatrix = mat3(0, 1, 0, 1, 2, 1, 0, 1, 0);
 
 uniform sampler2D tex;

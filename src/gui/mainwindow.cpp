@@ -11,9 +11,6 @@ MainWindow::MainWindow(QWidget *parent) :
     // set working directory to execution directory
     QDir::setCurrent(QCoreApplication::applicationDirPath());
 
-    // clear the set
-    m_shaderProgramIDs = QList<int>();
-
     ui->setupUi(this);
 
     m_glImageRenderer = new GLImageRenderer(this);
@@ -107,83 +104,84 @@ void MainWindow::showControls(QSharedPointer<Shader> aslShaderProgram)
   if( !m_shaderProgramIDs.contains( aslShaderProgram ) )
   {
     m_shaderProgramIDs.append( aslShaderProgram );
-    std::cout << "appended " << aslShaderProgram->data() << std::endl;
+    std::cout << "appended " << aslShaderProgram.data() << std::endl;
 
     QVBoxLayout *vBoxLayout = new QVBoxLayout();
     QScrollArea *scrollArea = new QScrollArea();
     scrollArea->setLayout( vBoxLayout );
+    scrollArea->show();
 
-    foreach(asl::ShaderParameterInfo info, aslShaderProgram->parameters())
+    if( aslShaderProgram->parameters().empty() )
     {
-      std::cout << "add control for " << qPrintable(info.identifier) << std::endl;
-
-      ShaderParameterControlHandle *handle;
-
-      switch( info.type->type() )
+      std::cout << "no parameters to show!" << std::endl;
+      vBoxLayout->addWidget( new QLabel( tr("No uniforms available for this shader!") ) );
+    }
+    else
+    {
+      foreach(asl::ShaderParameterInfo info, aslShaderProgram->parameters())
       {
-      case asl::GLTypeInfo::FLOAT:
+        std::cout << "added control for " << qPrintable(info.identifier) << std::endl;
+
+        ShaderParameterControlHandle *handle;
+
+        switch( info.type->type() )
         {
-        handle = static_cast<ShaderParameterControlHandle*>(
-          new ShaderParameterControl<QDoubleSpinBox, GLfloat>( info, 
-            aslShaderProgram));
+        case asl::GLTypeInfo::FLOAT:
+          {
+          handle = static_cast<ShaderParameterControlHandle*>(
+            new ShaderParameterControl<QDoubleSpinBox, GLfloat>( info, 
+              aslShaderProgram));
+          break;
+          }
 
-        vBoxLayout->addWidget( &control->widget() );
+        case asl::GLTypeInfo::INT:
+          {
+          handle = static_cast<ShaderParameterControlHandle*>(
+            new ShaderParameterControl<QSpinBox, GLint>( info, 
+              aslShaderProgram));
+          break;
+          }
 
-        break;
+        case asl::GLTypeInfo::UINT:
+          {
+          handle = static_cast<ShaderParameterControlHandle*>(
+            new ShaderParameterControl<QSpinBox, GLuint>( info, 
+              aslShaderProgram));
+          break;
+          }
+
+        case asl::GLTypeInfo::BOOL:
+          {
+          handle = static_cast<ShaderParameterControlHandle*>(
+            new ShaderParameterControl<QSpinBox, GLuint>( info, 
+              aslShaderProgram));
+          break;
+          }
+
+        default: // asl::GLTypeInfo::INT:
+          {
+          handle = static_cast<ShaderParameterControlHandle*>(
+            new ShaderParameterControl<QSpinBox, GLint>( info, 
+              aslShaderProgram));
+          }
         }
 
-      case asl::GLTypeInfo::INT:
-        {
-        handle = static_cast<ShaderParameterControlHandle*>(
-          new ShaderParameterControl<QDoubleSpinBox, GLfloat>( info, 
-            aslShaderProgram));
+        vBoxLayout->addWidget( &handle->widget() );
 
-        vBoxLayout->addWidget( &control->widget() );
-
-        break;
-        }
-
-      case asl::GLTypeInfo::UINT:
-        {
-        handle = static_cast<ShaderParameterControlHandle*>(
-          new ShaderParameterControl<QDoubleSpinBox, GLfloat>( info, 
-            aslShaderProgram));
-
-        vBoxLayout->addWidget( &control->widget() );
-
-        break;
-        }
-
-      case asl::GLTypeInfo::BOOL:
-        {
-        handle = static_cast<ShaderParameterControlHandle*>(
-          new ShaderParameterControl<QDoubleSpinBox, GLfloat>( info, 
-            aslShaderProgram));
-
-        vBoxLayout->addWidget( &control->widget() );
-
-        break;
-        }
-
-      default:
-        {
-        handle = static_cast<ShaderParameterControlHandle*>(
-          new ShaderParameterControl<QDoubleSpinBox, GLfloat>( info, 
-            aslShaderProgram));
-
-        vBoxLayout->addWidget( &control->widget() );
-        }
+        m_shaderParameterControls.insertMulti( aslShaderProgram.data(), handle);
       }
-
-      if(handle)
-        m_shaderParameterControls->insertMulti( aslShaderProgram->data(), handle);
     }
 
     int index = ui->stackedWidget_ShaderOptions->addWidget( scrollArea );
-    assert(index == m_shaderParameterControls.indexOf( 
-      aslShaderProgram->data() ));
+    assert(index == m_shaderProgramIDs.indexOf( 
+      aslShaderProgram ) );
   }
-
-  ui->stackedWidget_ShaderOptions->setCurrentIndex( 
-    m_shaderProgramIDs.indexOf( aslShaderProgram->data() ) );
+  else
+  {
+    std::cout << "Already in list! Set current index to "
+      << m_shaderProgramIDs.indexOf( aslShaderProgram ) << std::endl;
+    ui->stackedWidget_ShaderOptions->setCurrentIndex( 
+      m_shaderProgramIDs.indexOf( aslShaderProgram ) );
+    ui->stackedWidget_ShaderOptions->show();
+  }
 }
