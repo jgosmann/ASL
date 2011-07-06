@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_LoadImage, SIGNAL(triggered()),
             this, SLOT(loadImageFile()));
     connect(ui->action_SaveImage, SIGNAL(triggered()),
-            m_glImageRenderer, SLOT(saveImageFile()));
+            this, SLOT(saveImage()));
     connect(ui->checkBox_ApplyShaders, SIGNAL(stateChanged(int)), 
             m_glImageRenderer, SLOT(enableShaders(int)));
 
@@ -36,6 +36,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->listView_ShaderList,SIGNAL(renderShaderList(QList<QSharedPointer<Shader> >)),m_glImageRenderer,SLOT(renderImage(QList<QSharedPointer<Shader> >)));
 
+    connect(ui->action_Exit,SIGNAL(triggered()),this,SLOT(emitExit()));
+
 
 
 
@@ -45,6 +47,10 @@ MainWindow::~MainWindow()
 {
     delete ui;
     delete m_glImageRenderer;
+}
+
+void MainWindow::emitExit(){
+    emit exitProgram();
 }
 
 void MainWindow::loadShaderDialog()
@@ -70,5 +76,21 @@ void MainWindow::loadShaderDialog()
 }
 
 void MainWindow::loadImageFile(){
-    m_glImageRenderer->setSourceImage(QImage(QFileDialog::getOpenFileName()));
+    QString s = QFileDialog::getOpenFileName();
+
+    if(s != QString::null){
+        m_glImageRenderer->setSourceImage(QImage(s));
+    }
+
+
+}
+
+void MainWindow::saveImage(){
+    QString s = QFileDialog::getSaveFileName(this,"Chose a file to save the image");
+
+    if(s != QString::null){
+        const QImage tmpImg = m_glImageRenderer->getRenderedImage();
+        tmpImg.save(s);
+    }
+
 }
