@@ -21,8 +21,10 @@ uniform int texHeight;
 /* uniform */ const vec2 translation = vec2(0, 0);
 
 vec2 mapCoords(vec2 coords) {
-    return (2.0 * coords / vec2(texWidth, texHeight) - 1.0
-             + vec2(-1, 1) * translation)
-         / zoomFactor;
+    vec2 texSize = vec2(texWidth, texHeight);
+    float minSideLength = min(texSize.x, texSize.y);
+    vec2 priorTranslation = vec2(-1, 1) * (texSize - minSideLength) / 2.0;
+    return (2.0 * (coords + priorTranslation) / minSideLength - 1.0
+        + vec2(-1, 1) * translation) / zoomFactor;
 }
 
