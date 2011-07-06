@@ -19,7 +19,7 @@ uniform sampler2D tex;
 
 void convolute(mat3 convMat) {
 
-	float sum = 0;
+	float sum = 0.0;
 	vec3 xt = vec3( -1.0 / texWidth, 0, 1.0 / texWidth );
 	vec3 yt = vec3( -1.0 / texHeight, 0, 1.0 / texHeight );
 
