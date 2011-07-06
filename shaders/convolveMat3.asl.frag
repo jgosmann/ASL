@@ -3,12 +3,11 @@
  * ShaderDescription: Convolves a matrix with the texture
  */
 
-
 uniform sampler2D tex;
 uniform int texWidth;
 uniform int texHeight;
 
-void convolve(mat3 convMat) {
+vec4 getConvoluteValue(mat3 convMat) {
 
 	float sum = 0.0;
 	vec2 invTexSize = vec2(1.0 / float(texWidth), 1.0 / float(texHeight));
@@ -24,9 +23,10 @@ void convolve(mat3 convMat) {
 		}
 	}
 
-	gl_FragColor = vec4(0, 0, 0, 1);
-	gl_FragColor.rgb = color.rgb / sum;
+	vec4 retColor = vec4(0, 0, 0, 1);
+	retColor.rgb = color.rgb / sum;
 
+	return retColor;
 }
 
 #ifdef ASL_MAIN
@@ -34,10 +34,10 @@ void convolve(mat3 convMat) {
 * Name: Convolution Matrix
 * Default: mat3(1, 2, 1, 2, 4, 2, 1, 2, 1)
 *
-/* uniform */ mat3 convolutionMatrix = mat3(0, 1, 0, 1, 2, 1, 0, 1, 0);
+/* uniform */ mat3 convolutionMatrix = mat3(1, 2, 1, 2, 4, 2, 1, 2, 1);// mat3(-1,0,1,-2,0,2,-1,0,1);
 
 void main() {
-    convolve(convolutionMatrix);
+    gl_FragColor = getConvoluteValue(convolutionMatrix);
 }
 #endif
 

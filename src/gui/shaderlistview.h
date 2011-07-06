@@ -7,6 +7,7 @@
 #include <QStandardItem>
 #include <QList>
 #include <QSharedPointer>
+#include <QDragEnterEvent>
 
 #include <asl/annotatedglshaderprogram.h>
 #include <gui/shaderitemlist.h>
@@ -22,10 +23,10 @@ class ShaderListView : public QListView
     Q_OBJECT
 public:
     explicit ShaderListView(QWidget *parent = 0);
+
+    ~ShaderListView();
     void init();
-//    ShaderListModel *itemModel;
-    ShaderItemList *itemModel;
-    QList< QSharedPointer<Shader> > shaderList;
+
 
     /**
       * Clears the current shader List and replaces it with the given pShaderList
@@ -53,7 +54,6 @@ public:
 
 
 
-
 signals:
     void shaderClicked(QSharedPointer<Shader> shader);
     void renderShaderList(QList<QSharedPointer<Shader> >);
@@ -65,8 +65,13 @@ private slots:
     void clickedOnShader(const QModelIndex & index);
 
 private:
+    ShaderItemList *itemModel;
+    int currentID;
     int currentRow;
+    QMap<int,QSharedPointer<Shader> > shaderMap;
 
 };
+
+
 
 #endif // SHADERLISTVIEW_H

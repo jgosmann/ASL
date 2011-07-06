@@ -4,6 +4,7 @@
 #include <QStandardItem>
 #include <QSharedPointer>
 #include <asl/annotatedglshaderprogram.h>
+#include <cassert>
 
 typedef class asl::AnnotatedGLShaderProgram Shader;
 
@@ -26,5 +27,7 @@ private:
 
 
 };
+
+Q_DECLARE_METATYPE ( QSharedPointer<Shader> )
 
 #endif // SHADERITEM_H
