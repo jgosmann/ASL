@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <iostream>
+
 #include <QHash>
 #include <QMainWindow>
 #include <QCoreApplication>
@@ -14,8 +16,6 @@
 #include <asl/annotatedglshaderprogram.h>
 #include <asl/defaultaslprogramcompiler.h>
 #include <asl/gltypeinfo.h>
-
-#include <iostream>
 
 #include "glimagerenderer.h"
 #include "shaderparametercontrol.h"
@@ -55,7 +55,7 @@ private:
 
     asl::DefaultASLProgramCompiler compiler;
 
-    QHash< Shader*, ShaderParameterControlHandle* > m_shaderParameterControls;
+    QHash< Shader*, ShaderParameterControl* > m_shaderParameterControls;
     QList< QSharedPointer<Shader> > m_shaderProgramIDs;
 
 private slots:

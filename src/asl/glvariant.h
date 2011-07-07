@@ -10,7 +10,7 @@
 namespace asl
 {
 /**
- * Class able to hold different types which can passed to a shader program.
+ * Class able to hold different types which can be passed to a shader program.
  */
 class GLVariant
 {

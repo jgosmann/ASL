@@ -1,40 +1,159 @@
 #ifndef WIDGETWRAPPER_H
 #define WIDGETWRAPPER_H
 
+#include <assert.h>
+
+#include <QObject>
+#include <QHash>
+#include <QWidget>
+#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QColorDialog>
+#include <QColor>
+#include <QSlider>
+
+#include "../asl/shaderparameterinfo.h"
+#include "../asl/gltypeinfo.h"
+
 namespace gui
 {
 
-  class WidgetWrapper
+  class WidgetWrapper : public QObject
   {
+    Q_OBJECT
+
   public:
-    WidgetWrapper(QStringList &preferredUIControls);
+    /**
+     * This is the default constructor that is called, when WidgetWrapper shall
+     * create several single widgets for one control.
+     */
+    WidgetWrapper(asl::ShaderParameterInfo &info);
+
+    /**
+     * This constructor is an alternative to the default constructor that
+     * permits the creation of a single widget that is created from a template
+     * and is related to a whole uniform.
+     */
+    WidgetWrapper(Preset &preset);
+
     ~WidgetWrapper();
 
     /**
-     * Access the original widget with this getter 
+     * This enum helps to differ from preset-widgets the user proposed in ASL 
+     * using the key "Control" that refers to a widget-type that shall control
+     * the parameter.
      */
-    template<class ControlT>
-    inline const ControlT& widget() const { 
-      return *static_cast<ControlT*>( m_widget ); 
-    }
+    enum Preset 
+    {
+      COLOR,
+      SLIDER,
+      SPINBOX,
+      DEFAULT
+    };
 
-    template<class ControlT, class ParamT>
-    const ParamT& value() const;
+    /**
+     * Update the iterator for example when one instance has been erased from
+     * the hashmap and all other iterators have become invalid.
+     */
+    void setIterator( QHash::iterator iter ) { m_iter = iter; }
 
-    template<class ControlT, class ParamT>
-    void setValue(ParamT &value);
+    QWidget& widget() const { return m_widget; }
 
-    template<class ControlT, class ParamT>
-    void setRange(ParamT &min, ParamT &max);
+    const asl::GLVariant& value() const { return m_value; }
+
+    void setValue(asl::GLVariant &value) { m_value = value; }
+
+    void setRange(asl::GLVariant &min, asl::GLVariant &max);
+
+  signals:
+    template<class ParamT>
+    void updateParameter(ParamT* values);
 
   private:
+    static QHash<asl::ShaderProgramInfo, WidgetWrapper*> m_instances_;
+
     /**
-     * This void* will be casted to a special type in the getter.
+     * This is a list of all supported presets of control elements.
      */
-    void *m_widget;
+    static QStringList m_supportedUIControls_ = (QStringList() << "color"
+        << "slider" << "spinbox");
+
+    /**
+    * This function is called when a signal reached the changeValue()-slot.
+    */
+    template<class ParamT>
+    void update();
+
+    /**
+     * In the destructor each instance of WidgetWrapper will find itself in
+     * m_instances with help of this iterator.
+     */
+    QHash::iterator m_iter;
+
+    /**
+     * This is a placeholder for the "real" QWidget.
+     */
+    QWidget *m_widget;
+
+    /**
+     * This is a placeholder for the ShaderParameterInfo.
+     */
+    asl::ShaderParameterInfo m_info;
+
+    /**
+     * This is a placeholder for the value as a multitype GLVariant.
+     */
+    asl::GLVariant m_value;
+
+    /**
+     * This is a placeholder for the preset type. It is needed for distinction
+     * in constructor and value().
+     */
+    Preset m_preset;
+
+  private slots:
+    /**
+     * This slot opens a QColorDialog and writes the selected color to m_value.
+     */
+    void showColorDialog();
+
+    /**
+     * This slot is a template function because it shall receive different
+     * types of "valueChanged(..)" signals. It collects all WidgetWrapper
+     * instances that are related to m_info and emits their values in an array.
+     */
+    template<class ParamT>
+    void changeValue(ParamT value);
   };
 
-  #include "widgetwrapper.cpp"
+
+  // template-class implementations:
+
+  template<class ParamT>
+  void WidgetWrapper::update()
+  {
+    QList<WidgetWrapper> controls = m_instances_.values( m_info );
+
+    ParamT *values = new ParamT[ controls.length() ];
+
+    unsigned short int i = 0;
+    foreach( WidgetWrapper control, controls )
+    {
+      values[ i++ ] = control.value().as<ParamT>();
+      
+      emit updateParameter( values );
+    }
+  }
+
+  template<class ParamT>
+  void changeValue(ParamT value)
+  {
+    m_value = GLVariant<ParamT>( m_info, 1, &value );
+
+    update();
+  }
 
 } // namespace gui
 

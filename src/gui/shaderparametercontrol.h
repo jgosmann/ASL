@@ -1,9 +1,9 @@
 #ifndef SHADERPARAMETERCONTROL_H
 #define SHADERPARAMETERCONTROL_H
 
+#include <QObject>
 #include <QSharedPointer>
 #include <QGLShaderProgram>
-#include <QWidget>
 #include <QGridLayout>
 
 #include "../asl/shaderparameterinfo.h"
@@ -14,50 +14,65 @@
 
 namespace gui
 {
-template<class ParamT> 
-class ShaderParameterControl : public ShaderParameterControlHandle
-{
 
-public:
-    // 1. m_controls als Array mit genug Elementen initialisieren
-    // 2. Zeilen/Spalten durchgehen, Controls erstellen, Min, Max und default
-    //    wert setzen und jeweils connectSingleControlSignal() aufrufen.
-    ShaderParameterControl(const asl::ShaderParameterInfo &info,
-            QSharedPointer<QGLShaderProgram> shaderProgram);
+  class ShaderParameterControl : public ShaderParameterControlHandle, QObject
+  {
+    Q_OBJECT
 
-    // Speicher von m_controls freigeben
-    virtual ~ShaderParameterControl();
+  public:
+      ShaderParameterControl(const asl::ShaderParameterInfo &info,
+          QSharedPointer<QGLShaderProgram> shaderProgram);
 
-    QWidget &widget() { return m_widget; }
+      virtual ~ShaderParameterControl();
 
-    void setParametersFromControls();
+      /**
+       * Returns the WidgetWrapper's widget. It can be either a singleField,
+       * f.e. a QSpinBox, a multiField, f.e. a vector or matrix of 
+       * QDoubleSpinBoxes or a preset-widget, f.e. a QButton that will open
+       * a QColorDialog.
+       */
+      QWidget &widget() { return m_control->widget(); }
 
-    // Array mit genug Elementen vom Typ ParamT anlegen (sicherstellen das
-    // dieses beim Verlassen der Funktion wieder freigegeben wird)
-    // m_controls durchgehen und mit getSingelValueFromControl() Wert auslesen
-    // und in das Array schreiben. Uniform von m_prgm setzen.
-    //void setParameterFromControls(ParamT value);
+  public slots:
+      /**
+       * When the widget of the control has changed it will call this update
+       * slot to force the whole control to update its related uniform.
+       */
+      template<class ParamT>
+      void setParameterFromControls(ParamT *values);
 
-private:
-/*
-    // Liest den aktuellen Wert von control aus und gibt ihn zurück.
-    ParamT getSingleValueFromControl(const ControlT &control);
+  private:
+      /**
+       * This is a placeholder for the parameters widget.
+       */
+      WidgetWrapper *m_control;
 
-    // "valueChanged" signal von control mit setParaemterFromControlsVerbinden()
-    void connectSingleControlSignal(const ControlT &control);
-*/
-    QWidget m_widget;
-    WidgetWrapper **m_controls;
-    asl::ShaderParameterInfo m_info;
-    QSharedPointer<QGLShaderProgram> m_shaderProgram; 
+      /** All important information for the related shader program. */
+      asl::ShaderParameterInfo m_info;
 
-    unsigned short int m_rows, m_cols;
-};
+      /** 
+       * The instance of the related shader program. This class will run 
+       * setUniformValue[Array]() on that.
+       */
+      QSharedPointer<QGLShaderProgram> m_shaderProgram; 
 
-#include "shaderparametercontrol.cpp"
+      unsigned short int m_rows, m_cols;
+  };
 
-} 
+  template<class ParamT>
+  ShaderParameterControl::setParameterFromControls(ParamT *values)
+  {
+    if( sizeof(values) == sizeof(ParamT*) ) // type singleValue
+    {
+      m_shaderProgram->setUniformValue( m_info.identifier, values );
+    }
+    else  // type multiValue
+    {
+      m_shaderProgram->setUniformValueArray( m_info.identifier, values, m_rows, 
+          m_cols );
+    }
+  }
 
+} // namespace gui
 
 #endif /* SHADERPARAMETERCONTROL_H */
-
