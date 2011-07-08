@@ -31,6 +31,10 @@ class GLImageRenderer : public QObject
         }
 
     public slots:
+        /* FIXME: Give this function a void argument list and introduce a setter
+         * to set the shaderProgramList. This setter has to be called whenever
+         * the program's shader list is changed to set it to the new list. (Do
+         * not forget to call renderImage() afterwards. */
         void renderImage(QList<QSharedPointer<Shader> > shaderProgramList);
         void enableShaders(const int state);
         void setSourceImage(const QImage &img);
