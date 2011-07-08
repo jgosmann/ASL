@@ -2,6 +2,10 @@
  
 using namespace gui;
 
+WidgetWrapper::m_supportedUIControls_ = (QStringList() << "color" << "slider" 
+    << "spinbox");
+
+
 WidgetWrapper::WidgetWrapper(asl::ShaderParameterInfo &info)
   : m_info( info ),
     m_widget( new QWidget() )
@@ -12,7 +16,7 @@ WidgetWrapper::WidgetWrapper(asl::ShaderParameterInfo &info)
    * Set to default value, if user specified a preset control it will be set
    * in the following while-loop.
    */
-  m_preset = WidgetWrapper::DEFAULT;
+  m_preset = DEFAULT;
 
   while( !preferredUIControls.empty() )
   {
@@ -62,6 +66,9 @@ WidgetWrapper::WidgetWrapper(asl::ShaderParameterInfo &info)
     QPushButton *button = new QPushButton( tr("Select color...") );
     connect( button, SIGNAL( pressed() ), this, SLOT( showColorDialog() ) );
     vBoxLayout->addWidget( button );
+
+    // register itself as a widget related to info.
+    m_iter = m_instances.insertMulti( info, this );
     break;
     }
   default:
@@ -70,76 +77,22 @@ WidgetWrapper::WidgetWrapper(asl::ShaderParameterInfo &info)
     {
       m_value = m_info.defaultValue;
 
-      switch( m_preset )
-      {
-      case SLIDER:
-        {
-          if( !m_info.type->isFloat() )
-          {
-            QSlider *slider = new QSlider( m_widget );
-            slider->setValue( m_info.defaultValue.asInt() );
-            slider->setRange( m_info.minimum.asInt(), m_info.maximum.asInt() );
-
-            connect( slider, SIGNAL( valueChanged( int ) ), 
-                this, changeValue<int>( int ) );
-
-            vBoxLayout->addWidget( slider );
-          }
-          else // is int, uint or bool
-          {
-            // TODO: Implement DoubleSlider
-            QDoubleSpinBox *spinBox = new QDoubleSpinBox( m_widget );
-            spinBox->setValue( m_info.defaultValue.asFloat() );
-            spinBox->setRange( m_info.minimum.asFloat(), 
-                m_info.maximum.asFloat() );
-            
-            connect( spinBox, SIGNAL( valueChanged( double ) ),
-                this, changeValue<double>( double ) );
-
-            vBoxLayout->addWidget( spinBox );
-          }
-        }
-      case SPINBOX:
-        // no "break;"-statement will lead to default case
-      default:
-        {
-          if( m_info.type->isFloat() )
-          {
-            QDoubleSpinBox *spinBox = new QDoubleSpinBox( m_widget );
-            spinBox->setValue( m_info.defaultValue.asFloat() );
-            spinBox->setRange( m_info.minimum.asFloat(), 
-                m_info.maximum.asFloat() );
-            
-            connect( spinBox, SIGNAL( valueChanged( double ) ),
-                this, changeValue<double>( double ) );
-
-            vBoxLayout->addWidget( spinBox );
-          }
-          else
-          {
-            QSpinBox *spinBox = new QSpinBox( m_widget );
-            spinBox->setValue( m_info.defaultValue.asInt() );
-            spinBox->setRange( m_info.minimum.asInt(), 
-                m_info.maximum.asInt() );
-            
-            connect( spinBox, SIGNAL( valueChanged( int ) ),
-                this, changeValue<int>( int ) );
-
-            vBoxLayout->addWidget( spinBox );
-          }
-        }
-      }
+      createWidgetWrapperFromPreset( m_preset, vBoxLayout, this );
     }
     else // type is VECTOR or MATRIX
     {
       QWidget *dummy = new QWidget();
-      QGridLayout *gridLayout = new QGridLayout();
+      QGridLayout *gridLayout = new QGridLayout( dummy );
       dummy->setLayout( gridLayout );
-      
+     
+      unsigned short int i, j;
       for(j=0; j<m_info.type->columnDimensionality(); j++) 
       { 
         for(i=0; i<m_info.type->rowDimensionality(); i++)
         {
+
+          createWidgetWrapperFromPreset( m_preset, vBoxLayout );
+
           WidgetWrapper *control = new WidgetWrapper( info );
 
           // set Minimum and Maximum value dependent to ParamT
@@ -151,8 +104,7 @@ WidgetWrapper::WidgetWrapper(asl::ShaderParameterInfo &info)
           // add control - layout will resize automatically
           gridLayout->addWidget( control->widget(), i, j);
 
-          // create column major array
-          m_controls[i + j*m_cols] = control;
+          createWidgetWrapperFromPreset( preset, vBoxLayout, control );
         }
       }
     }
@@ -163,14 +115,12 @@ WidgetWrapper::WidgetWrapper(asl::ShaderParameterInfo &info)
   // assign the content to the widget
   m_widget.layout()->addWidget( vBoxLayout )
 
-  QGridLayout *gridLayout = new QGridLayout(&m_widget);
-  m_widget.setLayout(gridLayout); // necessary?
+  QGridLayout *gridLayout = new QGridLayout( m_widget );
+  m_widget.setLayout(gridLayout);
 
   m_controls = new WidgetWrapper*[m_rows*m_cols];
 
 
-  // register itself as a widget related to info.
-  m_iter = m_instances.insertMulti( info, this );
 }
 
 WidgetWrapper::~WidgetWrapper()
@@ -224,13 +174,80 @@ void WidgetWrapper::showColorDialog()
 }
 
 
+void WidgetWrapper::createWidgetWrapperFromPreset(Preset &preset,
+    QVBoxLayout *vBoxLayout, WidgetWrapper *widgetWrapper );
+{
+  switch( preset )
+  {
+  case SLIDER:
+    {
+      if( m_info.type->isFloat() )
+      {
+        // TODO: Implement DoubleSlider
+        QDoubleSpinBox *spinBox = new QDoubleSpinBox( m_widget );
+        spinBox->setValue( m_info.defaultValue.asFloat() );
+        spinBox->setRange( m_info.minimum.asFloat(), 
+            m_info.maximum.asFloat() );
+        
+        connect( spinBox, SIGNAL( valueChanged( double ) ),
+            this, changeValue<double>( double ) );
+
+        vBoxLayout->addWidget( spinBox );
+      }
+      else // is int, uint or bool
+      {
+        QSlider *slider = new QSlider( m_widget );
+        slider->setValue( m_info.defaultValue.asInt() );
+        slider->setRange( m_info.minimum.asInt(), m_info.maximum.asInt() );
+
+        connect( slider, SIGNAL( valueChanged( int ) ), 
+            this, changeValue<int>( int ) );
+
+        vBoxLayout->addWidget( slider );
+      }
+    }
+  case SPINBOX:
+    // no "break;"-statement will lead to default case
+  default:
+    {
+      if( m_info.type->isFloat() )
+      {
+        QDoubleSpinBox *spinBox = new QDoubleSpinBox( m_widget );
+        spinBox->setValue( m_info.defaultValue.asFloat() );
+        spinBox->setRange( m_info.minimum.asFloat(), 
+            m_info.maximum.asFloat() );
+        
+        connect( spinBox, SIGNAL( valueChanged( double ) ),
+            this, changeValue<double>( double ) );
+
+        vBoxLayout->addWidget( spinBox );
+      }
+      else
+      {
+        QSpinBox *spinBox = new QSpinBox( m_widget );
+        spinBox->setValue( m_info.defaultValue.asInt() );
+        spinBox->setRange( m_info.minimum.asInt(), 
+            m_info.maximum.asInt() );
+        
+        connect( spinBox, SIGNAL( valueChanged( int ) ),
+            this, changeValue<int>( int ) );
+
+        vBoxLayout->addWidget( spinBox );
+      }
+    }
+  }
+
+  // register itself as a widget related to info.
+  m_iter = m_instances.insertMulti( m_info, widgetWrapper );
+}
+
+
 /**
  * This function treats the special case of ControlT as a QCheckBox, where the
  * value must be converted to standard boolean element of {0,1} and where the
  * getter for the value is not equal to "value()".
  */
-template<>
-const GLuint WidgetWrapper::value() const
+template<> const GLuint WidgetWrapper::value() const
 {
   QCheckBox *widget = static_cast<QCheckBox*>( m_widget );
   GLuint value = widget->checkState();
@@ -242,19 +259,18 @@ const GLuint WidgetWrapper::value() const
 }
 
 
-template<class ControlT, class ParamT>
-void setValue(ParamT &value)
+template<class ControlT, class ParamT> void setValue(ParamT &value)
 {
   ControlT *widget = static_cast<ControlT*>( m_widget );
 
   widget->setValue( value );
 }
+
 /**
  * This function treats the special case of ControlT as a QCheckBox, where
  * there is no setValue() procedure, but a setCheckState() procedure instead.
  */
-template<class ParamT>
-void setValue(ParamT &value)
+template<class ParamT> void setValue(ParamT &value)
 {
   QCheckBox *widget = static_cast<QCheckBox*>( m_widget );
 
@@ -262,18 +278,17 @@ void setValue(ParamT &value)
 }
 
 
-template<class ControlT, class ParamT>
-void setRange(ParamT &min, ParamT &max)
+template<class ControlT, class ParamT> void setRange(ParamT &min, ParamT &max)
 {
   ControlT *widget = static_cast<ControlT*>( m_widget );
   widget->setRange(min, max);
 }
+
 /**
  * This function treats the special cas of ControlT as a QCheckBox, where there
  * is no range but a boolean state.
  */
-template<class ParamT>
-void setRange(ParamT &min, ParamT &max)
+template<class ParamT> void setRange(ParamT &min, ParamT &max)
 {
   QCheckBox *widget = static_cast<QCheckBox*>( m_widget );
   widget->setTristate( false );

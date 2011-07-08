@@ -16,8 +16,7 @@ namespace gui {
     /**
      * This function must be reimplemented by a ShaderParameterControl.
      */
-    template<class ParamT>
-    virtual void setParameterFromControls(ParamT* values) = 0;
+    /*template<class ParamT> virtual void setParameterFromControls(ParamT* values) = 0;*/
   };
   
 } // namespace gui

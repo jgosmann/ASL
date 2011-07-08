@@ -60,7 +60,7 @@ namespace gui
   };
 
   template<class ParamT>
-  ShaderParameterControl::setParameterFromControls(ParamT *values)
+  void ShaderParameterControl::setParameterFromControls(ParamT *values)
   {
     if( sizeof(values) == sizeof(ParamT*) ) // type singleValue
     {
