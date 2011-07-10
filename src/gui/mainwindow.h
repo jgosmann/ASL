@@ -18,10 +18,9 @@
 #include <asl/gltypeinfo.h>
 
 #include "glimagerenderer.h"
-#include "shaderparametercontrol.h"
+#include "shaderparametercontrolfactory.h"
 #include "shaderparametercontrolhandle.h"
-
-typedef class asl::AnnotatedGLShaderProgram Shader;
+#include "shaderparameterbundle.h"
 
 namespace Ui {
     class MainWindow;
@@ -29,38 +28,41 @@ namespace Ui {
 
 namespace gui
 {
-class MainWindow : public QMainWindow
-{
-    Q_OBJECT
+  typedef class asl::AnnotatedGLShaderProgram Shader;
 
-public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+  class MainWindow : public QMainWindow, UniformSetter
+  {
+      Q_OBJECT
 
-public slots:
-    void loadShaderDialog();
-    void loadImageFile();
-    void saveImage();
-    void showControls(QSharedPointer<Shader>);
+  public:
+      explicit MainWindow(QWidget *parent = 0);
+      ~MainWindow();
 
-signals:
-    void exitProgram();
+      void setUniforms( unsigned short int index );
 
-private:
-    Ui::MainWindow *ui;
+  public slots:
+      void loadShaderDialog();
+      void loadImageFile();
+      void saveImage();
+      void showControls( unsigned short int index );
 
-    QGLContext *m_sharedContext;
-    // this class connects the shaderList with the glImageViewer-widget
-    GLImageRenderer *m_glImageRenderer;
+  signals:
+      void exitProgram();
 
-    asl::DefaultASLProgramCompiler compiler;
+  private:
+      Ui::MainWindow *ui;
 
-    QHash< Shader*, ShaderParameterControl* > m_shaderParameterControls;
-    QList< QSharedPointer<Shader> > m_shaderProgramIDs;
+      QGLContext *m_sharedContext;
+      // this class connects the shaderList with the glImageViewer-widget
+      GLImageRenderer *m_glImageRenderer;
 
-private slots:
-    void emitExit();
-};
+      asl::DefaultASLProgramCompiler compiler;
+
+      ShaderParameterBundle m_shaderParameterBundle;
+
+  private slots:
+      void emitExit();
+  };
 }
 
 #endif // MAINWINDOW_H

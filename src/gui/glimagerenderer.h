@@ -14,52 +14,58 @@
 #include <algorithm>
 #include <iostream>
 
+#include "mainwindow.h"
+#include "uniformsetter.h"
+
 namespace gui {
 
 typedef class asl::AnnotatedGLShaderProgram Shader;
 
 class GLImageRenderer : public QObject
 {
-    Q_OBJECT
+  Q_OBJECT
 
-    public:
-        GLImageRenderer(QObject *parent);
-        ~GLImageRenderer();
+public:
+    GLImageRenderer(MainWindow *parent);
+    ~GLImageRenderer();
 
-        inline const QImage & getRenderedImage() const {
-            return m_renderedImage;
-        }
+    inline const QImage & getRenderedImage() const {
+        return m_renderedImage;
+    }
 
-    public slots:
-        /* FIXME: Give this function a void argument list and introduce a setter
-         * to set the shaderProgramList. This setter has to be called whenever
-         * the program's shader list is changed to set it to the new list. (Do
-         * not forget to call renderImage() afterwards. */
-        void renderImage(QList<QSharedPointer<Shader> > shaderProgramList);
-        void enableShaders(const int state);
-        void setSourceImage(const QImage &img);
+public slots:
+    /* FIXME: Give this function a void argument list and introduce a setter
+      * to set the shaderProgramList. This setter has to be called whenever
+      * the program's shader list is changed to set it to the new list. (Do
+      * not forget to call renderImage() afterwards. */
+    void renderImage();
+    void enableShaders(const int state);
 
-        inline void makeCurrent() { m_pixelBufferForContext.makeCurrent(); }
-        inline void doneCurrent() { m_pixelBufferForContext.doneCurrent(); }
+    void setShaderProgramList(QList< QSharedPointer<Shader> > shaderProgramList);
+    void setSourceImage(const QImage &img);
 
-    signals:
-        void updated(const QImage &image);
+    inline void makeCurrent() { m_pixelBufferForContext.makeCurrent(); }
+    inline void doneCurrent() { m_pixelBufferForContext.doneCurrent(); }
 
-    private:
-        void render();
-        void drawImageToTarget();
-        void applyShaders();
-        void drawTexture(GLuint tex);
+signals:
+    void updated(const QImage &image);
 
-        bool m_useShaderProgram;
+private:
+    UniformSetter *m_uniformSetter;
 
-        QList<QSharedPointer<Shader> > m_shaderProgramList;
+    void drawImageToTarget();
+    void applyShaders();
+    void drawTexture(GLuint tex);
 
-        QGLPixelBuffer m_pixelBufferForContext;
-        QPixmap m_sourceImage;
-        QImage m_renderedImage;
-        QGLFramebufferObject *m_source;
-        QGLFramebufferObject *m_target;
+    bool m_useShaderProgram;
+
+    QList<QSharedPointer<Shader> > m_shaderProgramList;
+
+    QGLPixelBuffer m_pixelBufferForContext;
+    QPixmap m_sourceImage;
+    QImage m_renderedImage;
+    QGLFramebufferObject *m_source;
+    QGLFramebufferObject *m_target;
 };
 }
 

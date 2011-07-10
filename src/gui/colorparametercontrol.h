@@ -1,10 +1,7 @@
-#ifndef SHADERPARAMETERCONTROL_H
-#define SHADERPARAMETERCONTROL_H
+#ifndef COLORPARAMETERCONTROL_H
+#define COLORPARAMETERCONTROL_H
 
-// for use of Q_FOREACH-macro
-#include <QtGlobal>
-
-#include <QObject>
+#include <QWidget>
 #include <QSharedPointer>
 
 #include "../asl/annotatedglshaderprogram.h"
@@ -20,27 +17,20 @@ namespace gui
   typedef class asl::AnnotatedGLShaderProgram Shader;
 
   template<class ControlT, class ParamT>
-  class ShaderParameterControl : public ShaderParameterControlHandle
+  class ColorParameterControl : public ShaderParameterControlHandle
   {
   
   public:
-    ShaderParameterControl(asl::ShaderParameterInfo info, QObject *listener);
-    ~ShaderParameterControl();
-
-    QWidget* widget();
+    ColorParameterControl(QObject *listener);
 
     void setParameterFromControls(QSharedPointer< Shader > shaderProgram);
 
   private:
     WidgetWrapper<ControlT, ParamT> **m_controls;
 
-    unsigned short int m_rows, m_cols;
-
     asl::ShaderParameterInfo m_info;
   };
 
-  #include "shaderparametercontrol.cpp"
-
 } // namespace gui
 
-#endif /* SHADERPARAMETERCONTROL_H */
+#endif /* COLORPARAMETERCONTROL_H */

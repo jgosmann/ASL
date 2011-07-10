@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-    m_glImageRenderer = new GLImageRenderer(this);
+    m_glImageRenderer = new GLImageRenderer( this );
 
     connect(ui->spinBox_Zoom, SIGNAL(valueChanged(int)), 
             ui->glDisplay, SLOT(setImageZoom(int)));
@@ -54,6 +54,16 @@ MainWindow::~MainWindow()
     delete m_glImageRenderer;
 }
 
+void MainWindow::setUniforms( unsigned short int index )
+{
+  foreach( QSharedPointer< ShaderParameterControlHandle > control,
+      m_shaderParameterBundle.getShaderParameterControls( index ) )
+  {
+    control->setParameterFromControls( 
+        m_shaderParameterBundle.getShaderProgram( index ) );
+  }
+}
+
 void MainWindow::emitExit()
 {
     emit exitProgram();
@@ -63,15 +73,36 @@ void MainWindow::loadShaderDialog()
 {
     QString s = QFileDialog::getOpenFileName(this,"Load Shader");
     std::cout << s.toStdString() << std::endl;
-    if(s != QString::null){
+    if(s != QString::null)
+    {
         m_glImageRenderer->makeCurrent();
         Shader* shader = compiler.compileFile(QGLShader::Fragment,s);
         m_glImageRenderer->doneCurrent();
-        if(compiler.success()){
-            QSharedPointer<Shader> shaderPointer = QSharedPointer<Shader>(shader);
-            ui->listView_ShaderList->addShader(shaderPointer);
 
-        } else {
+        if(compiler.success())
+        {
+            QSharedPointer<Shader> shaderPointer = 
+                QSharedPointer<Shader>( shader );
+
+            QWidget *controlWidget = new QWidget();
+            QList< QSharedPointer< ShaderParameterControlHandle > > 
+                shaderParameterControls;
+
+            ShaderParameterControlFactory::generateControls( 
+                QSharedPointer< Shader >(shaderPointer), 
+                qobject_cast< QWidget* >( m_glImageRenderer ),
+                *controlWidget, shaderParameterControls );
+
+            m_shaderParameterBundle.append( shaderPointer, 
+                shaderParameterControls );
+
+            QScrollArea *scrollArea = new QScrollArea();
+            scrollArea->setWidget( controlWidget );
+
+            ui->stackedWidget_ShaderOptions->addWidget( scrollArea );
+        } 
+        else 
+        {
             QMessageBox::warning(this, tr("An Error accured while compiling"),
                                            compiler.log(),
                                            QMessageBox::Ok);
@@ -98,45 +129,8 @@ void MainWindow::saveImage()
     }
 }
 
-void MainWindow::showControls(QSharedPointer<Shader> aslShaderProgram)
+void MainWindow::showControls( unsigned short int index )
 {
-  if( !m_shaderProgramIDs.contains( aslShaderProgram ) )
-  {
-    m_shaderProgramIDs.append( aslShaderProgram );
-    std::cout << "appended " << aslShaderProgram.data() << std::endl;
-
-    QScrollArea *scrollArea = new QScrollArea();
-
-    if( aslShaderProgram->parameters().empty() )
-    {
-      std::cout << "no parameters to show!" << std::endl;
-      scrollArea->setWidget( new QLabel( 
-            tr("No uniforms available for this shader!") ) );
-    }
-    else
-    {
-      foreach(asl::ShaderParameterInfo info, aslShaderProgram->parameters())
-      {
-        std::cout << "added control for " << qPrintable(info.identifier) << std::endl;
-        ShaderParameterControl *control = new ShaderParameterControl( info, 
-            aslShaderProgram);
-
-        scrollArea->setWidget( &control->widget() );
-
-        m_shaderParameterControls.insertMulti( aslShaderProgram.data(), control);
-      }
-    }
-
-    int index = ui->stackedWidget_ShaderOptions->addWidget( scrollArea );
-    assert(index == m_shaderProgramIDs.indexOf( 
-        aslShaderProgram ) );
-  }
-  else
-  {
-    std::cout << "Already in list! Set current index to "
-      << m_shaderProgramIDs.indexOf( aslShaderProgram ) << std::endl;
-    ui->stackedWidget_ShaderOptions->setCurrentIndex( 
-      m_shaderProgramIDs.indexOf( aslShaderProgram ) );
-    ui->stackedWidget_ShaderOptions->show();
-  }
+  ui->stackedWidget_ShaderOptions->setCurrentIndex( index );
+  ui->stackedWidget_ShaderOptions->show();
 }

@@ -5,12 +5,13 @@
 
 using namespace gui;
 
-GLImageRenderer::GLImageRenderer(QObject* parent)
+GLImageRenderer::GLImageRenderer(MainWindow *parent)
     : QObject(parent),
-    m_useShaderProgram(true),
-    m_pixelBufferForContext(1, 1),
-    m_source(NULL),
-    m_target(NULL)
+      m_useShaderProgram(true),
+      m_pixelBufferForContext(1, 1),
+      m_source(NULL),
+      m_target(NULL),
+      m_uniformSetter( parent )
 {
 }
 
@@ -66,6 +67,11 @@ void GLImageRenderer::applyShaders() {
         shaderProgram->setUniformValue("tex", 0);
         shaderProgram->setUniformValue("texWidth", m_sourceImage.width());
         shaderProgram->setUniformValue("texHeight", m_sourceImage.height());
+
+        // apply all custom uniforms
+        m_uniformSetter->setUniforms( m_shaderProgramList.indexOf( 
+              shaderProgram ) );
+
         drawTexture(sourceTexId);
         shaderProgram->release();
         m_target->release();
@@ -98,14 +104,14 @@ void GLImageRenderer::drawTexture(GLuint tex){
 
 //-- SLOTS --------------------------------------------------------------------
 
-/** TODO: connect this one to your shaderList-Widget! */
-void GLImageRenderer::renderImage(QList<QSharedPointer<Shader> > shaderProgramList)
+
+void GLImageRenderer::setShaderProgramList(QList< QSharedPointer<Shader> > shaderProgramList)
 {
+  m_shaderProgramList = shaderProgramList;
 
-    m_shaderProgramList = shaderProgramList;
-
-    render();
+  renderImage();
 }
+
 
 void GLImageRenderer::enableShaders(const int state)
 {
@@ -116,8 +122,9 @@ void GLImageRenderer::enableShaders(const int state)
         m_useShaderProgram = false;
     }
 
-    render();
+    renderImage();
 }
+
 
 void GLImageRenderer::setSourceImage(const QImage &img)
 {
@@ -151,6 +158,6 @@ void GLImageRenderer::setSourceImage(const QImage &img)
 
     m_pixelBufferForContext.doneCurrent();
 
-    render();
+    renderImage();
 }
 

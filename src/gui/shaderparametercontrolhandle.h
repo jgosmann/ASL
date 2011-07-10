@@ -5,18 +5,23 @@
 
 namespace gui {
 
-  /**
-   *  Interface. FIXME Needful anymore?
-   */
+  typedef class asl::AnnotatedGLShaderProgram Shader;
+
   class ShaderParameterControlHandle
   {
   public:
     virtual ~ShaderParameterControlHandle() {}
 
     /**
+     * This getter puts all controls widgets into one grid-layout that will be 
+     * returned in a QWidget.
+     */
+    virtual QWidget* widget() = 0;
+
+    /**
      * This function must be reimplemented by a ShaderParameterControl.
      */
-    /*template<class ParamT> virtual void setParameterFromControls(ParamT* values) = 0;*/
+    virtual void setParameterFromControls(QSharedPointer< Shader > shaderProgram)=0;
   };
   
 } // namespace gui
