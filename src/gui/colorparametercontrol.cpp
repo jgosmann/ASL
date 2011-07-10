@@ -68,5 +68,6 @@ void ColorParameterControl::showColorDialog()
 void ColorParameterControl::setParameterFromControls(
     QSharedPointer< Shader > shaderProgram )
 {
-  shaderProgram->setUniformValueArray( m_info.identifier, m_colorArray, 1, 3 );
+  shaderProgram->setUniformValueArray( qPrintable( m_info.identifier ), 
+      m_colorArray , 1, 3 );
 }
