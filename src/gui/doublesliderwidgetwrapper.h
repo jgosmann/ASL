@@ -10,30 +10,35 @@
 namespace gui
 {
 
-  class DoubleSliderWidgetWrapper : WidgetWrapper< QSlider, GLfloat >
+  class DoubleSliderWidgetWrapper : WidgetWrapper<  GLfloat >
   {
-    Q_OBJECT
-
   public:
     DoubleSliderWidgetWrapper() {}
     ~DoubleSliderWidgetWrapper() {}
 
     GLfloat value()
     {
-      GLfloat position = static_cast<GLfloat>( value() ) 
-          * pow( 10.0f, -m_precision_);
-      return static_cast<GLfloat>( position );
+        // FIXME
+        return 0;
+      //GLfloat position = static_cast<GLfloat>( value() ) 
+          //* pow( 10.0f, -m_precision_);
+      //return static_cast<GLfloat>( position );
     }
 
     void setValue(GLfloat value)
     {
-      setSliderPosition( static_cast<int>( value * pow( 10.0f, m_precision_ ) ) );
+        // FIXME
+        Q_UNUSED(value);
+      //setSliderPosition( static_cast<int>( value * pow( 10.0f, m_precision_ ) ) );
     }
 
     void setRange(GLfloat min, GLfloat max)
     {
-      setRange( static_cast<int>( min * pow( 10.0f, m_precision_ ) ), 
-          static_cast<int> ( max * pow( 10.0f, m_precision_ ) ) );
+        // FIXME
+        Q_UNUSED(min);
+        Q_UNUSED(max);
+      //setRange( static_cast<int>( min * pow( 10.0f, m_precision_ ) ), 
+          //static_cast<int> ( max * pow( 10.0f, m_precision_ ) ) );
     }
 
   private:

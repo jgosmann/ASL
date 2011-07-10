@@ -3,6 +3,7 @@ SOURCES += \
     src/gui/glimagerenderer.cpp \
     src/gui/glimageviewer.cpp \
     src/gui/shaderparameterbundle.cpp \
+    src/gui/shaderparametercontrolfactory.cpp \
     src/gui/colorparametercontrol.cpp \
     src/gui/shaderlistview.cpp \
     src/gui/shaderitemlist.cpp \
@@ -20,6 +21,7 @@ HEADERS  += \
     src/gui/doublesliderwidgetwrapper.h \
     src/gui/sliderwidgetwrapper.h \
     src/gui/shaderparametercontrol.h \
+    src/gui/shaderparametercontrolfactory.h \
     src/gui/colorparametercontrol.h \
     src/gui/shaderparametercontrol.cpp \ # template class, do not compile as cpp
     src/gui/shaderparametercontrolhandle.h \

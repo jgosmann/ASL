@@ -1,11 +1,9 @@
 #ifndef SHADERPARAMETERCONTROL_H
 #define SHADERPARAMETERCONTROL_H
 
-// for use of Q_FOREACH-macro
-#include <QtGlobal>
-
 #include <QObject>
 #include <QSharedPointer>
+#include <QWidget>
 
 #include "../asl/annotatedglshaderprogram.h"
 #include "../asl/shaderparameterinfo.h"
@@ -32,15 +30,15 @@ namespace gui
     void setParameterFromControls(QSharedPointer< Shader > shaderProgram);
 
   private:
-    WidgetWrapper<ControlT, ParamT> **m_controls;
+    WidgetWrapper<ParamT> **m_controls;
 
     unsigned short int m_rows, m_cols;
 
     asl::ShaderParameterInfo m_info;
   };
 
-  #include "shaderparametercontrol.cpp"
-
 } // namespace gui
+
+#include "shaderparametercontrol.cpp"
 
 #endif /* SHADERPARAMETERCONTROL_H */

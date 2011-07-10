@@ -20,6 +20,7 @@
 #include "shaderparametercontrolfactory.h"
 #include "shaderparametercontrolhandle.h"
 #include "shaderparameterbundle.h"
+#include "uniformsetter.h"
 
 namespace Ui {
     class MainWindow;
@@ -29,7 +30,7 @@ namespace gui
 {
   typedef class asl::AnnotatedGLShaderProgram Shader;
 
-  class MainWindow : public QMainWindow, UniformSetter
+  class MainWindow : public QMainWindow, public gui::UniformSetter
   {
       Q_OBJECT
 

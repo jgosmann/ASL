@@ -10,38 +10,40 @@
 namespace gui
 {
 
-  class CheckBoxWidgetWrapper : WidgetWrapper< QCheckBox, GLuint >
+  class CheckBoxWidgetWrapper : WidgetWrapper< GLuint >
   {
-    Q_OBJECT
-
   public:
     CheckBoxWidgetWrapper() {}
     ~CheckBoxWidgetWrapper() {}
 
     const GLuint value() const
     {
-      GLuint state;
-      switch( checkState() )
-      {
-      case Qt::Unchecked:
-        state = 0; // false
-        break;
-      case Qt::PartiallyChecked:
-        // see below
-      case Qt::Checked:
-        state = 1; // true
-        break;
-      }
+        //FIXME
+      //GLuint state;
+      //switch( checkState() )
+      //{
+      //case Qt::Unchecked:
+        //state = 0; // false
+        //break;
+      //case Qt::PartiallyChecked:
+        //// see below
+      //case Qt::Checked:
+        //state = 1; // true
+        //break;
+      //}
 
-      return state;
+      //return state;
+      return 0;
     }
 
     void setValue(GLuint value)
     {
-      if( value == 1 ) // true
-        setCheckState( Qt::Checked );
-      else // false
-        setCheckState( Qt::Unchecked );
+        //FIXME
+      //if( value == 1 ) // true
+        //setCheckState( Qt::Checked );
+      //else // false
+        //setCheckState( Qt::Unchecked );
+        Q_UNUSED(value);
     }
 
     void setRange(GLuint min, GLuint max)

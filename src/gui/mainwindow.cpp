@@ -13,7 +13,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-    m_glImageRenderer = new GLImageRenderer( this );
+    // FIXME
+    m_glImageRenderer = new GLImageRenderer(  );
 
     connect(ui->spinBox_Zoom, SIGNAL(valueChanged(int)), 
             ui->glDisplay, SLOT(setImageZoom(int)));
@@ -71,6 +72,9 @@ void MainWindow::emitExit()
 
 void MainWindow::loadShaderDialog()
 {
+    // FIXME: Could use dependency injection, but this is not the most urgent
+    // issue.
+    ShaderParameterControlFactory factory;
     QString s = QFileDialog::getOpenFileName(this,"Load Shader");
     std::cout << s.toStdString() << std::endl;
     if(s != QString::null)
@@ -88,7 +92,7 @@ void MainWindow::loadShaderDialog()
             QList< QSharedPointer< ShaderParameterControlHandle > > 
                 shaderParameterControls;
 
-            ShaderParameterControlFactory::generateControls( 
+            factory.generateControls( 
                 QSharedPointer< Shader >(shaderPointer), 
                 qobject_cast< QWidget* >( m_glImageRenderer ),
                 *controlWidget, shaderParameterControls );

@@ -5,13 +5,14 @@
 
 using namespace gui;
 
-GLImageRenderer::GLImageRenderer(const MainWindow *parent)
-    : QObject( parent ),
+//FIXME
+GLImageRenderer::GLImageRenderer()
+    : QObject( NULL ), // parent ),
+      m_uniformSetter( NULL ), // parent )
       m_useShaderProgram( true ),
       m_pixelBufferForContext( 1, 1 ),
       m_source( NULL ),
-      m_target( NULL ),
-      m_uniformSetter( parent )
+      m_target( NULL )
 {
 }
 
@@ -109,7 +110,7 @@ void GLImageRenderer::setShaderProgramList(QList< QSharedPointer<Shader> > shade
 {
   m_shaderProgramList = shaderProgramList;
 
-  renderImage();
+  render();
 }
 
 
@@ -122,7 +123,7 @@ void GLImageRenderer::enableShaders(const int state)
         m_useShaderProgram = false;
     }
 
-    renderImage();
+    render();
 }
 
 
@@ -158,6 +159,6 @@ void GLImageRenderer::setSourceImage(const QImage &img)
 
     m_pixelBufferForContext.doneCurrent();
 
-    renderImage();
+    render();
 }
 

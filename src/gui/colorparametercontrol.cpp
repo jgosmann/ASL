@@ -1,3 +1,10 @@
+
+#include <QLabel>
+
+#include "colorparametercontrol.h"
+
+using namespace gui;
+
 ColorParameterControl::ColorParameterControl(asl::ShaderParameterInfo &info, 
     QObject *listener)
   : m_info( info )
@@ -68,6 +75,8 @@ void ColorParameterControl::showColorDialog()
 void ColorParameterControl::setParameterFromControls(
     QSharedPointer< Shader > shaderProgram )
 {
-  shaderProgram->setUniformValueArray( qPrintable( m_info.identifier ), 
-      m_colorArray , 1, 3 );
+    Q_UNUSED(shaderProgram);
+    //FIXME
+  //shaderProgram->setUniformValueArray( qPrintable( m_info.identifier ), 
+      //m_colorArray , 1, 3 );
 }

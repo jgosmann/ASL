@@ -9,27 +9,29 @@ namespace gui
 {
 
   template<class ParamT>
-  class SliderWidgetWrapper : WidgetWrapper< QSlider, ParamT >
+  class SliderWidgetWrapper : WidgetWrapper< ParamT >
   {
-    Q_OBJECT
-
   public:
     SliderWidgetWrapper() {}
     ~SliderWidgetWrapper() {}
 
     ParamT value()
     {
-      return static_cast<ParamT>( value() );
+        // FIXME
+        return 0;
+      //return static_cast<ParamT>( value() );
     }
 
     void setValue(ParamT value)
     {
-      setValue( static_cast<int>( value ) );
+        // FIXME
+      //setValue( static_cast<int>( value ) );
     }
 
     void setRange(ParamT min, ParamT max)
     {
-      setRange( static_cast<int>( min ), static_cast<int> ( max ) );
+        // FIXME
+      //setRange( static_cast<int>( min ), static_cast<int> ( max ) );
     }
 
   };

@@ -1,12 +1,20 @@
-#include "shaderparametercontrolfactory.h"
 
+#include <QLabel>
+
+#include "shaderparametercontrolfactory.h"
+#include "sliderwidgetwrapper.h"
+#include "spinboxwidgetwrapper.h"
+
+#include "../asl/gltypeinfo.h"
+
+using namespace asl;
 using namespace gui;
 
-static void ShaderParameterControlFactory::generateControls( 
+void ShaderParameterControlFactory::generateControls( 
     const QSharedPointer< Shader > shaderProgram, QWidget *listener,
     QWidget &widget, 
     QList< QSharedPointer< ShaderParameterControlHandle > > 
-        &shaderParameterControls );
+        &shaderParameterControls )
 {
   QVBoxLayout *container = new QVBoxLayout();
 
@@ -51,88 +59,89 @@ static void ShaderParameterControlFactory::generateControls(
   widget.setLayout( container );
 }
 
-
-template<ParamT>
-static QSharedPointer< ShaderParameterControlHandle > 
-    ShaderParameterControlFactory::createControlType<ParamT>( QWidget *listener,
+// FIXME
+template<class ParamT>
+QSharedPointer< ShaderParameterControlHandle > 
+    ShaderParameterControlFactory::createControlType( QWidget *listener,
         asl::ShaderParameterInfo &info )
 {
-  foreach( QString control, info.preferredUIControls )
-  {
-    if( control == "slider" )
-    {
-      return QSharedPointer< ShaderParameterControlHandle >(
-          new ShaderParameterControl<SliderWidgetWrapper, ParamT>( 
-              info, listener ) );
-    } 
-    else if( control == "spinbox" )
-    {
-      return QSharedPointer< ShaderParameterControlHandle >(
-          new ShaderParameterControl<SpinBoxWidgetWrapper, ParamT>( 
-              info, listener ) );
-    }
-  }
+  //foreach( QString control, info.preferredUIControls )
+  //{
+    //if( control == "slider" )
+    //{
+      //return QSharedPointer< ShaderParameterControlHandle >(
+          //new ShaderParameterControl<SliderWidgetWrapper<ParamT>, ParamT>( 
+              //info, listener ) );
+    //} 
+    //else if( control == "spinbox" )
+    //{
+      //return QSharedPointer< ShaderParameterControlHandle >(
+          //new ShaderParameterControl<SpinBoxWidgetWrapper<ParamT>, ParamT>( 
+              //info, listener ) );
+    //}
+  //}
   // default case
-  return QSharedPointer< ShaderParameterControlHandle >(
-      new ShaderParameterControl< SpinBoxWidgetWrapper, ParamT>( 
-          info, listener ) );
+  //return QSharedPointer< ShaderParameterControlHandle >(
+      //new ShaderParameterControl< SpinBoxWidgetWrapper<ParamT>, ParamT>( 
+          //info, listener ) );
+return QSharedPointer< ShaderParameterControlHandle >(NULL);
 }
 
 
-template<>
-static QSharedPointer< ShaderParameterControlHandle > 
-    ShaderParameterControlFactory::createControlType<GLuint>( QWidget *listener,
-        asl::ShaderParameterInfo &info )
-{
-  foreach( QString control, info.preferredUIControls )
-  {
-    if( control == "slider" )
-    {
-      return QSharedPointer< ShaderParameterControlHandle >(
-          new ShaderParameterControl<SliderWidgetWrapper, GLuint>( 
-              info, listener ) );
-    } 
-    else if( control == "spinbox" )
-    {
-      return QSharedPointer< ShaderParameterControlHandle >(
-          new ShaderParameterControl<SpinBoxWidgetWrapper, GLuint>( 
-              info, listener ) );
-    }
-  }
-  // default case
-  return QSharedPointer< ShaderParameterControlHandle >(
-      new ShaderParameterControl< CheckBoxWidgetWrapper, GLuint >( 
-          info, listener ) );
-}
+//template<>
+//QSharedPointer< ShaderParameterControlHandle > 
+    //ShaderParameterControlFactory::createControlType<GLuint>( QWidget *listener,
+        //asl::ShaderParameterInfo &info )
+//{
+  //foreach( QString control, info.preferredUIControls )
+  //{
+    //if( control == "slider" )
+    //{
+      //return QSharedPointer< ShaderParameterControlHandle >(
+          //new ShaderParameterControl<SliderWidgetWrapper, GLuint>( 
+              //info, listener ) );
+    //} 
+    //else if( control == "spinbox" )
+    //{
+      //return QSharedPointer< ShaderParameterControlHandle >(
+          //new ShaderParameterControl<SpinBoxWidgetWrapper, GLuint>( 
+              //info, listener ) );
+    //}
+  //}
+  //// default case
+  //return QSharedPointer< ShaderParameterControlHandle >(
+      //new ShaderParameterControl< CheckBoxWidgetWrapper, GLuint >( 
+          //info, listener ) );
+//}
 
 
-template<>
-static QSharedPointer< ShaderParameterControlHandle > 
-    ShaderParameterControlFactory::createControlType<GLfloat>( QWidget *listener,
-        asl::ShaderParameterInfo &info )
-{
-  foreach( QString control, info.preferredUIControls )
-  {
-    if( control == "slider" )
-    {
-      return QSharedPointer< ShaderParameterControlHandle >( 
-          new ShaderParameterControl< DoubleSliderWidgetWrapper, GLfloat >( 
-              info, listener ) );
-    } 
-    else if( control == "spinbox" )
-    {
-      return QSharedPointer< ShaderParameterControlHandle >( 
-          new ShaderParameterControl< DoubleSpinBoxWidgetWrapper, GLfloat >( 
-              info, listener ) );
-    }
-    else if( control == "color" )
-    {
-      // very special case
-      //return new ColorParameterControl( info, listener );
-    }
-  }
-  // default case
-  return QSharedPointer< ShaderParameterControlHandle >( 
-      new ShaderParameterControl< DoubleSpinBoxWidgetWrapper, GLfloat >( 
-        info, listener ) );
-}
+//template<>
+//QSharedPointer< ShaderParameterControlHandle > 
+    //ShaderParameterControlFactory::createControlType<GLfloat>( QWidget *listener,
+        //asl::ShaderParameterInfo &info )
+//{
+  //foreach( QString control, info.preferredUIControls )
+  //{
+    //if( control == "slider" )
+    //{
+      //return QSharedPointer< ShaderParameterControlHandle >( 
+          //new ShaderParameterControl< DoubleSliderWidgetWrapper, GLfloat >( 
+              //info, listener ) );
+    //} 
+    //else if( control == "spinbox" )
+    //{
+      //return QSharedPointer< ShaderParameterControlHandle >( 
+          //new ShaderParameterControl< DoubleSpinBoxWidgetWrapper, GLfloat >( 
+              //info, listener ) );
+    //}
+    //else if( control == "color" )
+    //{
+      //// very special case
+      ////return new ColorParameterControl( info, listener );
+    //}
+  //}
+  //// default case
+  //return QSharedPointer< ShaderParameterControlHandle >( 
+      //new ShaderParameterControl< DoubleSpinBoxWidgetWrapper, GLfloat >( 
+        //info, listener ) );
+//}

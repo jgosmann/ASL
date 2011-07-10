@@ -2,11 +2,11 @@
 
 using namespace gui;
 
-ShaderParameterBundle::append(QSharedPointer< Shader > shaderProgram,
+void ShaderParameterBundle::append(QSharedPointer< Shader > shaderProgram,
     QList< QSharedPointer< ShaderParameterControlHandle > > 
         &shaderParameterControls )
 {
-  shaderPrograms.append( shaderProgram );
+  m_shaderPrograms.append( shaderProgram );
   shaderParameterControls.append( shaderParameterControls );
 }
 

@@ -21,7 +21,7 @@ namespace gui
 {
   typedef class asl::AnnotatedGLShaderProgram Shader;
 
-  class ColorParameterControl : public ShaderParameterControlHandle, QObject
+  class ColorParameterControl : public QObject, public ShaderParameterControlHandle
   {
     Q_OBJECT
   
@@ -49,9 +49,6 @@ namespace gui
   signals:
     void colorChanged();
   };
-
-  
-  #include "colorparametercontrol.cpp"
 
 } // namespace gui
 

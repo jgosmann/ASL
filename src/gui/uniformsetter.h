@@ -3,15 +3,13 @@
 
 namespace gui
 {
-  typedef class asl::AnnotatedGLShaderProgram Shader;
-  
   class UniformSetter
   {
   
   public:
     virtual ~UniformSetter() {}
 
-    virtual void setUniforms( unsigned short int );
+    virtual void setUniforms( unsigned short int index ) = 0;
 
   };
 

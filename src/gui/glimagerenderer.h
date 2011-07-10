@@ -14,7 +14,6 @@
 #include <algorithm>
 #include <iostream>
 
-#include "mainwindow.h"
 #include "uniformsetter.h"
 
 namespace gui {
@@ -26,7 +25,8 @@ class GLImageRenderer : public QObject
   Q_OBJECT
 
 public:
-    GLImageRenderer(const MainWindow *parent);
+    //GLImageRenderer(const MainWindow *parent);
+    GLImageRenderer();
     ~GLImageRenderer();
 
     inline const QImage & getRenderedImage() const {
@@ -38,7 +38,7 @@ public slots:
       * to set the shaderProgramList. This setter has to be called whenever
       * the program's shader list is changed to set it to the new list. (Do
       * not forget to call renderImage() afterwards. */
-    void renderImage();
+    void render();
     void enableShaders(const int state);
 
     void setShaderProgramList(QList< QSharedPointer<Shader> > shaderProgramList);
@@ -51,15 +51,15 @@ signals:
     void updated(const QImage &image);
 
 private:
-    UniformSetter *m_uniformSetter;
-
     void drawImageToTarget();
     void applyShaders();
     void drawTexture(GLuint tex);
 
+    UniformSetter *m_uniformSetter;
     bool m_useShaderProgram;
 
     QList<QSharedPointer<Shader> > m_shaderProgramList;
+
 
     QGLPixelBuffer m_pixelBufferForContext;
     QPixmap m_sourceImage;

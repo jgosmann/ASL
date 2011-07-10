@@ -1,5 +1,8 @@
+
+#include <QGridLayout>
+
 template<class ControlT, class ParamT>
-ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(asl::ShaderParameterInfo &info,
+gui::ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(asl::ShaderParameterInfo &info,
     QObject *listener)
   : m_rows( info.type->rowDimensionality() ),
     m_cols( info.type->columnDimensionality() ),
@@ -21,7 +24,7 @@ ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(asl::ShaderPara
 }
 
 template<class ControlT, class ParamT>
-ShaderParameterControl<ControlT, ParamT>::~ShaderParameterControl()
+gui::ShaderParameterControl<ControlT, ParamT>::~ShaderParameterControl()
 {
   delete [] m_controls;
   m_controls = 0;
@@ -32,7 +35,7 @@ ShaderParameterControl<ControlT, ParamT>::~ShaderParameterControl()
  * to a column-major array into a QGridLayout.
  */
 template<class ControlT, class ParamT>
-QWidget* ShaderParameterControl<ControlT, ParamT>::widget()
+QWidget* gui::ShaderParameterControl<ControlT, ParamT>::widget()
 {
   QWidget *widget = new QWidget();
   QGridLayout *gridLayout = new QGridLayout();
@@ -54,7 +57,7 @@ QWidget* ShaderParameterControl<ControlT, ParamT>::widget()
 
 
 template<class ControlT, class ParamT>
-void ShaderParameterControl<ControlT, ParamT>::setParameterFromControls(
+void gui::ShaderParameterControl<ControlT, ParamT>::setParameterFromControls(
     QSharedPointer< Shader > shaderProgram )
 {
   ParamT values[] = new ParamT[ m_rows*m_cols ];
@@ -69,22 +72,23 @@ void ShaderParameterControl<ControlT, ParamT>::setParameterFromControls(
       m_rows*m_cols);
 }
 
-template<class ControlT>
-void ShaderParameterControl<ControlT, GLfloat>::setParameterFromControls(
-    QSharedPointer< Shader > shaderProgram )
-{
-  GLfloat values[] = new GLfloat[ m_rows*m_cols ];
+// FIXME
+//template<class ControlT, GLfloat>
+//void ShaderParameterControl<ControlT, GLfloat>::setParameterFromControls(
+    //QSharedPointer< Shader > shaderProgram )
+//{
+  //GLfloat values[] = new GLfloat[ m_rows*m_cols ];
 
-  unsigned short int i = 0;
-  foreach( WidgetWrapper *widget, m_controls )
-  {
-    values[ i++ ] = widget->value();
-  }
+  //unsigned short int i = 0;
+  //foreach( WidgetWrapper *widget, m_controls )
+  //{
+    //values[ i++ ] = widget->value();
+  //}
 
   /*
    * The uniform-setter for the type GLfloat is a special case that needs both
    * dimensions.
    */
-  shaderProgram->setUniformValueArray( m_info.identifier, values, m_cols,
-      m_rows);
-}
+  //shaderProgram->setUniformValueArray( m_info.identifier, values, m_cols,
+      //m_rows);
+//}

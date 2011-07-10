@@ -5,11 +5,11 @@
 namespace gui
 {
 
-  template<class ControlT, class ParamT>
-  class WidgetWrapper : public ControlT
+  template<class ParamT>
+  class WidgetWrapper
   {
   public:
-    virtual ~WidgetWrapper<ControlT, ParamT>() {}
+    virtual ~WidgetWrapper() {}
 
     virtual const ParamT value() const =0;
 

@@ -1,9 +1,11 @@
 #ifndef SHADERPARAMETERCONTROLFACTORY_H
 #define SHADERPARAMETERCONTROLFACTORY_H
 
+#include <QList>
+#include <QObject>
+#include <QString>
 #include <QWidget>
 #include <QVBoxLayout>
-#include <QList>
 
 #include "../asl/shaderparameterinfo.h"
 
@@ -18,17 +20,22 @@
 
 namespace gui {
 
-  class ShaderParameterControlFactory
+  class ShaderParameterControlFactory : public QObject
   {
+      Q_OBJECT
+
   public:
-    static void generateControls( const QSharedPointer< Shader > shaderProgram, 
+    void generateControls( const QSharedPointer< Shader > shaderProgram, 
         QWidget *listener, QWidget &widget, 
         QList< QSharedPointer< ShaderParameterControlHandle > > 
             &shaderParameterControls );
 
   private:
+    // FIXME just a quickfix
+    QString tr(const QString &str) { return tr(qPrintable(str)); }
+
     template<class ParamT>
-    static QSharedPointer< ShaderParameterControlHandle > createControlType(
+    QSharedPointer< ShaderParameterControlHandle > createControlType(
         QWidget *listener, asl::ShaderParameterInfo &info );
   };
 
