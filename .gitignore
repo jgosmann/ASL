@@ -8,10 +8,13 @@ doc/api
 tags
 *.aux
 *.log
+*.nav
 *.out
 *.pdf
+*.snm
 *.toc
 *.user
+*.vrb
 *.o
 moc_*.cpp
 *_lex.cpp
