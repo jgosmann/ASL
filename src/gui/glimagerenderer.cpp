@@ -5,12 +5,12 @@
 
 using namespace gui;
 
-GLImageRenderer::GLImageRenderer(MainWindow *parent)
-    : QObject(parent),
-      m_useShaderProgram(true),
-      m_pixelBufferForContext(1, 1),
-      m_source(NULL),
-      m_target(NULL),
+GLImageRenderer::GLImageRenderer(const MainWindow *parent)
+    : QObject( parent ),
+      m_useShaderProgram( true ),
+      m_pixelBufferForContext( 1, 1 ),
+      m_source( NULL ),
+      m_target( NULL ),
       m_uniformSetter( parent )
 {
 }

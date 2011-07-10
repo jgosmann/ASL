@@ -2,6 +2,11 @@
 #define COLORPARAMETERCONTROL_H
 
 #include <QWidget>
+#include <QPushButton>
+#include <QColorDialog>
+#include <QColor>
+#include <QString>
+#include <QVBoxLayout>
 #include <QSharedPointer>
 
 #include "../asl/annotatedglshaderprogram.h"
@@ -16,20 +21,37 @@ namespace gui
 {
   typedef class asl::AnnotatedGLShaderProgram Shader;
 
-  template<class ControlT, class ParamT>
-  class ColorParameterControl : public ShaderParameterControlHandle
+  class ColorParameterControl : public ShaderParameterControlHandle, QObject
   {
+    Q_OBJECT
   
   public:
-    ColorParameterControl(QObject *listener);
+    ColorParameterControl(asl::ShaderParameterInfo &info, QObject *listener);
+    ~ColorParameterControl();
+
+    QWidget* widget()
+    {
+      return m_widget;
+    }
 
     void setParameterFromControls(QSharedPointer< Shader > shaderProgram);
 
   private:
-    WidgetWrapper<ControlT, ParamT> **m_controls;
+    GLfloat *m_colorArray;
+
+    QWidget *m_widget;
 
     asl::ShaderParameterInfo m_info;
+
+  private slots:
+    void showColorDialog();
+
+  signals:
+    void colorChanged();
   };
+
+  
+  #include "colorparametercontrol.cpp"
 
 } // namespace gui
 

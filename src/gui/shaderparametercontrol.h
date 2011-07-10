@@ -24,7 +24,7 @@ namespace gui
   {
   
   public:
-    ShaderParameterControl(asl::ShaderParameterInfo info, QObject *listener);
+    ShaderParameterControl(asl::ShaderParameterInfo &info, QObject *listener);
     ~ShaderParameterControl();
 
     QWidget* widget();

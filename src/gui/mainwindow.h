@@ -3,7 +3,6 @@
 
 #include <iostream>
 
-#include <QHash>
 #include <QMainWindow>
 #include <QCoreApplication>
 #include <QScrollArea>

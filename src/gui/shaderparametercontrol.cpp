@@ -1,5 +1,5 @@
 template<class ControlT, class ParamT>
-ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(asl::ShaderParameterInfo info,
+ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(asl::ShaderParameterInfo &info,
     QObject *listener)
   : m_rows( info.type->rowDimensionality() ),
     m_cols( info.type->columnDimensionality() ),
@@ -23,7 +23,8 @@ ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(asl::ShaderPara
 template<class ControlT, class ParamT>
 ShaderParameterControl<ControlT, ParamT>::~ShaderParameterControl()
 {
-  delete m_controls;
+  delete [] m_controls;
+  m_controls = 0;
 }
 
 /*
@@ -58,10 +59,10 @@ void ShaderParameterControl<ControlT, ParamT>::setParameterFromControls(
 {
   ParamT values[] = new ParamT[ m_rows*m_cols ];
 
-  unsigned short int i = 0;
-  foreach( WidgetWrapper<ControlT, ParamT> *widget, m_controls )
+  unsigned short int i;
+  for(i = 0; i < (m_rows*m_cols); i++)
   {
-    values[ i++ ] = widget->value();
+    values[ i ] = m_controls[ i++ ]->value();
   }
 
   shaderProgram->setUniformValueArray( m_info.identifier, values, 

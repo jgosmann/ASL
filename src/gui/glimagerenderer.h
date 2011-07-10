@@ -26,7 +26,7 @@ class GLImageRenderer : public QObject
   Q_OBJECT
 
 public:
-    GLImageRenderer(MainWindow *parent);
+    GLImageRenderer(const MainWindow *parent);
     ~GLImageRenderer();
 
     inline const QImage & getRenderedImage() const {
