@@ -4,7 +4,7 @@
  * Depends: convolveMat3.asl.frag
  */
 
-mat3 gaussMat = mat3(1, 2, 1, 2, 4, 2, 1, 2, 1);
+const mat3 gaussMat = mat3(1, 2, 1, 2, 4, 2, 1, 2, 1);
 
 void main() {
 	gl_FragColor = getConvoluteValue(gaussMat);
