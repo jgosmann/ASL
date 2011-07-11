@@ -76,18 +76,15 @@ void ShaderParameterControl<ControlT, ParamT>::setParameterFromControls(
   // FIXME: QGenericMatrix is row-major, isn't OpenGL column-major
   // FIXME: This case shall also handle vector-types, so look for conversion
   //        in annotatedglshaderprogram.*!
-  ifMatchesMatDimSetUniform(2,1)
-  ifMatchesMatDimSetUniform(3,1)
-  ifMatchesMatDimSetUniform(4,1)
   ifMatchesMatDimSetUniform(2,2)
-  ifMatchesMatDimSetUniform(2,3)
-  ifMatchesMatDimSetUniform(2,4)
-  ifMatchesMatDimSetUniform(3,2)
-  ifMatchesMatDimSetUniform(3,3)
-  ifMatchesMatDimSetUniform(3,4)
-  ifMatchesMatDimSetUniform(4,2)
-  ifMatchesMatDimSetUniform(4,3)
-  ifMatchesMatDimSetUniform(4,4)
+  else ifMatchesMatDimSetUniform(2,3)
+  else ifMatchesMatDimSetUniform(2,4)
+  else ifMatchesMatDimSetUniform(3,2)
+  else ifMatchesMatDimSetUniform(3,3)
+  else ifMatchesMatDimSetUniform(3,4)
+  else ifMatchesMatDimSetUniform(4,2)
+  else ifMatchesMatDimSetUniform(4,3)
+  else ifMatchesMatDimSetUniform(4,4)
   else
   {
     throw std::logic_error("This uniform-type is not supported yet!");

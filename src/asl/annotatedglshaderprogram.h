@@ -24,31 +24,8 @@ namespace asl
 
       bool addSharedShader(QSharedPointer<QGLShader> shader);
 
-      SET_UNIFORM_VALUE(2,1,GLint)
-      SET_UNIFORM_VALUE(2,1,GLuint)
-      SET_UNIFORM_VALUE(2,1,GLfloat)
-      SET_UNIFORM_VALUE(3,1,GLint)
-      SET_UNIFORM_VALUE(3,1,GLuint)
-      SET_UNIFORM_VALUE(3,1,GLfloat)
-      SET_UNIFORM_VALUE(4,1,GLint)
-      SET_UNIFORM_VALUE(4,1,GLuint)
-      SET_UNIFORM_VALUE(4,1,GLfloat)
-      SET_UNIFORM_VALUE(2,2,GLint)
-      SET_UNIFORM_VALUE(2,3,GLuint)
-      SET_UNIFORM_VALUE(2,4,GLfloat)
-      SET_UNIFORM_VALUE(3,2,GLint)
-      SET_UNIFORM_VALUE(3,3,GLuint)
-      SET_UNIFORM_VALUE(3,4,GLfloat)
-      SET_UNIFORM_VALUE(4,2,GLint)
-      SET_UNIFORM_VALUE(4,3,GLuint)
-      SET_UNIFORM_VALUE(4,4,GLfloat)
-
-
   private:
       QList<QSharedPointer<QGLShader> > m_shadersInUse;
-
-    #define SET_UNIFORM_VALUE(m,n,type) \
-      void setUniformValue(const char* name, const QGenericMatrix<n,m,type> &mat); \
 
   };
 }

@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 
+#include <QGenericMatrix>
 #include <QObject>
 #include <QSharedPointer>
 #include <QWidget>
@@ -39,11 +40,16 @@ namespace gui
     asl::ShaderParameterInfo m_info;
   };
 
-  #define IF_MAT_MATCHES_DIM_SET_UNIFORM(rows, cols) \
-  else if (m_rows == (rows) && m_cols == (cols)) { \
-    QGenericMatrix<cols, rows, ParamT> mat(values); \
+  #define ifMatchesMatDimSetUniform(rows, cols) \
+  if (m_rows == (rows) && m_cols == (cols)) { \
+    qreal valuesAsFloat[(rows) * (cols)]; \
+    for (unsigned int i = 0; i < (rows) * (cols); ++i) { \
+      valuesAsFloat[i] = values[i]; \
+    } \
+    \
+    QMatrix##cols##x##rows mat(valuesAsFloat); \
     shaderProgram->setUniformValue(qPrintable(m_info.identifier), mat); \
-  } \
+  }
 
   #include "shaderparametercontrol.cpp"
 
