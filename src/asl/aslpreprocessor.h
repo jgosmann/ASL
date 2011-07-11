@@ -2,7 +2,6 @@
 #define ASLPREPROCESSOR_H
 
 #include <GL/gl.h>
-#include <GL/glext.h>
 #include <QString>
 #include <QTextStream>
 
