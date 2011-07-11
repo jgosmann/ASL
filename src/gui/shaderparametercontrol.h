@@ -3,7 +3,6 @@
 
 #include <stdexcept>
 
-#include <QGenericMatrix>
 #include <QObject>
 #include <QSharedPointer>
 #include <QWidget>

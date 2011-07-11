@@ -1,4 +1,7 @@
 #include <QGenericMatrix>
+#include <QVector2D>
+#include <QVector3D>
+#include <QVector4D>
   
 template<class ControlT, class ParamT>
 ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(asl::ShaderParameterInfo &info,
@@ -73,10 +76,44 @@ void ShaderParameterControl<ControlT, ParamT>::setParameterFromControls(
   {
     shaderProgram->setUniformValue(qPrintable(m_info.identifier), values[0]);
   }
+  else if(m_cols == 1 && m_rows == 2)
+  {
+    qreal valuesAsFloat[m_rows];
+    for(unsigned int i = 0; i < m_rows; ++i)
+    {
+      valuesAsFloat[i] = values[i];
+    }
+
+    QVector2D vec2(valuesAsFloat[0], valuesAsFloat[1]);
+    shaderProgram->setUniformValue(qPrintable(m_info.identifier), vec2);
+  }
+  else if(m_cols == 1 && m_rows == 3)
+  {
+    qreal valuesAsFloat[m_rows];
+    for(unsigned int i = 0; i < m_rows; ++i)
+    {
+      valuesAsFloat[i] = values[i];
+    }
+
+    QVector3D vec3(valuesAsFloat[0], valuesAsFloat[1], valuesAsFloat[2]);
+    shaderProgram->setUniformValue(qPrintable(m_info.identifier), vec3);
+  }
+  else if(m_cols == 1 && m_rows == 4)
+  {
+    qreal valuesAsFloat[m_rows];
+    for(unsigned int i = 0; i < m_rows; ++i)
+    {
+      valuesAsFloat[i] = values[i];
+    }
+
+    QVector4D vec4(valuesAsFloat[0], valuesAsFloat[1], valuesAsFloat[2],
+        valuesAsFloat[3]);
+    shaderProgram->setUniformValue(qPrintable(m_info.identifier), vec4);
+  }
   // FIXME: QGenericMatrix is row-major, isn't OpenGL column-major
   // FIXME: This case shall also handle vector-types, so look for conversion
   //        in annotatedglshaderprogram.*!
-  ifMatchesMatDimSetUniform(2,2)
+  else ifMatchesMatDimSetUniform(2,2)
   else ifMatchesMatDimSetUniform(2,3)
   else ifMatchesMatDimSetUniform(2,4)
   else ifMatchesMatDimSetUniform(3,2)
