@@ -63,7 +63,7 @@ public:
      * \note Even if \c true is returned #log() may return a string
      * containing warnings (but not errors).
      */
-    virtual const bool success() const = 0;
+    virtual bool success() const = 0;
 };
 }
 

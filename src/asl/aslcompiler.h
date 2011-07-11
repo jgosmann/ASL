@@ -28,7 +28,7 @@ public:
             const QString &filename);
 
     QString log() const { return m_log; }
-    const bool success() const { return m_success; }
+    bool success() const { return m_success; }
 
 private:
     QString getExportedFunctionsOfDependencies(QGLShader::ShaderType shaderType,

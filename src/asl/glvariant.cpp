@@ -191,7 +191,7 @@ template<class CastToT> CastToT GLVariant::ithValueCasted(GLsizei i) const
     }
 }
 
-const GLsizei GLVariant::count() const
+GLsizei GLVariant::count() const
 {
     return m_type->rowDimensionality() * m_type->columnDimensionality();
 }
