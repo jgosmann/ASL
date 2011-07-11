@@ -8,8 +8,6 @@
 //#include <QKeyEvent>
 //#include <QWheelEvent>
 
-#include "mainwindow.h"
-
 namespace gui {
 
 class GLImageViewer : public QGraphicsView

@@ -37,7 +37,7 @@ namespace gui
       explicit MainWindow(QWidget *parent = 0);
       ~MainWindow();
 
-      void setUniforms( unsigned short int index );
+      void setUniforms( unsigned int index );
 
   public slots:
       void loadShaderDialog();

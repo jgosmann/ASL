@@ -6,9 +6,9 @@
 using namespace gui;
 
 //FIXME
-GLImageRenderer::GLImageRenderer() //MainWindow *parent)
-  : QObject( NULL ), // ( parent ),
-    m_uniformSetter( NULL ), // ( parent )
+GLImageRenderer::GLImageRenderer(UniformSetter &uniformSetter, QWidget *parent)
+  : QObject( parent ),
+    m_uniformSetter( uniformSetter ),
     m_useShaderProgram( true ),
     m_pixelBufferForContext( 1, 1 ),
     m_source( NULL ),
@@ -56,30 +56,29 @@ void GLImageRenderer::drawImageToTarget() {
 }
 
 void GLImageRenderer::applyShaders() {
+    unsigned int shaderIndex = 0;
+    foreach (QSharedPointer<Shader> shaderProgram, m_shaderProgramList) {
 
-  foreach (QSharedPointer<Shader> shaderProgram, m_shaderProgramList) {
+        if(!shaderProgram->isLinked()) {
+            continue;
+        }
 
-    if(!shaderProgram->isLinked()) {
-        continue;
+        std::swap(m_target, m_source);
+
+        m_target->bind();
+        GLuint sourceTexId = m_source->texture();
+        shaderProgram->bind();
+        shaderProgram->setUniformValue("tex", 0);
+        shaderProgram->setUniformValue("texWidth", m_sourceImage.width());
+        shaderProgram->setUniformValue("texHeight", m_sourceImage.height());
+        m_uniformSetter.setUniforms(shaderIndex);
+
+        drawTexture(sourceTexId);
+        shaderProgram->release();
+        m_target->release();
+
+        ++shaderIndex;
     }
-
-    std::swap(m_target, m_source);
-
-    m_target->bind();
-    GLuint sourceTexId = m_source->texture();
-    shaderProgram->bind();
-    shaderProgram->setUniformValue("tex", 0);
-    shaderProgram->setUniformValue("texWidth", m_sourceImage.width());
-    shaderProgram->setUniformValue("texHeight", m_sourceImage.height());
-
-    // apply all custom uniforms
-    m_uniformSetter->setUniforms( m_shaderProgramList.indexOf( 
-          shaderProgram ) );
-
-    drawTexture(sourceTexId);
-    shaderProgram->release();
-    m_target->release();
-  }
 }
 
 void GLImageRenderer::drawTexture(GLuint tex){

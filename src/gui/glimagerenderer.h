@@ -26,9 +26,7 @@ class GLImageRenderer : public QObject
   Q_OBJECT
 
 public:
-    // FIXME
-    //GLImageRenderer(MainWindow *parent);
-    GLImageRenderer();
+    GLImageRenderer(UniformSetter &uniformSetter, QWidget *parent = NULL);
     ~GLImageRenderer();
 
     inline const QImage & getRenderedImage() const {
@@ -57,7 +55,7 @@ private:
     void applyShaders();
     void drawTexture(GLuint tex);
 
-    UniformSetter *m_uniformSetter;
+    UniformSetter &m_uniformSetter;
     bool m_useShaderProgram;
 
     QList<QSharedPointer<Shader> > m_shaderProgramList;

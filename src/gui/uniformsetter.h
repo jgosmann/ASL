@@ -9,7 +9,7 @@ namespace gui
   public:
     virtual ~UniformSetter() {}
 
-    virtual void setUniforms( unsigned short int index ) = 0;
+    virtual void setUniforms( unsigned int index ) = 0;
 
   };
 

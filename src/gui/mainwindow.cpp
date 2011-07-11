@@ -13,8 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-    // FIXME
-    m_glImageRenderer = new GLImageRenderer( );
+    m_glImageRenderer = new GLImageRenderer(*this, this);
 
     connect(ui->spinBox_Zoom, SIGNAL(valueChanged(int)), 
             ui->glDisplay, SLOT(setImageZoom(int)));
@@ -55,7 +54,7 @@ MainWindow::~MainWindow()
     delete m_glImageRenderer;
 }
 
-void MainWindow::setUniforms( unsigned short int index )
+void MainWindow::setUniforms( unsigned int index )
 {
   foreach( QSharedPointer< ShaderParameterControlHandle > control,
       m_shaderParameterBundle.getShaderParameterControls( index ) )
