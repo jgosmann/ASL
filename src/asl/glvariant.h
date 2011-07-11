@@ -60,7 +60,7 @@ public:
     template<class T> const T * as() const;
 
     template<class CastToT> CastToT ithValueCasted(GLsizei i) const;
-    const GLsizei count() const;
+    GLsizei count() const;
     inline const GLTypeInfo & type() const { return *m_type; }
 
     GLVariant & operator=(const GLVariant &rhs);
