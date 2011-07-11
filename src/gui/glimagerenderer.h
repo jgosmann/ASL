@@ -20,12 +20,14 @@ namespace gui {
 
 typedef class asl::AnnotatedGLShaderProgram Shader;
 
+
 class GLImageRenderer : public QObject
 {
   Q_OBJECT
 
 public:
-    //GLImageRenderer(const MainWindow *parent);
+    // FIXME
+    //GLImageRenderer(MainWindow *parent);
     GLImageRenderer();
     ~GLImageRenderer();
 
@@ -38,7 +40,7 @@ public slots:
       * to set the shaderProgramList. This setter has to be called whenever
       * the program's shader list is changed to set it to the new list. (Do
       * not forget to call renderImage() afterwards. */
-    void render();
+    void renderImage();
     void enableShaders(const int state);
 
     void setShaderProgramList(QList< QSharedPointer<Shader> > shaderProgramList);

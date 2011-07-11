@@ -1,8 +1,5 @@
-
-#include <QGridLayout>
-
 template<class ControlT, class ParamT>
-gui::ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(asl::ShaderParameterInfo &info,
+ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(asl::ShaderParameterInfo &info,
     QObject *listener)
   : m_rows( info.type->rowDimensionality() ),
     m_cols( info.type->columnDimensionality() ),
@@ -24,7 +21,7 @@ gui::ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(asl::Shade
 }
 
 template<class ControlT, class ParamT>
-gui::ShaderParameterControl<ControlT, ParamT>::~ShaderParameterControl()
+ShaderParameterControl<ControlT, ParamT>::~ShaderParameterControl()
 {
   delete [] m_controls;
   m_controls = 0;
@@ -35,7 +32,7 @@ gui::ShaderParameterControl<ControlT, ParamT>::~ShaderParameterControl()
  * to a column-major array into a QGridLayout.
  */
 template<class ControlT, class ParamT>
-QWidget* gui::ShaderParameterControl<ControlT, ParamT>::widget()
+QWidget* ShaderParameterControl<ControlT, ParamT>::widget()
 {
   QWidget *widget = new QWidget();
   QGridLayout *gridLayout = new QGridLayout();
@@ -57,7 +54,7 @@ QWidget* gui::ShaderParameterControl<ControlT, ParamT>::widget()
 
 
 template<class ControlT, class ParamT>
-void gui::ShaderParameterControl<ControlT, ParamT>::setParameterFromControls(
+void ShaderParameterControl<ControlT, ParamT>::setParameterFromControls(
     QSharedPointer< Shader > shaderProgram )
 {
   ParamT values[] = new ParamT[ m_rows*m_cols ];
@@ -68,27 +65,28 @@ void gui::ShaderParameterControl<ControlT, ParamT>::setParameterFromControls(
     values[ i ] = m_controls[ i++ ]->value();
   }
 
+  // FIXME Here we have to use the standard OpenGL uniform-setter
   shaderProgram->setUniformValueArray( m_info.identifier, values, 
       m_rows*m_cols);
 }
 
-// FIXME
-//template<class ControlT, GLfloat>
+// FIXME Why can't I specify the template function for GLfloat???
+//template<class ControlT>
 //void ShaderParameterControl<ControlT, GLfloat>::setParameterFromControls(
-    //QSharedPointer< Shader > shaderProgram )
+//    QSharedPointer< Shader > shaderProgram )
 //{
-  //GLfloat values[] = new GLfloat[ m_rows*m_cols ];
-
-  //unsigned short int i = 0;
-  //foreach( WidgetWrapper *widget, m_controls )
-  //{
-    //values[ i++ ] = widget->value();
-  //}
-
-  /*
-   * The uniform-setter for the type GLfloat is a special case that needs both
-   * dimensions.
-   */
-  //shaderProgram->setUniformValueArray( m_info.identifier, values, m_cols,
-      //m_rows);
+//  GLfloat values[] = new GLfloat[ m_rows*m_cols ];
+//
+//  unsigned short int i = 0;
+//  foreach( WidgetWrapper *widget, m_controls )
+//  {
+//    values[ i++ ] = widget->value();
+//  }
+//
+//  /*
+//   * The uniform-setter for the type GLfloat is a special case that needs both
+//   * dimensions.
+//   */
+//  shaderProgram->setUniformValueArray( m_info.identifier, values, m_cols,
+//      m_rows);
 //}

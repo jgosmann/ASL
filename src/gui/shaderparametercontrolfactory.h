@@ -6,9 +6,12 @@
 #include <QString>
 #include <QWidget>
 #include <QVBoxLayout>
+#include <QLabel>
 
+#include "../asl/gltypeinfo.h"
 #include "../asl/shaderparameterinfo.h"
 
+#include "shaderparametercontrolfactory.h"
 #include "shaderparametercontrol.h"
 #include "colorparametercontrol.h"
 #include "shaderparametercontrolhandle.h"

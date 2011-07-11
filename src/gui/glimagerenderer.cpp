@@ -6,77 +6,80 @@
 using namespace gui;
 
 //FIXME
-GLImageRenderer::GLImageRenderer()
-    : QObject( NULL ), // parent ),
-      m_uniformSetter( NULL ), // parent )
-      m_useShaderProgram( true ),
-      m_pixelBufferForContext( 1, 1 ),
-      m_source( NULL ),
-      m_target( NULL )
+GLImageRenderer::GLImageRenderer() //MainWindow *parent)
+  : QObject( NULL ), // ( parent ),
+    m_uniformSetter( NULL ), // ( parent )
+    m_useShaderProgram( true ),
+    m_pixelBufferForContext( 1, 1 ),
+    m_source( NULL ),
+    m_target( NULL )
 {
 }
 
 GLImageRenderer::~GLImageRenderer()
 {
-    if (m_source) {
-        delete m_source;
-    }
-    if (m_target) {
-        delete m_target;
-    }
+  if (m_source) {
+      delete m_source;
+  }
+  if (m_target) {
+      delete m_target;
+  }
 }
 
 //-- MEMBER-FUNCTIONS ---------------------------------------------------------
 
-void GLImageRenderer::render()
+void GLImageRenderer::renderImage()
 {
-    if(!m_source || !m_target) {
-        return;
-    }
+  if(!m_source || !m_target) {
+      return;
+  }
 
-    m_pixelBufferForContext.makeCurrent();
-    drawImageToTarget();
+  m_pixelBufferForContext.makeCurrent();
+  drawImageToTarget();
 
-    if (m_useShaderProgram) {
-        applyShaders();
-    }
+  if (m_useShaderProgram) {
+      applyShaders();
+  }
 
-    m_renderedImage = m_target->toImage();
-    m_pixelBufferForContext.doneCurrent();
-    emit updated(m_renderedImage);
+  m_renderedImage = m_target->toImage();
+  m_pixelBufferForContext.doneCurrent();
+  emit updated(m_renderedImage);
 }
 
 void GLImageRenderer::drawImageToTarget() {
-    m_target->bind();
-    const GLuint imgTex = m_pixelBufferForContext.bindTexture(m_sourceImage);
-    drawTexture(imgTex);
-    m_pixelBufferForContext.deleteTexture(imgTex);
-    m_target->release();
+
+  m_target->bind();
+  const GLuint imgTex = m_pixelBufferForContext.bindTexture(m_sourceImage);
+  drawTexture(imgTex);
+  m_pixelBufferForContext.deleteTexture(imgTex);
+  m_target->release();
 }
 
 void GLImageRenderer::applyShaders() {
-    foreach (QSharedPointer<Shader> shaderProgram, m_shaderProgramList) {
-        if(!shaderProgram->isLinked()) {
-            continue;
-        }
 
-        std::swap(m_target, m_source);
+  foreach (QSharedPointer<Shader> shaderProgram, m_shaderProgramList) {
 
-        m_target->bind();
-        GLuint sourceTexId = m_source->texture();
-        shaderProgram->bind();
-        shaderProgram->setUniformValue("tex", 0);
-        shaderProgram->setUniformValue("texWidth", m_sourceImage.width());
-        shaderProgram->setUniformValue("texHeight", m_sourceImage.height());
-
-        // apply all custom uniforms
-        m_uniformSetter->setUniforms( m_shaderProgramList.indexOf( 
-              shaderProgram ) );
-
-        drawTexture(sourceTexId);
-        shaderProgram->release();
-        m_target->release();
+    if(!shaderProgram->isLinked()) {
+        continue;
     }
+
+    std::swap(m_target, m_source);
+
+    m_target->bind();
+    GLuint sourceTexId = m_source->texture();
+    shaderProgram->bind();
+    shaderProgram->setUniformValue("tex", 0);
+    shaderProgram->setUniformValue("texWidth", m_sourceImage.width());
+    shaderProgram->setUniformValue("texHeight", m_sourceImage.height());
+
+    // apply all custom uniforms
+    m_uniformSetter->setUniforms( m_shaderProgramList.indexOf( 
+          shaderProgram ) );
+
+    drawTexture(sourceTexId);
+    shaderProgram->release();
+    m_target->release();
+  }
 }
 
 void GLImageRenderer::drawTexture(GLuint tex){
@@ -110,20 +113,20 @@ void GLImageRenderer::setShaderProgramList(QList< QSharedPointer<Shader> > shade
 {
   m_shaderProgramList = shaderProgramList;
 
-  render();
+  renderImage();
 }
 
 
 void GLImageRenderer::enableShaders(const int state)
 {
-    if(((state == Qt::Checked) || (state == Qt::PartiallyChecked)))
-    {
-        m_useShaderProgram = true;
-    } else {
-        m_useShaderProgram = false;
-    }
+  if(((state == Qt::Checked) || (state == Qt::PartiallyChecked)))
+  {
+      m_useShaderProgram = true;
+  } else {
+      m_useShaderProgram = false;
+  }
 
-    render();
+  renderImage();
 }
 
 
@@ -159,6 +162,6 @@ void GLImageRenderer::setSourceImage(const QImage &img)
 
     m_pixelBufferForContext.doneCurrent();
 
-    render();
+    renderImage();
 }
 
