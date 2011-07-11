@@ -1,13 +1,5 @@
-
-#include <QLabel>
-
 #include "shaderparametercontrolfactory.h"
-#include "sliderwidgetwrapper.h"
-#include "spinboxwidgetwrapper.h"
 
-#include "../asl/gltypeinfo.h"
-
-using namespace asl;
 using namespace gui;
 
 void ShaderParameterControlFactory::generateControls( 
@@ -24,16 +16,16 @@ void ShaderParameterControlFactory::generateControls(
 
     switch( info.type->type() )
     {
-    case GLTypeInfo::BOOL:
+    case asl::GLTypeInfo::BOOL:
       shaderParameterControls.append( createControlType<GLuint>( listener, info ) );
       break;
-    case GLTypeInfo::UINT:
+    case asl::GLTypeInfo::UINT:
       shaderParameterControls.append( createControlType<GLuint>( listener, info ) );
       break;
-    case GLTypeInfo::INT:
+    case asl::GLTypeInfo::INT:
       shaderParameterControls.append( createControlType<GLint>( listener, info ) );
       break;
-    case GLTypeInfo::FLOAT:
+    case asl::GLTypeInfo::FLOAT:
       shaderParameterControls.append( createControlType<GLfloat>( listener, info ) );
       break;
     default:

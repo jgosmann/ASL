@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSharedPointer>
 #include <QWidget>
+#include <QGridLayout>
 
 #include "../asl/annotatedglshaderprogram.h"
 #include "../asl/shaderparameterinfo.h"
@@ -37,8 +38,8 @@ namespace gui
     asl::ShaderParameterInfo m_info;
   };
 
-} // namespace gui
+  #include "shaderparametercontrol.cpp"
 
-#include "shaderparametercontrol.cpp"
+} // namespace gui
 
 #endif /* SHADERPARAMETERCONTROL_H */

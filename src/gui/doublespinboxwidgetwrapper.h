@@ -9,7 +9,7 @@
 namespace gui
 {
 
-  class DoubleSpinBoxWidgetWrapper : WidgetWrapper< GLfloat >
+  class DoubleSpinBoxWidgetWrapper : public QDoubleSpinBox
   {
   public:
     DoubleSpinBoxWidgetWrapper() {}
@@ -17,24 +17,17 @@ namespace gui
 
     GLfloat value()
     {
-        //FIXME
-        return 0;
-      //return static_cast<GLfloat>( value() );
+      return static_cast<GLfloat>( value() );
     }
 
     void setValue(GLfloat value)
     {
-        // FIXME
-        Q_UNUSED(value);
-      //setValue( static_cast<double>( value ) );
+      setValue( static_cast<double>( value ) );
     }
 
     void setRange(GLfloat min, GLfloat max)
     {
-        // FIXME
-        Q_UNUSED(min);
-        Q_UNUSED(max);
-      //setRange( static_cast<double>( min ), static_cast<double> ( max ) );
+      setRange( static_cast<double>( min ), static_cast<double> ( max ) );
     }
 
   };

@@ -75,8 +75,12 @@ void ColorParameterControl::showColorDialog()
 void ColorParameterControl::setParameterFromControls(
     QSharedPointer< Shader > shaderProgram )
 {
-    Q_UNUSED(shaderProgram);
-    //FIXME
-  //shaderProgram->setUniformValueArray( qPrintable( m_info.identifier ), 
-      //m_colorArray , 1, 3 );
+//  GLint location = shaderProgram->uniformLocation( qPrintable( 
+//        m_info.identifier ) );
+
+//  glUniform3fv( location, 3, m_colorArray );
+
+  // FIXME
+  shaderProgram->setUniformValueArray( qPrintable( m_info.identifier ), 
+      new QVector3D( m_colorArray[0], m_colorArray[1], m_colorArray[3] ), 1 );
 }

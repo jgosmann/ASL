@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     // FIXME
-    m_glImageRenderer = new GLImageRenderer(  );
+    m_glImageRenderer = new GLImageRenderer( );
 
     connect(ui->spinBox_Zoom, SIGNAL(valueChanged(int)), 
             ui->glDisplay, SLOT(setImageZoom(int)));
@@ -72,46 +72,46 @@ void MainWindow::emitExit()
 
 void MainWindow::loadShaderDialog()
 {
-    // FIXME: Could use dependency injection, but this is not the most urgent
-    // issue.
-    ShaderParameterControlFactory factory;
-    QString s = QFileDialog::getOpenFileName(this,"Load Shader");
-    std::cout << s.toStdString() << std::endl;
-    if(s != QString::null)
+  // FIXME: Could use dependency injection, but this is not the most urgent
+  // issue.
+  ShaderParameterControlFactory factory;
+
+  QString s = QFileDialog::getOpenFileName(this,"Load Shader");
+  std::cout << s.toStdString() << std::endl;
+  if(s != QString::null)
+  {
+    m_glImageRenderer->makeCurrent();
+    Shader* shader = compiler.compileFile(QGLShader::Fragment,s);
+    m_glImageRenderer->doneCurrent();
+
+    if(compiler.success())
     {
-        m_glImageRenderer->makeCurrent();
-        Shader* shader = compiler.compileFile(QGLShader::Fragment,s);
-        m_glImageRenderer->doneCurrent();
+      QSharedPointer<Shader> shaderPointer = 
+          QSharedPointer<Shader>( shader );
 
-        if(compiler.success())
-        {
-            QSharedPointer<Shader> shaderPointer = 
-                QSharedPointer<Shader>( shader );
+      QWidget *controlWidget = new QWidget();
+      QList< QSharedPointer< ShaderParameterControlHandle > > 
+          shaderParameterControls;
 
-            QWidget *controlWidget = new QWidget();
-            QList< QSharedPointer< ShaderParameterControlHandle > > 
-                shaderParameterControls;
+      factory.generateControls( QSharedPointer< Shader >(shaderPointer), 
+          qobject_cast< QWidget* >( m_glImageRenderer ), *controlWidget, 
+          shaderParameterControls );
 
-            factory.generateControls( 
-                QSharedPointer< Shader >(shaderPointer), 
-                qobject_cast< QWidget* >( m_glImageRenderer ),
-                *controlWidget, shaderParameterControls );
+      m_shaderParameterBundle.append( shaderPointer, 
+          shaderParameterControls );
 
-            m_shaderParameterBundle.append( shaderPointer, 
-                shaderParameterControls );
+      QScrollArea *scrollArea = new QScrollArea();
+      scrollArea->setWidget( controlWidget );
 
-            QScrollArea *scrollArea = new QScrollArea();
-            scrollArea->setWidget( controlWidget );
-
-            ui->stackedWidget_ShaderOptions->addWidget( scrollArea );
-        } 
-        else 
-        {
-            QMessageBox::warning(this, tr("An Error accured while compiling"),
-                                           compiler.log(),
-                                           QMessageBox::Ok);
-        }
+      ui->stackedWidget_ShaderOptions->addWidget( scrollArea );
+    } 
+    else 
+    {
+      QMessageBox::warning(this, tr("An Error accured while compiling"),
+                                      compiler.log(),
+                                      QMessageBox::Ok);
     }
+  }
 }
 
 void MainWindow::loadImageFile()
