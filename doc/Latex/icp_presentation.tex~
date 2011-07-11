@@ -1,0 +1,13 @@
+\documentclass{beamer}
+
+
+\input{input/style.tex}
+\input{input/headInfo.tex}
+
+\begin{document}
+\frame{\titlepage}
+
+
+\input{input/exampleSlides.tex}
+
+\end{document}

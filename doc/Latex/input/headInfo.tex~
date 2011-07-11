@@ -1,0 +1,36 @@
+
+
+% Autor
+\author{Denis John}
+
+% Titel 
+\title[ICP]{Der Iterative Closest Point Algorithmus}
+
+% Institut
+%\institute[Techfak]{Technische Fakultät \\ Universtität Bielfeld}
+
+% Datum
+\date{\today}
+
+
+%=============================================================================%
+
+% Grafiken
+
+%Auf der Titelseite
+%\titlegraphic{\includegraphics[width=2cm,height=2cm]{figures/back.jpg}}
+
+%Auf jeder Seite
+%\logo{\pgfimage[width=2cm]{figures/back.jpg}}
+
+
+%=============================================================================%
+
+% Weitere Informationen über die Arbeit
+
+%\subject{Berechenbarkeit}
+
+\subtitle[UT-kurz]{Untertitel}
+
+%\keywords{Gödelsätze, Unentscheidbarkeit}
+
