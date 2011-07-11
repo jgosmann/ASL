@@ -56,7 +56,7 @@ public:
 
 signals:
     void shaderClicked(QSharedPointer<Shader> shader);
-    void renderShaderList(QList<QSharedPointer<Shader> >);
+    void renderShaderList();
 
 public slots:
     void removeSelectedShader();
