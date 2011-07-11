@@ -77,7 +77,7 @@ void ColorParameterControl::setParameterFromControls(
   GLint location = shaderProgram->uniformLocation( qPrintable( 
         m_info.identifier ) );
 
-  if( m_info.type()->rowDimensionality() == 3 )
+  if( m_info.type->rowDimensionality() == 3 )
     glUniform3fv( location, 1, m_colorArray );
   else
     glUniform4fv( location, 1, m_colorArray );

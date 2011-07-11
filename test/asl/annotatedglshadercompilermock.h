@@ -23,7 +23,7 @@ class AnnotatedGLShaderCompilerMock : public AnnotatedGLShaderCompiler
             QGLShader::ShaderType type, const QString &filename));
 
         MOCK_CONST_METHOD0(log, QString());
-        MOCK_CONST_METHOD0(success, const bool());
+        MOCK_CONST_METHOD0(success, bool());
 };
 } /* namespace asl */
 
