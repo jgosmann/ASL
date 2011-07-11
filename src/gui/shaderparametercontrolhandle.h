@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "../asl/annotatedglshaderprogram.h"
+
 namespace gui {
 
   typedef class asl::AnnotatedGLShaderProgram Shader;

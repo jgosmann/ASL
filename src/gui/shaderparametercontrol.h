@@ -11,7 +11,6 @@
 #include "../asl/gltypeinfo.h"
 
 #include "shaderparametercontrolhandle.h"
-#include "widgetwrapper.h"
 
 
 namespace gui
@@ -31,7 +30,7 @@ namespace gui
     void setParameterFromControls(QSharedPointer< Shader > shaderProgram);
 
   private:
-    WidgetWrapper<ParamT> **m_controls;
+    ControlT **m_controls;
 
     unsigned short int m_rows, m_cols;
 

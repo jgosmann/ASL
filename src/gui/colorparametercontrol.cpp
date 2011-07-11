@@ -1,6 +1,11 @@
 #include "colorparametercontrol.h"
 
-#include <GL/gl.h>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QColorDialog>
+#include <QColor>
+#include <QVector3D>
 
 using namespace gui;
 
@@ -74,15 +79,16 @@ void ColorParameterControl::showColorDialog()
 void ColorParameterControl::setParameterFromControls(
     QSharedPointer< Shader > shaderProgram )
 {
-  GLint location = shaderProgram->uniformLocation( qPrintable( 
-        m_info.identifier ) );
-
+  // FIXME: Replace with opengl standard uniform-setters using glew.h
   if( m_info.type->rowDimensionality() == 3 )
-    glUniform3fv( location, 1, m_colorArray );
+  {
+    shaderProgram->setUniformValueArray( qPrintable( m_info.identifier ), 
+        new QVector3D( m_colorArray[0], m_colorArray[1], m_colorArray[2] ), 1 );
+  }
   else
-    glUniform4fv( location, 1, m_colorArray );
-
-  // FIXME
-//  shaderProgram->setUniformValueArray( qPrintable( m_info.identifier ), 
-      //new QVector3D( m_colorArray[0], m_colorArray[1], m_colorArray[3] ), 1 );
+  {
+    shaderProgram->setUniformValueArray( qPrintable( m_info.identifier ), 
+        new QVector4D( m_colorArray[0], m_colorArray[1], m_colorArray[2],
+          m_colorArray[3] ), 1 );
+  }
 }

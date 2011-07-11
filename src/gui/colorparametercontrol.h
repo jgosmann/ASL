@@ -1,13 +1,9 @@
 #ifndef COLORPARAMETERCONTROL_H
 #define COLORPARAMETERCONTROL_H
 
+#include <QObject>
 #include <QWidget>
-#include <QPushButton>
-#include <QColorDialog>
-#include <QColor>
 #include <QString>
-#include <QLabel>
-#include <QVBoxLayout>
 #include <QSharedPointer>
 
 #include "../asl/annotatedglshaderprogram.h"
@@ -15,13 +11,17 @@
 #include "../asl/gltypeinfo.h"
 
 #include "shaderparametercontrolhandle.h"
-#include "widgetwrapper.h"
 
 
 namespace gui
 {
   typedef class asl::AnnotatedGLShaderProgram Shader;
 
+  /**
+   * This class is a special subclass of ShaderParameterControlHandle beside
+   * the default ShaderParameterControl that treats the case of a user-
+   * preferred control "color" specified with ASL.
+   */
   class ColorParameterControl : public QObject, public ShaderParameterControlHandle
   {
     Q_OBJECT

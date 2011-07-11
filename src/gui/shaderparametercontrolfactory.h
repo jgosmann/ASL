@@ -5,27 +5,18 @@
 #include <QObject>
 #include <QString>
 #include <QWidget>
-#include <QVBoxLayout>
-#include <QLabel>
 
 #include "../asl/gltypeinfo.h"
 #include "../asl/shaderparameterinfo.h"
 
-#include "shaderparametercontrolfactory.h"
-#include "shaderparametercontrol.h"
-#include "colorparametercontrol.h"
 #include "shaderparametercontrolhandle.h"
-#include "checkboxwidgetwrapper.h"
-#include "spinboxwidgetwrapper.h"
-#include "doublespinboxwidgetwrapper.h"
-#include "sliderwidgetwrapper.h"
-#include "doublesliderwidgetwrapper.h"
+
 
 namespace gui {
 
   class ShaderParameterControlFactory : public QObject
   {
-      Q_OBJECT
+    Q_OBJECT
 
   public:
     void generateControls( const QSharedPointer< Shader > shaderProgram, 
@@ -34,12 +25,10 @@ namespace gui {
             &shaderParameterControls );
 
   private:
-    // FIXME just a quickfix
-    QString tr(const QString &str) { return tr(qPrintable(str)); }
 
-    template<class ParamT>
     QSharedPointer< ShaderParameterControlHandle > createControlType(
-        QWidget *listener, asl::ShaderParameterInfo &info );
+        asl::GLTypeInfo::Type type, QWidget *listener, 
+        asl::ShaderParameterInfo &info );
   };
 
 } // namespace gui
