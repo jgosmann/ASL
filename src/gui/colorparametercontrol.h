@@ -6,6 +6,7 @@
 #include <QColorDialog>
 #include <QColor>
 #include <QString>
+#include <QLabel>
 #include <QVBoxLayout>
 #include <QSharedPointer>
 

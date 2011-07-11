@@ -1,7 +1,6 @@
-
-#include <QLabel>
-
 #include "colorparametercontrol.h"
+
+#include <GL/gl.h>
 
 using namespace gui;
 
@@ -75,12 +74,15 @@ void ColorParameterControl::showColorDialog()
 void ColorParameterControl::setParameterFromControls(
     QSharedPointer< Shader > shaderProgram )
 {
-//  GLint location = shaderProgram->uniformLocation( qPrintable( 
-//        m_info.identifier ) );
+  GLint location = shaderProgram->uniformLocation( qPrintable( 
+        m_info.identifier ) );
 
-//  glUniform3fv( location, 3, m_colorArray );
+  if( m_info.type()->rowDimensionality() == 3 )
+    glUniform3fv( location, 1, m_colorArray );
+  else
+    glUniform4fv( location, 1, m_colorArray );
 
   // FIXME
-  shaderProgram->setUniformValueArray( qPrintable( m_info.identifier ), 
-      new QVector3D( m_colorArray[0], m_colorArray[1], m_colorArray[3] ), 1 );
+//  shaderProgram->setUniformValueArray( qPrintable( m_info.identifier ), 
+      //new QVector3D( m_colorArray[0], m_colorArray[1], m_colorArray[3] ), 1 );
 }
