@@ -22,7 +22,7 @@ ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(asl::ShaderPara
         info.maximum.as<ParamT>()[i] );
 
     QObject::connect( m_controls[i], SIGNAL( valueChanged(void) ),
-        listener, SLOT( update(void) ) );
+        listener, SLOT( renderImage(void) ) );
   }
 }
 

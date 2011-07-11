@@ -30,11 +30,12 @@ vec4 getConvoluteValue(mat3 convMat) {
 }
 
 #ifdef ASL_MAIN
-/*
+/**
 * Name: Convolution Matrix
 * Default: mat3(1, 2, 1, 2, 4, 2, 1, 2, 1)
-*
-/* uniform */ mat3 convolutionMatrix = mat3(1, 2, 1, 2, 4, 2, 1, 2, 1);// mat3(-1,0,1,-2,0,2,-1,0,1);
+* Control: slider, default
+*/
+uniform mat3 convolutionMatrix;// = mat3(1, 2, 1, 2, 4, 2, 1, 2, 1);// mat3(-1,0,1,-2,0,2,-1,0,1);
 
 void main() {
     gl_FragColor = getConvoluteValue(convolutionMatrix);

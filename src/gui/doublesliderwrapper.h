@@ -15,7 +15,11 @@ namespace gui
     Q_OBJECT
 
   public:
-    DoubleSliderWrapper() {}
+    DoubleSliderWrapper() 
+    {
+      connect(this, SIGNAL( valueChanged(int) ),
+          this, SLOT( emitValueChanged(int) ));
+    }
     ~DoubleSliderWrapper() {}
 
     GLfloat value()
@@ -35,6 +39,16 @@ namespace gui
       setRange( static_cast<int>( min * pow( 10.0f, m_precision_ ) ), 
           static_cast<int> ( max * pow( 10.0f, m_precision_ ) ) );
     }
+
+  public slots:
+    void emitValueChaned(int value)
+    {
+      Q_UNUSED(value)
+      emit valueChanged();
+    }
+
+  signals:
+    void valueChanged();
 
 
   private:

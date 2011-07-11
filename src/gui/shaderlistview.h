@@ -55,7 +55,7 @@ public:
 
 
 signals:
-    void shaderClicked(QSharedPointer<Shader> shader);
+    void shaderClicked(int index);
     void renderShaderList();
 
 public slots:

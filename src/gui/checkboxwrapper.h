@@ -72,12 +72,13 @@ namespace gui
   public slots:
     void emitValueChanged(int state)
     {
-      emit valueChanged(state);
+      Q_UNUSED(state)
+      emit valueChanged();
     }
 
 
   signals:
-    void valueChanged(int state);
+    void valueChanged();
 
   };
 

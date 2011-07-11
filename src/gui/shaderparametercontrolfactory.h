@@ -20,14 +20,14 @@ namespace gui {
 
   public:
     void generateControls( const QSharedPointer< Shader > shaderProgram, 
-        QWidget *listener, QWidget &widget, 
+        QObject *listener, QWidget &widget, 
         QList< QSharedPointer< ShaderParameterControlHandle > > 
             &shaderParameterControls );
 
   private:
 
     QSharedPointer< ShaderParameterControlHandle > createControlType(
-        asl::GLTypeInfo::Type type, QWidget *listener, 
+        asl::GLTypeInfo::Type type, QObject *listener, 
         asl::ShaderParameterInfo &info );
   };
 

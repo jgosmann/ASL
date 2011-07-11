@@ -65,7 +65,7 @@ void ShaderListView::clickedOnShader(const QModelIndex &index){
     currentRow = index.row();
 
     int key = item->data().value<int>();
-    emit shaderClicked(shaderMap.value(key));
+    emit shaderClicked( shaderMap.keys().indexOf(key) );
     emit renderShaderList();
 
 }

@@ -43,7 +43,7 @@ namespace gui
       void loadShaderDialog();
       void loadImageFile();
       void saveImage();
-      void showControls( unsigned short int index );
+      void showControls( int index );
 
   signals:
       void exitProgram();

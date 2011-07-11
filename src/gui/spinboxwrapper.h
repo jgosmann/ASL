@@ -1,30 +1,23 @@
-#ifndef SLIDERWRAPPER_H
-#define SLIDERWRAPPER_H
+#ifndef SPINBOXWRAPPER_H
+#define SPINBOXWRAPPER_H
 
-#include <GL/gl.h>
-
-#include <QSlider>
+#include <QSpinBox>
 
 
 namespace gui
 {
 
-  class SliderWrapper : public QSlider
+  class SpinBoxWrapper : public QSpinBox
   {
     Q_OBJECT
 
   public:
-    SliderWrapper() 
+    SpinBoxWrapper() : QSpinBox(NULL)
     {
       connect(this, SIGNAL( valueChanged(int) ),
           this, SLOT( emitValueChanged(int) ));
     }
-    ~SliderWrapper() {}
-
-    void setValue(GLint value)
-    {
-      setSliderPosition( value );
-    }
+    ~SpinBoxWrapper() {}
 
   public slots:
     void emitValueChanged(int value)
@@ -40,4 +33,4 @@ namespace gui
 
 } // namespace gui
 
-#endif /* SLIDERWRAPPER_H */
+#endif /* SPINBOXWRAPPER_H */

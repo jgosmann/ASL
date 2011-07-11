@@ -41,9 +41,9 @@ MainWindow::MainWindow(QWidget *parent) :
               renderImage(void)));
 
     connect(ui->listView_ShaderList, SIGNAL(
-              shaderClicked(QSharedPointer<Shader>)),
+              shaderClicked(int)),
             this, SLOT(
-              showControls(QSharedPointer<Shader>)));
+              showControls(int)));
 
     connect(ui->action_Exit,SIGNAL(triggered()),this,SLOT(emitExit()));
 }
@@ -92,9 +92,11 @@ void MainWindow::loadShaderDialog()
       QList< QSharedPointer< ShaderParameterControlHandle > > 
           shaderParameterControls;
 
+      if(!m_glImageRenderer)
+        std::cout << "glImageRenderer is NULL!" << std::endl;
+
       factory.generateControls( QSharedPointer< Shader >(shaderPointer), 
-          qobject_cast< QWidget* >( m_glImageRenderer ), *controlWidget, 
-          shaderParameterControls );
+          m_glImageRenderer, *controlWidget, shaderParameterControls );
 
       m_shaderParameterBundle.append( shaderPointer, 
           shaderParameterControls );
@@ -132,7 +134,7 @@ void MainWindow::saveImage()
     }
 }
 
-void MainWindow::showControls( unsigned short int index )
+void MainWindow::showControls( int index )
 {
   ui->stackedWidget_ShaderOptions->setCurrentIndex( index );
   ui->stackedWidget_ShaderOptions->show();

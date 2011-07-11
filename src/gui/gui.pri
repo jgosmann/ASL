@@ -17,6 +17,8 @@ HEADERS  += \
     src/gui/checkboxwrapper.h \
     src/gui/sliderwrapper.h \
     src/gui/doublesliderwrapper.h \
+    src/gui/spinboxwrapper.h \
+    src/gui/doublespinboxwrapper.h \
     src/gui/shaderparametercontrol.h src/gui/shaderparametercontrol.cpp \ # template class, do not compile as cpp
     src/gui/colorparametercontrol.h \
     src/gui/shaderparametercontrolfactory.h \
