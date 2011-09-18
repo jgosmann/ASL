@@ -1,5 +1,3 @@
-#version 120
-
 /**
  * ShaderName: Julia Sets
  * ShaderDescription: Calculates Julia set fractals using the picture loaded as
@@ -18,14 +16,14 @@ uniform int texHeight;
  * Default: 200
  * Range: 0, max
  */
-/* uniform */ int iterations = 200;
+/* uniform */ const int iterations = 200;
 
 vec4 calcJuliaSetColor(vec2 z, vec2 c) {
     for (int i = 0; i < iterations; ++i) {
         z = cmplxMultiply(z, z);
         z += c;
-        if (dot(z, z) > 4) {
-            float texCoord =  float(i) / iterations;
+        if (dot(z, z) > 4.0) {
+            float texCoord =  float(i) / float(iterations);
             return texture2D(tex, vec2(texCoord));
         }
     }
@@ -37,7 +35,7 @@ vec4 calcJuliaSetColor(vec2 z, vec2 c) {
  * Name: c
  * Description: Parameter to vary the Julia set.
  */
-/* uniform */ vec2 c = vec2(0.2, 0.4);
+/* uniform */ const vec2 c = vec2(0.2, 0.4);
 
 void main() {
     gl_FragColor = calcJuliaSetColor(mapCoords(gl_FragCoord.xy), c);

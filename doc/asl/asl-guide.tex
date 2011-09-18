@@ -29,10 +29,10 @@
 
 %%%%% Weiteres %%%%%
 
-\title{Guide to the Annotated Shader Language}
+\title{Guide to the Annotated Shading Language}
 \author{Jan Gosmann \and Denis John \and Markus Kastrop}
 \hypersetup{
-  pdftitle={Guide to the Annotated Shader Language},
+  pdftitle={Guide to the Annotated Shading Language},
   pdfauthor={Jan Gosmann, Denis John, Markus Kastrop},
   pdfkeywords={OpenGL, Shader, ASL}
 }
@@ -58,9 +58,9 @@ algorithms: just write a shader and store it in the right directory.
 However, it would be nice if one could control the various parameters of the 
 algorithms with GUI controls. But a normal shader program does not provide the 
 information what the purpose and valid range of a parameter is. This is the 
-point were the Annotated Shader Language comes into play.
+point were the Annotated Shading Language comes into play.
 
-The Annotated Shader Language, or short ASL, allows to add information like 
+The Annotated Shading Language, or short ASL, allows to add information like 
 description and parameter range of a parameter to the program. Because all ASL 
 elements are written within comments, the shader program can still be compiled 
 without using an ASL shader compiler.
@@ -215,8 +215,7 @@ first.
 /**
  * ShaderName: Example Shader
  * ShaderDescription: This is just an example with a shader doing nothing.
- * Depends: some-other-shader.fs
- *          and-another-shader.fs
+ * Depends: some-other-shader.fs, and-another-shader.fs
  */
 \end{lstlisting}
 

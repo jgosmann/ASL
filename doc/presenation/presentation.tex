@@ -1,0 +1,173 @@
+\documentclass{beamer}
+
+%%%%%% Packages %%%%%
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{ae,aecompl}
+%\usepackage{scrpage2}
+%\usepackage{amssymb}
+%\usepackage{amsmath}
+%\usepackage[flushmargin,ragged]{footmisc}
+% \usepackage{graphicx}
+%\usepackage{ifthen}
+% \usepackage{lastpage}
+\usepackage{ngerman}
+\usepackage{enumerate}
+% \usepackage{hhline}
+\usepackage{listings}
+%\usepackage{xr-hyper}
+\usepackage{hyperref}
+%\usepackage{units}
+% \usepackage{xcolor}
+
+%%%%% Eigene Format-Kommandos %%%%%
+\newcommand{\makeframetitle}[1]{{\usebeamercolor[fg]{frametitle} \usebeamerfont{frametitle} #1}}
+
+\newenvironment{questionFrame}[1]{\begin{frame} \center \vfill \makeframetitle{#1} \linebreak \linebreak \pause}{\vfill \end{frame}}
+
+%%%%% Externe Dokumente %%%%%
+
+%%%%% Silbentrennung %%%%%
+
+%%%%% Weiteres %%%%%
+\lstdefinelanguage[opengl]{Shader}[ANSI]{C}{morekeywords={in,layout,sampler2D,uniform,varying,vec3}}
+\lstdefinelanguage[ASL]{Shader}[opengl]{Shader}{morekeywords={Name,Control,Description,Default,Depends,Range,ShaderName,ShaderDescription},moredelim=*[s][\itshape]{/**}{*/},moredelim=[is][\itshape]{|}{|}}
+\lstset{basicstyle=\fontfamily{pcr}\selectfont\footnotesize,keywordstyle=\bfseries,language=[ASL]Shader}
+
+\title{Shaderbasierte Bildbearbeitung}
+\author{Jan Gosmann \and Denis John \and Markus Kastrop}
+\date{12. Juli 2011}
+\hypersetup{
+  pdftitle={Shaderbasierte Bildbearbeitung},
+  pdfauthor={Jan Gosmann, Denis John, Markus Kastrop},
+  pdfkeywords={}
+}
+
+\begin{document}
+\maketitle
+
+%TODO: frame: Was ist das Ziel unseres Projekts?
+
+\begin{questionFrame}{Wie macht man das modular und einfach erweiterbar?}
+    Möglichkeit bieten, Shader-Sourcefiles direkt zu öffnen.
+\end{questionFrame}
+
+\begin{questionFrame}{Aber woher weiß das Programm, für welche Shadereinstellungen UI-Elemente benötigt werden?}
+    {\Huge Annotated Shading Language}
+\end{questionFrame}
+
+\begin{frame}
+    \frametitle{Was ist die Annotated Shading Lanuage (ASL)?}
+    \begin{itemize}
+        \item Erlaubt das Beschreiben der Shaderparameter mit "`Annotations"'.
+            \begin{itemize}
+                \item Name und Beschreibung
+                \item Default-Wert
+                \item Erlaubter Wertebereich
+                \item Bevorzugte Controls (z.\,B. Color Picker oder Spin Box)
+            \end{itemize}
+        \item Dem Shader kann ein Name und eine Beschreibung gegeben werden.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \centering \vfill
+    \makeframetitle{One More Thing \dots}
+    \vfill
+\end{frame}
+
+\begin{frame}
+    \frametitle{Abhängigkeiten bzw. Dependencies}
+    \begin{itemize}
+        \item Ein Shader kann einen anderen laden und dessen Funktionen mitverwenden.
+        \item ASL wird in den geladenen Abhängigkeiten ebenfalls ausgewertet.
+        \item \lstinline$ASL_MAIN$-Makro erlaubt Unterscheidung, ob ein Shader als Abhängigkeit geladen wird.
+        \item Unsere Implementierung verwendet einen Cache, so dass jede Abhängigkeit nur einmal im Speicher vorhanden ist.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Und so sieht es aus \dots }
+    \framesubtitle{convolveMat3.asl.frag}
+    \begin{lstlisting}
+/**
+ * ShaderName: ConvolveMat3
+ * ShaderDescription: Convolves a matrix with the texture.
+ */
+
+uniform sampler2D tex;
+uniform int texWidth;
+uniform int texHeight;
+
+vec4 getConvoluteValue(mat3 convMat) {
+    /* Some complicated code. */
+}
+
+/* ... */
+    \end{lstlisting}
+\end{frame}
+\begin{frame}[fragile]
+    \frametitle{Und so sieht es aus \dots }
+    \framesubtitle{convolveMat3.asl.frag (fortgesetzt)}
+    \begin{lstlisting}
+/* ... */
+
+#ifdef ASL_MAIN
+/**
+ * Name: Convolution Matrix
+ * Default: mat3(1, 2, 1, 2, 4, 2, 1, 2, 1)
+ *
+uniform mat3 convolutionMatrix;
+
+void main() {
+    gl_FragColor = getConvoluteValue(convolutionMatrix);
+}
+#endif
+     \end{lstlisting}
+\end{frame}
+\begin{frame}[fragile]
+    \frametitle{Und so sieht es aus \dots }
+    \framesubtitle{gauss.asl.frag}
+    \begin{lstlisting}
+/**
+ * ShaderName: Gaussfilter
+ * ShaderDescription: Uses a gaussian filter with the given
+ *     texture.
+ * Depends: convolveMat3.asl.frag
+ */
+
+const mat3 gaussMat = mat3(1, 2, 1, 2, 4, 2, 1, 2, 1);
+
+void main() {
+    gl_FragColor = getConvoluteValue(gaussMat);
+}
+     \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Noch ein paar (technische) Infos}
+    \begin{itemize}
+        \item ASL ist dokumentiert.
+        \item Gute Unit-Testabdeckung des Parsers mit 216 Test-Cases.
+        \item Parser basiert auf Bison\footnote{http://www.gnu.org/software/bison/}
+             und Flex\footnote{http://flex.sourceforge.net/}.
+        \item Eigene Implementierung des GLSL-Präprozessors.
+        \item Jeder ASL-Shader ist ein gültiger GLSL-Shader und umgekehrt.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Und was fehlt?}
+    \begin{itemize}
+        \item Nur Unterstützung für Fragment-Shader.
+        \item Nur Unterstützung für einfache Uniforms (d.h. kein
+            \lstinline$varying$/\lstinline$in$, kein \lstinline$layout$-Qualifier,
+            keine Structs oder Arrays).
+        \item Keine arithmetischen Ausdrücke für Default-Wert und Wertebereich unterstützt.
+        \item Keine Unterstützung für zusätzliche Texturen (Sampler).
+        \item Cool wäre auch, wenn man direkt in ASL mehrere Renderdurchläufe definieren könnte.
+        \item Weitere kleine Verbesserungen an verschiedenen Stellen denkbar.
+    \end{itemize}
+\end{frame}
+
+\end{document}
