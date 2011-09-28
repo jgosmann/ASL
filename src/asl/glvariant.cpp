@@ -72,7 +72,7 @@ const GLVariant GLVariant::minOfType(const GLTypeInfo &type)
      */
     switch (type.type()) {
         case GLTypeInfo::FLOAT: {
-            const GLfloat value = FLT_MIN;
+            const GLfloat value = -FLT_MAX;
             return GLVariant(type, 1, &value);
         }
         case GLTypeInfo::INT: {
