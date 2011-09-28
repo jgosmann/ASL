@@ -105,6 +105,7 @@ void MainWindow::loadShaderDialog()
       scrollArea->setWidget( controlWidget );
 
       ui->stackedWidget_ShaderOptions->addWidget( scrollArea );
+      ui->listView_ShaderList->addShader(shaderPointer);
     } 
     else 
     {

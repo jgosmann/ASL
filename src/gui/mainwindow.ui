@@ -130,10 +130,7 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
-            <widget class="QStackedWidget" name="stackedWidget_ShaderOptions">
-             <widget class="QWidget" name="page"/>
-             <widget class="QWidget" name="page_2"/>
-            </widget>
+            <widget class="QStackedWidget" name="stackedWidget_ShaderOptions"/>
            </item>
           </layout>
          </widget>
@@ -283,7 +280,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMain">

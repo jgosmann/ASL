@@ -48,7 +48,7 @@ QWidget* ShaderParameterControl<ControlT, ParamT>::widget()
   {
     for(j = 0; j < m_cols; j++)
     {
-      gridLayout->addWidget( m_controls[ i*m_rows + j ], i, j , 
+      gridLayout->addWidget( m_controls[ i*m_cols + j ], i, j , 
           Qt::AlignCenter);
     }
   }
