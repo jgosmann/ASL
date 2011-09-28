@@ -1,7 +1,7 @@
 #include "shaderparametercontrolfactory.h"
 
 #include <iostream>
-#include <GL/gl.h>
+#include <qgl.h>
 
 #include <QVBoxLayout>
 #include <QLabel>

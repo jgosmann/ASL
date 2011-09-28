@@ -1,7 +1,7 @@
 #ifndef CHECKBOXWRAPPER_H
 #define CHECKBOXWRAPPER_H
 
-#include <GL/gl.h>
+#include <qgl.h>
 
 #include <QCheckBox>
 

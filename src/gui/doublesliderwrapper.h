@@ -2,7 +2,7 @@
 #define DOUBLESLIDERWRAPPER_H
 
 #include <math.h>
-#include <GL/gl.h>
+#include <qgl.h>
 
 #include <QSlider>
 

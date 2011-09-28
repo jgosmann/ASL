@@ -1,7 +1,7 @@
 
 #include <stdexcept>
 
-#include <GL/gl.h>
+#include <qgl.h>
 
 #include "../src/asl/gltypenames.h"
 #include "../src/asl/glvariant.h"

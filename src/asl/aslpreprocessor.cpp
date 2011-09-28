@@ -3,7 +3,7 @@
 #include "aslpreprocessor_parserinternal.h"
 
 #include <exception>
-#include <GL/glu.h>
+#include <qgl.h>
 #include <QByteArray>
 #include <QGLPixelBuffer>
 #include <QRegExp>

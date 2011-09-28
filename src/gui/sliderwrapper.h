@@ -1,7 +1,7 @@
 #ifndef SLIDERWRAPPER_H
 #define SLIDERWRAPPER_H
 
-#include <GL/gl.h>
+#include <qgl.h>
 
 #include <QSlider>
 

@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include <GL/gl.h>
+#include <qgl.h>
 
 #include "gltypeinfo.h"
 

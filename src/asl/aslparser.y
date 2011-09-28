@@ -5,7 +5,7 @@
 
     #include <exception>
 
-    #include <GL/gl.h>
+    #include <qgl.h>
 
     #include <QFileInfo>
     #include <QList>
