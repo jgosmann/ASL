@@ -573,6 +573,23 @@ public:
                     .withMaximum(GLVariant(VEC3, 3, maxValues)));
     }
 
+    void testRangeSetsMinAndMaxValueOfScalarType()
+    {
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/** Range: -3, 4 */\n"
+                    "uniform " + QString(FLOAT) + " param;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        GLfloat minValue = -3;
+        GLfloat maxValue = 4;
+        assertCleanCompilation(compiled.data());
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withMinimum(GLVariant(FLOAT, 1, &minValue))
+                    .withMaximum(GLVariant(FLOAT, 1, &maxValue)));
+    }
+
     void testRangeCastsMinAndMaxValue()
     {
         QScopedPointer<AnnotatedGLShader> compiled(
@@ -835,6 +852,7 @@ public:
     CPPUNIT_TEST(testRangeDefaultsToMinAndMaxOfType<gltypenames::INT>);
     CPPUNIT_TEST(testRangeDefaultsToMinAndMaxOfType<gltypenames::BOOL>);
     CPPUNIT_TEST(testRangeSetsMinAndMaxValue);
+    CPPUNIT_TEST(testRangeSetsMinAndMaxValueOfScalarType);
     CPPUNIT_TEST(testRangeCastsMinAndMaxValue);
     CPPUNIT_TEST(testRangeSetsMinAndMaxWithMinMaxIdentifier);
     CPPUNIT_TEST(testRangeSetsMinAndMaxWithMinMaxIdentifierAndValueMixed);

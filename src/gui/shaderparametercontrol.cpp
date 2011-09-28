@@ -2,7 +2,7 @@
 #include <QVector2D>
 #include <QVector3D>
 #include <QVector4D>
-  
+
 template<class ControlT, class ParamT>
 ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(asl::ShaderParameterInfo &info,
     QObject *listener)
@@ -17,9 +17,9 @@ ShaderParameterControl<ControlT, ParamT>::ShaderParameterControl(asl::ShaderPara
   {
     m_controls[i] = new ControlT();
 
-    m_controls[i]->setValue( info.defaultValue.as<ParamT>()[i] );
     m_controls[i]->setRange( info.minimum.as<ParamT>()[i], 
         info.maximum.as<ParamT>()[i] );
+    m_controls[i]->setValue( info.defaultValue.as<ParamT>()[i] );
 
     QObject::connect( m_controls[i], SIGNAL( valueChanged(void) ),
         listener, SLOT( renderImage(void) ) );
