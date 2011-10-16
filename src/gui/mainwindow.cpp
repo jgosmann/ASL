@@ -35,10 +35,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton_RemoveShader,SIGNAL(clicked()),
             ui->listView_ShaderList,SLOT(removeSelectedShader()));
 
-    connect(ui->listView_ShaderList,SIGNAL(
-              renderShaderList(void)),
-            m_glImageRenderer,SLOT(
-              renderImage(void)));
+    connect(ui->listView_ShaderList, SIGNAL(renderShaderList(void)),
+            this, SLOT(render(void)));
 
     connect(ui->listView_ShaderList, SIGNAL(
               shaderClicked(int)),
@@ -59,7 +57,7 @@ void MainWindow::setUniforms( unsigned int index )
   foreach( QSharedPointer< ShaderParameterControlHandle > control,
       m_shaderParameterBundle.getShaderParameterControls( index ) )
   {
-    control->setParameterFromControls( 
+    control->setParameterFromControls(
         m_shaderParameterBundle.getShaderProgram( index ) );
   }
 }
@@ -133,6 +131,13 @@ void MainWindow::saveImage()
         const QImage tmpImg = m_glImageRenderer->getRenderedImage();
         tmpImg.save(s);
     }
+}
+
+void MainWindow::render()
+{
+    m_glImageRenderer->setShaderProgramList(
+        ui->listView_ShaderList->getCheckedShaders());
+    m_glImageRenderer->renderImage();
 }
 
 void MainWindow::showControls( int index )

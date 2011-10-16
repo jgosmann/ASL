@@ -42,6 +42,7 @@ namespace gui
   public slots:
       void loadShaderDialog();
       void loadImageFile();
+      void render();
       void saveImage();
       void showControls( int index );
 

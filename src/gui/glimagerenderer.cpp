@@ -118,7 +118,7 @@ void GLImageRenderer::setShaderProgramList(QList< QSharedPointer<Shader> > shade
 
 void GLImageRenderer::enableShaders(const int state)
 {
-  if(((state == Qt::Checked) || (state == Qt::PartiallyChecked)))
+  if (state == Qt::Checked || state == Qt::PartiallyChecked)
   {
       m_useShaderProgram = true;
   } else {
