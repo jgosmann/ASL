@@ -6,8 +6,8 @@
  */
 
 uniform sampler2D tex;
-uniform float texWidth = 512.0;
-uniform float texHeight = 512.0;
+uniform float texWidth;
+uniform float texHeight;
 
 /**
  * Name: Red color value
@@ -27,8 +27,7 @@ uniform float green;
  */
 uniform float blue;
 
-
 void main() {
-
   gl_FragColor = mix(texture2D(tex, gl_TexCoord[0].st), vec4(red, green, blue, 1.0), 0.5);
 }
+
