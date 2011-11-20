@@ -12,13 +12,13 @@ uniform int texHeight;
  * Default: 1
  * Range: 0.0001, max
  */
-const float zoomFactor;
+uniform float zoomFactor;
 
 /**
  * Name: Translation
  * Default: vec2(0, 0)
  */
-const vec2 translation;
+uniform vec2 translation;
 
 vec2 mapCoords(vec2 coords) {
     vec2 texSize = vec2(texWidth, texHeight);
