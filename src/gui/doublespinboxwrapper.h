@@ -14,13 +14,13 @@ namespace gui
   public:
     DoubleSpinBoxWrapper() : QDoubleSpinBox(NULL)
     {
-      connect(this, SIGNAL( valueChanged(int) ),
-          this, SLOT( emitValueChanged(int) ));
+      connect(this, SIGNAL( valueChanged(double) ),
+          this, SLOT( emitValueChanged(double) ));
     }
     ~DoubleSpinBoxWrapper() {}
 
   public slots:
-    void emitValueChanged(int value)
+    void emitValueChanged(double value)
     {
       Q_UNUSED(value)
       emit valueChanged();
