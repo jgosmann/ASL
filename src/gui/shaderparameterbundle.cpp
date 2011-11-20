@@ -7,7 +7,7 @@ void ShaderParameterBundle::append(QSharedPointer< Shader > shaderProgram,
         &shaderParameterControls )
 {
   m_shaderPrograms.append( shaderProgram );
-  shaderParameterControls.append( shaderParameterControls );
+  m_shaderParameterControls.append( shaderParameterControls );
 }
 
 
