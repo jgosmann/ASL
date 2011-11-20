@@ -66,6 +66,7 @@ void ASLProgramCompiler::addShader(const QString &filename,
 {
     m_success &= m_programUnderConstruction->addSharedShader(
             qSharedPointerCast<QGLShader>(shader));
+    m_programUnderConstruction->addParameters(shader->parameters());
     m_addedShaders.insert(filename);
 }
 

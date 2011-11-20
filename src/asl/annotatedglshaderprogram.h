@@ -20,12 +20,24 @@ namespace asl
   public:
       AnnotatedGLShaderProgram(const ShaderInfo &shaderInfo)
               : QGLShaderProgram(static_cast<QObject *>(NULL)),
-              Annotated(shaderInfo) { }
+              Annotated(shaderInfo) {
+          m_parameters.append(shaderInfo.parameters);
+      }
 
       bool addSharedShader(QSharedPointer<QGLShader> shader);
 
+      inline void addParameters(const QList<asl::ShaderParameterInfo>
+              &parameters) {
+          m_parameters.append(parameters);
+      }
+
+      inline const QList<asl::ShaderParameterInfo> & parameters() const {
+          return m_parameters;
+      }
+
   private:
       QList<QSharedPointer<QGLShader> > m_shadersInUse;
+      QList<asl::ShaderParameterInfo> m_parameters;
 
   };
 }
