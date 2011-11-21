@@ -32,7 +32,7 @@ namespace gui
 
     QWidget* widget()
     {
-      return m_widget;
+      return &m_widget;
     }
 
     void setParameterFromControls(QSharedPointer< Shader > shaderProgram);
@@ -40,7 +40,7 @@ namespace gui
   private:
     GLfloat *m_colorArray;
 
-    QWidget *m_widget;
+    QWidget m_widget;
 
     asl::ShaderParameterInfo m_info;
 

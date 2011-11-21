@@ -19,7 +19,7 @@ ColorParameterControl::ColorParameterControl(asl::ShaderParameterInfo &info,
   QVBoxLayout *vBoxLayout = new QVBoxLayout();
   vBoxLayout->addWidget( caption );
   vBoxLayout->addWidget( pushButton );
-  m_widget->setLayout( vBoxLayout );
+  m_widget.setLayout( vBoxLayout );
 
   QObject::connect( pushButton, SIGNAL( pressed(void) ),
       this, SLOT( showColorDialog(void) ) );
@@ -48,7 +48,7 @@ void ColorParameterControl::showColorDialog()
     defaultColor.setRgbF( defaultColorArray[0], defaultColorArray[1], 
         defaultColorArray[2] );
 
-    color = QColorDialog::getColor( defaultColor, m_widget, 
+    color = QColorDialog::getColor( defaultColor, &m_widget, 
         "Please select a color ..." );
 
     m_colorArray = new GLfloat[3];
@@ -61,7 +61,7 @@ void ColorParameterControl::showColorDialog()
     defaultColor.setRgbF( defaultColorArray[0], defaultColorArray[1], 
         defaultColorArray[2], defaultColorArray[3] );
 
-    color = QColorDialog::getColor( defaultColor, m_widget, 
+    color = QColorDialog::getColor( defaultColor, &m_widget, 
         "Please select a color ...",
         QColorDialog::ShowAlphaChannel );
 
