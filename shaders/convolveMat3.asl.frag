@@ -33,7 +33,6 @@ vec4 getConvoluteValue(mat3 convMat) {
 /**
 * Name: Convolution Matrix
 * Default: mat3(1, 2, 1, 2, 4, 2, 1, 2, 1)
-* Control: slider, default
 */
 uniform mat3 convolutionMatrix;
 
