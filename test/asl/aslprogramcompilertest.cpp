@@ -156,6 +156,28 @@ public:
         CPPUNIT_ASSERT(compiled->shaders().contains(depSubmain));
     }
 
+    void addsMainParametersToProgram()
+    {
+        ShaderParameterInfo parameterInfo;
+
+        QString filename("filename");
+        QList<asl::ShaderParameterInfo> parameters;
+        parameters.append(parameterInfo);
+        AnnotatedGLShader *dummyShader = createDummyShader(
+                "void main() { }", QStringList(), QStringList(),
+                parameters);
+
+        EXPECT_CALL(shaderCompilerMock, compileFileAsMain(stdType, filename))
+            .Times(1).WillOnce(Return(dummyShader));
+
+        QScopedPointer<AnnotatedGLShaderProgram> compiled(
+                shaderProgramCompiler->compileFile(stdType, filename));
+
+        assertCleanCompilationAndLinkage(compiled.data());
+        CPPUNIT_ASSERT(compiled->parameters().contains(parameterInfo));
+        CPPUNIT_ASSERT(compiled->parameters().count() == 1);
+    }
+
     void addsDependencyParametersToProgram()
     {
         ShaderParameterInfo parameterInfo;
@@ -184,6 +206,7 @@ public:
 
         assertCleanCompilationAndLinkage(compiled.data());
         CPPUNIT_ASSERT(compiled->parameters().contains(parameterInfo));
+        CPPUNIT_ASSERT(compiled->parameters().count() == 1);
     }
 
     void logsCompiledDependencies()
@@ -456,6 +479,7 @@ public:
     CPPUNIT_TEST(cachesCompiledShader);
     CPPUNIT_TEST(loadsDependencies);
     CPPUNIT_TEST(loadsRecursiveDependencies);
+    CPPUNIT_TEST(addsMainParametersToProgram);
     CPPUNIT_TEST(addsDependencyParametersToProgram);
     CPPUNIT_TEST(logsCompiledDependencies);
     CPPUNIT_TEST(loadsDuplicatesOnlyOnce);
