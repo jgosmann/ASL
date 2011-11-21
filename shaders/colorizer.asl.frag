@@ -10,24 +10,13 @@ uniform float texWidth;
 uniform float texHeight;
 
 /**
- * Name: Red color value
- * Default: 1.0
+ * Name: Color value
+ * Default: vec3(0.0, 0.0, 0.0)
+ * Control: color, default
  */
-uniform float red;
-
-/**
- * Name: Green color value
- * Default: 1.0
- */
-uniform float green;
-
-/**
- * Name: Blue color value
- * Default: 1.0
- */
-uniform float blue;
+uniform vec3 color;
 
 void main() {
-  gl_FragColor = mix(texture2D(tex, gl_TexCoord[0].st), vec4(red, green, blue, 1.0), 0.5);
+  gl_FragColor = mix(texture2D(tex, gl_TexCoord[0].st), vec4(color.r, color.g, color.b, 1.0), 0.5);
 }
 
