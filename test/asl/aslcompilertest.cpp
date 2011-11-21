@@ -50,6 +50,39 @@ public:
         assertFailedAndLogged(LogEntry().withType(LOG_ERROR).occuringIn(0));
     }
 
+    void logsPreprocessorErrors()
+    {
+        shaderCompiler.compile(QGLShader::Fragment,
+                "#error msg\n"
+                + trivialShader);
+        assertFailedAndLogged(LogEntry().withType(LOG_ERROR).occuringIn(0)
+                .withMessageMatching(QRegExp("msg")));
+    }
+
+    void doesNotLeakPreprocessorErrorsFromPreviousCompilation()
+    {
+        shaderCompiler.compile(QGLShader::Fragment,
+                "#error msg\n"
+                + trivialShader);
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(QGLShader::Fragment, trivialShader));
+        assertCleanCompilation(compiled.data());
+    }
+
+    void doesNotLeakPreprocessorMacrosFromPreviousCompilation()
+    {
+        shaderCompiler.compile(QGLShader::Fragment,
+                "#define macro\n"
+                + trivialShader);
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "#ifdef macro\n"
+                    "#error macro should be undefined\n"
+                    "#endif\n"
+                    + trivialShader));
+        assertCleanCompilation(compiled.data());
+    }
+
     void resetsStateBeforeCompiling()
     {
         QScopedPointer<AnnotatedGLShader> createsLogEntries(
@@ -817,6 +850,9 @@ public:
 
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
+    CPPUNIT_TEST(logsPreprocessorErrors);
+    CPPUNIT_TEST(doesNotLeakPreprocessorErrorsFromPreviousCompilation);
+    CPPUNIT_TEST(doesNotLeakPreprocessorMacrosFromPreviousCompilation);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
     CPPUNIT_TEST(compilesAndLinksTrivialShader);
     CPPUNIT_TEST(shaderNameDefaultsToFilename);
