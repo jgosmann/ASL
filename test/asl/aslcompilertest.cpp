@@ -343,6 +343,21 @@ public:
                 LogEntry().withType(LOG_WARNING).occuringAt(42, 26));
     }
 
+    void evaluatesPreprocessorConditionals()
+    {
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "#ifdef UNDEFINED\n"
+                    "/**\n"
+                    " * ShaderName: name1\n"
+                    " * ShaderName: name2\n"
+                    " */\n"
+                    "#endif\n"
+                    + trivialShader));
+        CPPUNIT_ASSERT(shaderCompiler.success());
+        assertCleanCompilation(compiled.data());
+    }
+
     void warnsAboutAslCommontNotPrecedingUniform()
     {
         QScopedPointer<AnnotatedGLShader> compiled(
@@ -791,12 +806,12 @@ public:
     void compilePrefixesNotWithAslMainMacro() {
         QScopedPointer<AnnotatedGLShader> compiled(
             shaderCompiler.compileAsMain(QGLShader::Fragment,
-                "#ifndef ASL_MAIN\n"
-                "/** ShaderName: aslMainMacroIsNotDefined */\n"
+                "#ifdef ASL_MAIN\n"
+                "/** ShaderName: aslMainMacroIsDefined */\n"
                 "#endif\n"
                 + trivialShader));
         assertCleanCompilation(compiled.data());
-        CPPUNIT_ASSERT_EQUAL(QString("aslMainMacroIsNotDefined"),
+        CPPUNIT_ASSERT_EQUAL(QString("aslMainMacroIsDefined"),
                 compiled->name());
     }
 
@@ -825,6 +840,7 @@ public:
     CPPUNIT_TEST(allowCommentsInAnnotatedUniform);
     CPPUNIT_TEST(linePreprocessorDirectiveSetsLine);
     CPPUNIT_TEST(linePreprocessorDirectiveSetsLineAndSourcestringNo);
+    CPPUNIT_TEST(evaluatesPreprocessorConditionals);
     CPPUNIT_TEST(warnsAboutAslCommontNotPrecedingUniform);
     CPPUNIT_TEST(
             warnsAboutAndDoesNotInterpretGeneralAnnotationsInUniformAslComment);
