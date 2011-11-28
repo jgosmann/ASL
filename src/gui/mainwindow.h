@@ -61,6 +61,7 @@ namespace gui
       ShaderParameterBundle m_shaderParameterBundle;
 
   private slots:
+      void removeShader();
       void emitExit();
   };
 }

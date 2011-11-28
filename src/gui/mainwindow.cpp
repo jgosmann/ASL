@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton_AddShader,SIGNAL(clicked()),
             this,SLOT(loadShaderDialog()));
     connect(ui->pushButton_RemoveShader,SIGNAL(clicked()),
-            ui->listView_ShaderList,SLOT(removeSelectedShader()));
+            this, SLOT(removeShader()));
 
     connect(ui->listView_ShaderList, SIGNAL(renderShaderList(void)),
             this, SLOT(render(void)));
@@ -112,6 +112,13 @@ void MainWindow::loadShaderDialog()
                                       QMessageBox::Ok);
     }
   }
+}
+
+void MainWindow::removeShader()
+{
+    ui->stackedWidget_ShaderOptions->removeWidget(
+            ui->stackedWidget_ShaderOptions->currentWidget());
+    ui->listView_ShaderList->removeSelectedShader();
 }
 
 void MainWindow::loadImageFile()
