@@ -32,7 +32,7 @@ void ShaderListView::init(){
     this->setDragDropOverwriteMode(false);
 
     connect(this,SIGNAL(clicked(QModelIndex)),this,SLOT(clickedOnShader(QModelIndex)));
-    connect(this,SIGNAL(indexesMoved(QModelIndex)), this, SIGNAL(renderShaderList(void)));
+    connect(this,SIGNAL(indexesMoved(const QModelIndexList &)), this, SIGNAL(renderShaderList(void)));
 
 
 }
