@@ -32,6 +32,7 @@ void ShaderListView::init(){
     this->setDragDropOverwriteMode(false);
 
     connect(this,SIGNAL(clicked(QModelIndex)),this,SLOT(clickedOnShader(QModelIndex)));
+    connect(this,SIGNAL(indexesMoved(QModelIndex)), this, SIGNAL(renderShaderList(void)));
 
 
 }
@@ -51,6 +52,7 @@ void ShaderListView::removeSelectedShader(){
         int key = itemModel->item(currentRow)->data().value<int>();
         shaderMap.remove(key);
         itemModel->removeRow(currentRow);
+        emit renderShaderList();
     }
 }
 
