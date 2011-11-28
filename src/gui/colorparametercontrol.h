@@ -48,7 +48,7 @@ namespace gui
     void showColorDialog();
 
   signals:
-    void colorChanged();
+    void valueChanged();
   };
 
 } // namespace gui

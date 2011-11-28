@@ -30,7 +30,7 @@ ColorParameterControl::ColorParameterControl(asl::ShaderParameterInfo &info,
   QObject::connect( pushButton, SIGNAL( pressed(void) ),
       this, SLOT( showColorDialog(void) ) );
 
-  QObject::connect( this, SIGNAL( colorChanged(void) ),
+  QObject::connect( this, SIGNAL( valueChanged(void) ),
       listener, SLOT( update(void) ) );
 }
 
@@ -72,7 +72,7 @@ void ColorParameterControl::showColorDialog()
   m_colorArray [2] = color.blueF();
 
   if (color != defaultColor) {
-    emit colorChanged();
+    emit valueChanged();
   }
 }
 
