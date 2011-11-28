@@ -29,9 +29,8 @@ ColorParameterControl::ColorParameterControl(asl::ShaderParameterInfo &info,
 
   QObject::connect( pushButton, SIGNAL( pressed(void) ),
       this, SLOT( showColorDialog(void) ) );
-
   QObject::connect( this, SIGNAL( valueChanged(void) ),
-      listener, SLOT( update(void) ) );
+      listener, SLOT( renderImage(void) ) );
 }
 
 
@@ -80,7 +79,6 @@ void ColorParameterControl::showColorDialog()
 void ColorParameterControl::setParameterFromControls(
     QSharedPointer< Shader > shaderProgram )
 {
-  // FIXME: Replace with opengl standard uniform-setters using glew.h
   if( m_info.type->rowDimensionality() == 3 )
   {
     shaderProgram->setUniformValueArray( qPrintable( m_info.identifier ), 
