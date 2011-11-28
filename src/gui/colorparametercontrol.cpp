@@ -13,7 +13,11 @@ ColorParameterControl::ColorParameterControl(asl::ShaderParameterInfo &info,
     QObject *listener)
   : m_info( info )
 {
-  m_colorArray = m_info.defaultValue.asFloat();
+  const GLfloat *defaultColor = m_info.defaultValue.asFloat();
+  m_colorArray = new GLfloat[m_info.type->rowDimensionality()];
+  for (unsigned int i = 0; i < m_info.type->rowDimensionality(); ++i) {
+      m_colorArray[i] = defaultColor[i];
+  }
 
   QLabel *caption = new QLabel( info.name );
   QPushButton *pushButton = new QPushButton( "Select color ..." );
@@ -33,6 +37,7 @@ ColorParameterControl::ColorParameterControl(asl::ShaderParameterInfo &info,
 
 ColorParameterControl::~ColorParameterControl()
 {
+  delete [] m_colorArray;
 }
 
 
