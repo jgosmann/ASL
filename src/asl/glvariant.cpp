@@ -77,21 +77,25 @@ const GLVariant GLVariant::minOfType(const GLTypeInfo &type)
             const GLfloat *value = replicate(-FLT_MAX, size);
             retVal = GLVariant(type, size, value);
             delete value;
+            break;
         }
         case GLTypeInfo::INT: {
             const GLint *value = replicate(INT_MIN, size);
             retVal = GLVariant(type, size, value);
             delete value;
+            break;
         }
         case GLTypeInfo::BOOL: {
             const GLint *value = replicate(GL_FALSE, size);
             retVal = GLVariant(type, size, value);
             delete value;
+            break;
         }
         case GLTypeInfo::UINT: {
             const GLuint *value = replicate(static_cast<GLuint>(0), size);
             retVal = GLVariant(type, size, value);
             delete value;
+            break;
         }
         default:
             throw invalid_argument("Minimum of type unknown.");
@@ -116,21 +120,25 @@ const GLVariant GLVariant::maxOfType(const GLTypeInfo &type)
             const GLfloat *value = replicate(FLT_MAX, size);
             retVal = GLVariant(type, size, value);
             delete value;
+            break;
         }
         case GLTypeInfo::INT: {
             const GLint *value = replicate(INT_MAX, size);
             retVal = GLVariant(type, size, value);
             delete value;
+            break;
         }
         case GLTypeInfo::BOOL: {
             const GLint *value = replicate(GL_TRUE, size);
             retVal = GLVariant(type, size, value);
             delete value;
+            break;
         }
         case GLTypeInfo::UINT: {
             const GLuint *value = replicate(UINT_MAX, size);
             retVal = GLVariant(type, size, value);
             delete value;
+            break;
         }
         default:
             throw invalid_argument("Maximum of type unknown.");
