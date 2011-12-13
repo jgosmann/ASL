@@ -67,25 +67,26 @@ GLVariant::~GLVariant() {
 
 const GLVariant GLVariant::minOfType(const GLTypeInfo &type)
 {
+    const GLsizei size = type.rowDimensionality() * type.columnDimensionality();
     /* We'll use the standard limits from climits as our best guess for the
      * limits as there are no such constants for the OpenGL types.
      */
     switch (type.type()) {
         case GLTypeInfo::FLOAT: {
             const GLfloat value = -FLT_MAX;
-            return GLVariant(type, 1, &value);
+            return GLVariant(type, size, &value);
         }
         case GLTypeInfo::INT: {
             const GLint value = INT_MIN;
-            return GLVariant(type, 1, &value);
+            return GLVariant(type, size, &value);
         }
         case GLTypeInfo::BOOL: {
             const GLint value = GL_FALSE;
-            return GLVariant(type, 1, &value);
+            return GLVariant(type, size, &value);
         }
         case GLTypeInfo::UINT: {
             const GLuint value = 0;
-            return GLVariant(type, 1, &value);
+            return GLVariant(type, size, &value);
         }
         default:
             throw invalid_argument("Minimum of type unknown.");
@@ -99,22 +100,26 @@ const GLVariant GLVariant::minOfType(const QString &glslTypename)
 
 const GLVariant GLVariant::maxOfType(const GLTypeInfo &type)
 {
+    const GLsizei size = type.rowDimensionality() * type.columnDimensionality();
+    /* We'll use the standard limits from climits as our best guess for the
+     * limits as there are no such constants for the OpenGL types.
+     */
     switch (type.type()) {
         case GLTypeInfo::FLOAT: {
             const GLfloat value = FLT_MAX;
-            return GLVariant(type, 1, &value);
+            return GLVariant(type, size, &value);
         }
         case GLTypeInfo::INT: {
             const GLint value = INT_MAX;
-            return GLVariant(type, 1, &value);
+            return GLVariant(type, size, &value);
         }
         case GLTypeInfo::BOOL: {
             const GLint value = GL_TRUE;
-            return GLVariant(type, 1, &value);
+            return GLVariant(type, size, &value);
         }
         case GLTypeInfo::UINT: {
             const GLuint value = UINT_MAX;
-            return GLVariant(type, 1, &value);
+            return GLVariant(type, size, &value);
         }
         default:
             throw invalid_argument("Maximum of type unknown.");
