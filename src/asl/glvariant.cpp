@@ -68,29 +68,35 @@ GLVariant::~GLVariant() {
 const GLVariant GLVariant::minOfType(const GLTypeInfo &type)
 {
     const GLsizei size = type.rowDimensionality() * type.columnDimensionality();
+    GLVariant retVal;
     /* We'll use the standard limits from climits as our best guess for the
      * limits as there are no such constants for the OpenGL types.
      */
     switch (type.type()) {
         case GLTypeInfo::FLOAT: {
-            const GLfloat value = -FLT_MAX;
-            return GLVariant(type, size, &value);
+            const GLfloat *value = replicate(-FLT_MAX, size);
+            retVal = GLVariant(type, size, value);
+            delete value;
         }
         case GLTypeInfo::INT: {
-            const GLint value = INT_MIN;
-            return GLVariant(type, size, &value);
+            const GLint *value = replicate(INT_MIN, size);
+            retVal = GLVariant(type, size, value);
+            delete value;
         }
         case GLTypeInfo::BOOL: {
-            const GLint value = GL_FALSE;
-            return GLVariant(type, size, &value);
+            const GLint *value = replicate(GL_FALSE, size);
+            retVal = GLVariant(type, size, value);
+            delete value;
         }
         case GLTypeInfo::UINT: {
-            const GLuint value = 0;
-            return GLVariant(type, size, &value);
+            const GLuint *value = replicate(static_cast<GLuint>(0), size);
+            retVal = GLVariant(type, size, value);
+            delete value;
         }
         default:
             throw invalid_argument("Minimum of type unknown.");
     }
+    return retVal;
 }
 
 const GLVariant GLVariant::minOfType(const QString &glslTypename)
@@ -101,29 +107,35 @@ const GLVariant GLVariant::minOfType(const QString &glslTypename)
 const GLVariant GLVariant::maxOfType(const GLTypeInfo &type)
 {
     const GLsizei size = type.rowDimensionality() * type.columnDimensionality();
+    GLVariant retVal;
     /* We'll use the standard limits from climits as our best guess for the
      * limits as there are no such constants for the OpenGL types.
      */
     switch (type.type()) {
         case GLTypeInfo::FLOAT: {
-            const GLfloat value = FLT_MAX;
-            return GLVariant(type, size, &value);
+            const GLfloat *value = replicate(FLT_MAX, size);
+            retVal = GLVariant(type, size, value);
+            delete value;
         }
         case GLTypeInfo::INT: {
-            const GLint value = INT_MAX;
-            return GLVariant(type, size, &value);
+            const GLint *value = replicate(INT_MAX, size);
+            retVal = GLVariant(type, size, value);
+            delete value;
         }
         case GLTypeInfo::BOOL: {
-            const GLint value = GL_TRUE;
-            return GLVariant(type, size, &value);
+            const GLint *value = replicate(GL_TRUE, size);
+            retVal = GLVariant(type, size, value);
+            delete value;
         }
         case GLTypeInfo::UINT: {
-            const GLuint value = UINT_MAX;
-            return GLVariant(type, size, &value);
+            const GLuint *value = replicate(UINT_MAX, size);
+            retVal = GLVariant(type, size, value);
+            delete value;
         }
         default:
             throw invalid_argument("Maximum of type unknown.");
     }
+    return retVal;
 }
 
 const GLVariant GLVariant::maxOfType(const QString &glslTypename)
@@ -199,6 +211,14 @@ template<class CastToT> CastToT GLVariant::ithValueCasted(GLsizei i) const
 GLsizei GLVariant::count() const
 {
     return m_type->rowDimensionality() * m_type->columnDimensionality();
+}
+
+template<class T> T * GLVariant::replicate(T value, unsigned int count) {
+    T *data = new T[count];
+    for (unsigned int i = 0; i < count; ++i) {
+        data[i] = value;
+    }
+    return data;
 }
 
 void GLVariant::allocateMemory()

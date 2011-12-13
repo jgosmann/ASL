@@ -71,6 +71,8 @@ public:
     }
 
 private:
+    template<class T> static T * replicate(T value, unsigned int count);
+
     void allocateMemory();
     void freeMemory();
 
