@@ -52,6 +52,8 @@ public:
     QList<QSharedPointer<Shader> > getAllShaders();
 
 
+protected:
+    bool eventFilter(QObject *watched, QEvent *event);
 
 
 signals:
