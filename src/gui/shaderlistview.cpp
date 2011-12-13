@@ -6,7 +6,7 @@ ShaderListView::ShaderListView(QWidget *parent) :
 {
     currentRow = -1;
     init();
-
+    installEventFilter(this);
 }
 
 ShaderListView::~ShaderListView(){
@@ -49,7 +49,7 @@ void ShaderListView::addShader(QSharedPointer<Shader> shader){
 
 bool ShaderListView::eventFilter(QObject *watched, QEvent *event) {
     Q_UNUSED(watched);
-    if (event->type() == QEvent::ChildAdded) {
+    if (event->type() == QEvent::ChildRemoved) {
         emit renderShaderList();
     }
     return false;
