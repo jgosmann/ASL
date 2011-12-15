@@ -55,7 +55,7 @@ MainWindow::~MainWindow()
 void MainWindow::setUniforms( unsigned int index )
 {
   // Calculate the correct index including deativated shaders.
-  for (unsigned int i = 0; i < index; ++i) {
+  for (unsigned int i = 0; i <= index; ++i) {
     if (!ui->listView_ShaderList->isActive(index)) {
       ++index;
     }
