@@ -44,10 +44,10 @@ tested with Mac OS X 10.6 (Snow Leopard) at the time of writing this.
 Known Problems
 --------------
 
-- The program will not work with Mac OS X 10.7 (Lion). Qt messes up the
-  initialization of the OpenGL context on that platform. Presumably because Lion
-  introduced OpenGL 3. The problem may be fixed with Qt versions > 4.7. However,
-  it still persisted in the beta version of Qt 4.8.
+- Not all shaders will work with Mac OS X 10.7 (Lion). It seems that Qt messes
+  up the initialization of the OpenGL context on that platform. Presumably
+  because Lion introduced OpenGL 3. The problem may be fixed with Qt versions
+  > 4.7. However, it still persisted in the beta version of Qt 4.8.
 
 Authors
 -------
