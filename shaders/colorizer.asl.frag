@@ -11,7 +11,7 @@ uniform float texHeight;
 
 /**
  * Name: Color value
- * Default: vec3(0.0, 0.0, 0.0)
+ * Default: vec3(1.0, 0.0, 0.0)
  * Control: color, default
  */
 uniform vec3 color;
