@@ -10,7 +10,9 @@ ShaderParameterInfoMatcher::ShaderParameterInfoMatcher(
     m_identifier = other.identifier;
     m_name = other.name;
     m_description = other.description;
-    m_type = other.type;
+    if (other.type) {
+        m_type = other.type;
+    }
     m_defaultValue = other.defaultValue;
     m_minValue = other.minimum;
     m_maxValue = other.maximum;
