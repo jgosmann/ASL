@@ -50,6 +50,39 @@ public:
         assertFailedAndLogged(LogEntry().withType(LOG_ERROR).occuringIn(0));
     }
 
+    void logsPreprocessorErrors()
+    {
+        shaderCompiler.compile(QGLShader::Fragment,
+                "#error msg\n"
+                + trivialShader);
+        assertFailedAndLogged(LogEntry().withType(LOG_ERROR).occuringIn(0)
+                .withMessageMatching(QRegExp("msg")));
+    }
+
+    void doesNotLeakPreprocessorErrorsFromPreviousCompilation()
+    {
+        shaderCompiler.compile(QGLShader::Fragment,
+                "#error msg\n"
+                + trivialShader);
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(QGLShader::Fragment, trivialShader));
+        assertCleanCompilation(compiled.data());
+    }
+
+    void doesNotLeakPreprocessorMacrosFromPreviousCompilation()
+    {
+        shaderCompiler.compile(QGLShader::Fragment,
+                "#define macro\n"
+                + trivialShader);
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "#ifdef macro\n"
+                    "#error macro should be undefined\n"
+                    "#endif\n"
+                    + trivialShader));
+        assertCleanCompilation(compiled.data());
+    }
+
     void resetsStateBeforeCompiling()
     {
         QScopedPointer<AnnotatedGLShader> createsLogEntries(
@@ -343,6 +376,21 @@ public:
                 LogEntry().withType(LOG_WARNING).occuringAt(42, 26));
     }
 
+    void evaluatesPreprocessorConditionals()
+    {
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "#ifdef UNDEFINED\n"
+                    "/**\n"
+                    " * ShaderName: name1\n"
+                    " * ShaderName: name2\n"
+                    " */\n"
+                    "#endif\n"
+                    + trivialShader));
+        CPPUNIT_ASSERT(shaderCompiler.success());
+        assertCleanCompilation(compiled.data());
+    }
+
     void warnsAboutAslCommontNotPrecedingUniform()
     {
         QScopedPointer<AnnotatedGLShader> compiled(
@@ -573,6 +621,23 @@ public:
                     .withMaximum(GLVariant(VEC3, 3, maxValues)));
     }
 
+    void testRangeSetsMinAndMaxValueOfScalarType()
+    {
+        QScopedPointer<AnnotatedGLShader> compiled(
+                shaderCompiler.compile(QGLShader::Fragment,
+                    "/***/\n"
+                    "/** Range: -3, 4 */\n"
+                    "uniform " + QString(FLOAT) + " param;\n"
+                    + trivialShader));
+        ShaderParameterInfoMatcher parameter;
+        GLfloat minValue = -3;
+        GLfloat maxValue = 4;
+        assertCleanCompilation(compiled.data());
+        assertHasExactlyOneParameterMatching(compiled.data(),
+                parameter.withMinimum(GLVariant(FLOAT, 1, &minValue))
+                    .withMaximum(GLVariant(FLOAT, 1, &maxValue)));
+    }
+
     void testRangeCastsMinAndMaxValue()
     {
         QScopedPointer<AnnotatedGLShader> compiled(
@@ -774,17 +839,20 @@ public:
     void compilePrefixesNotWithAslMainMacro() {
         QScopedPointer<AnnotatedGLShader> compiled(
             shaderCompiler.compileAsMain(QGLShader::Fragment,
-                "#ifndef ASL_MAIN\n"
-                "/** ShaderName: aslMainMacroIsNotDefined */\n"
+                "#ifdef ASL_MAIN\n"
+                "/** ShaderName: aslMainMacroIsDefined */\n"
                 "#endif\n"
                 + trivialShader));
         assertCleanCompilation(compiled.data());
-        CPPUNIT_ASSERT_EQUAL(QString("aslMainMacroIsNotDefined"),
+        CPPUNIT_ASSERT_EQUAL(QString("aslMainMacroIsDefined"),
                 compiled->name());
     }
 
     CPPUNIT_TEST_SUITE(ASLCompilerTest);
     CPPUNIT_TEST(logsErrorWhenCompilingInvalidShader);
+    CPPUNIT_TEST(logsPreprocessorErrors);
+    CPPUNIT_TEST(doesNotLeakPreprocessorErrorsFromPreviousCompilation);
+    CPPUNIT_TEST(doesNotLeakPreprocessorMacrosFromPreviousCompilation);
     CPPUNIT_TEST(resetsStateBeforeCompiling);
     CPPUNIT_TEST(compilesAndLinksTrivialShader);
     CPPUNIT_TEST(shaderNameDefaultsToFilename);
@@ -808,6 +876,7 @@ public:
     CPPUNIT_TEST(allowCommentsInAnnotatedUniform);
     CPPUNIT_TEST(linePreprocessorDirectiveSetsLine);
     CPPUNIT_TEST(linePreprocessorDirectiveSetsLineAndSourcestringNo);
+    CPPUNIT_TEST(evaluatesPreprocessorConditionals);
     CPPUNIT_TEST(warnsAboutAslCommontNotPrecedingUniform);
     CPPUNIT_TEST(
             warnsAboutAndDoesNotInterpretGeneralAnnotationsInUniformAslComment);
@@ -835,6 +904,7 @@ public:
     CPPUNIT_TEST(testRangeDefaultsToMinAndMaxOfType<gltypenames::INT>);
     CPPUNIT_TEST(testRangeDefaultsToMinAndMaxOfType<gltypenames::BOOL>);
     CPPUNIT_TEST(testRangeSetsMinAndMaxValue);
+    CPPUNIT_TEST(testRangeSetsMinAndMaxValueOfScalarType);
     CPPUNIT_TEST(testRangeCastsMinAndMaxValue);
     CPPUNIT_TEST(testRangeSetsMinAndMaxWithMinMaxIdentifier);
     CPPUNIT_TEST(testRangeSetsMinAndMaxWithMinMaxIdentifierAndValueMixed);

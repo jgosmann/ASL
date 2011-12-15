@@ -1,4 +1,3 @@
-
 #include "annotatedglshaderprogram.h"
 
 using namespace asl;

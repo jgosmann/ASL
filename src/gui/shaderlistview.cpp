@@ -6,7 +6,7 @@ ShaderListView::ShaderListView(QWidget *parent) :
 {
     currentRow = -1;
     init();
-
+    installEventFilter(this);
 }
 
 ShaderListView::~ShaderListView(){
@@ -32,6 +32,7 @@ void ShaderListView::init(){
     this->setDragDropOverwriteMode(false);
 
     connect(this,SIGNAL(clicked(QModelIndex)),this,SLOT(clickedOnShader(QModelIndex)));
+    connect(this,SIGNAL(indexesMoved(const QModelIndexList &)), this, SIGNAL(renderShaderList()));
 
 
 }
@@ -46,11 +47,20 @@ void ShaderListView::addShader(QSharedPointer<Shader> shader){
     ++currentID;
 }
 
+bool ShaderListView::eventFilter(QObject *watched, QEvent *event) {
+    Q_UNUSED(watched);
+    if (event->type() == QEvent::ChildRemoved) {
+        emit renderShaderList();
+    }
+    return false;
+}
+
 void ShaderListView::removeSelectedShader(){
     if(currentRow >= 0 && currentRow < itemModel->rowCount()){
         int key = itemModel->item(currentRow)->data().value<int>();
         shaderMap.remove(key);
         itemModel->removeRow(currentRow);
+        emit renderShaderList();
     }
 }
 
@@ -65,8 +75,8 @@ void ShaderListView::clickedOnShader(const QModelIndex &index){
     currentRow = index.row();
 
     int key = item->data().value<int>();
-    emit shaderClicked(shaderMap.value(key));
-    emit renderShaderList(getCheckedShaders());
+    emit shaderClicked( shaderMap.keys().indexOf(key) );
+    emit renderShaderList();
 
 }
 

@@ -5,7 +5,7 @@
 
     #include <exception>
 
-    #include <GL/gl.h>
+    #include <qgl.h>
 
     #include <QFileInfo>
     #include <QList>
@@ -239,7 +239,7 @@ glvariant:
         }
     | NEGATE INTEGER {
             const GLint value = -$2;
-            $$ = new asl::GLVariant("uint", 1, &value);
+            $$ = new asl::GLVariant("int", 1, &value);
         }
     | FLT {
             const GLfloat value = $1;

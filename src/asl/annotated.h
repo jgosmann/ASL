@@ -26,7 +26,7 @@ public:
         return m_shaderInfo.dependencies;
     }
 
-    inline const QList<asl::ShaderParameterInfo> & parameters() const {
+    virtual inline const QList<asl::ShaderParameterInfo> & parameters() const {
         return m_shaderInfo.parameters;
     }
 

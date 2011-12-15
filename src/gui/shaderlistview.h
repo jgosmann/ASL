@@ -15,7 +15,7 @@
 
 #include <iostream>
 
-
+// !! abbreviation
 typedef class asl::AnnotatedGLShaderProgram Shader;
 
 class ShaderListView : public QListView
@@ -52,11 +52,13 @@ public:
     QList<QSharedPointer<Shader> > getAllShaders();
 
 
+protected:
+    bool eventFilter(QObject *watched, QEvent *event);
 
 
 signals:
-    void shaderClicked(QSharedPointer<Shader> shader);
-    void renderShaderList(QList<QSharedPointer<Shader> >);
+    void shaderClicked(int index);
+    void renderShaderList();
 
 public slots:
     void removeSelectedShader();

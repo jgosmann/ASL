@@ -1,22 +1,25 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <iostream>
+
 #include <QMainWindow>
 #include <QCoreApplication>
+#include <QScrollArea>
 #include <QGLContext>
 #include <QGLFormat>
 #include <QSharedPointer>
 #include <QMessageBox>
-
+#include <QLabel>
 
 #include <asl/annotatedglshaderprogram.h>
 #include <asl/defaultaslprogramcompiler.h>
-
-#include <iostream>
+#include <asl/gltypeinfo.h>
 
 #include "glimagerenderer.h"
-
-typedef class asl::AnnotatedGLShaderProgram Shader;
+#include "shaderparametercontrolfactory.h"
+#include "shaderparametercontrolhandle.h"
+#include "shaderparameterbundle.h"
 
 namespace Ui {
     class MainWindow;
@@ -24,36 +27,43 @@ namespace Ui {
 
 namespace gui
 {
-class MainWindow : public QMainWindow
-{
-    Q_OBJECT
+  typedef class asl::AnnotatedGLShaderProgram Shader;
 
-public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+  class MainWindow : public QMainWindow, public UniformSetter
+  {
+      Q_OBJECT
 
-private:
-    Ui::MainWindow *ui;
+  public:
+      explicit MainWindow(QWidget *parent = 0);
+      ~MainWindow();
 
-    QGLContext *m_sharedContext;
-    // this class connects the shaderList with the glImageViewer-widget
-    GLImageRenderer *m_glImageRenderer;
+      void setUniforms( unsigned int index );
 
-    asl::DefaultASLProgramCompiler compiler;
+  public slots:
+      void loadShaderDialog();
+      void loadImageFile();
+      void render();
+      void saveImage();
+      void showControls( int index );
 
-signals:
-    void exitProgram();
+  signals:
+      void exitProgram();
 
-private slots:
-    void emitExit();
+  private:
+      Ui::MainWindow *ui;
 
+      QGLContext *m_sharedContext;
+      // this class connects the shaderList with the glImageViewer-widget
+      GLImageRenderer *m_glImageRenderer;
 
+      asl::DefaultASLProgramCompiler compiler;
 
-public slots:
-    void loadShaderDialog();
-    void loadImageFile();
-    void saveImage();
-};
+      ShaderParameterBundle m_shaderParameterBundle;
+
+  private slots:
+      void removeShader();
+      void emitExit();
+  };
 }
 
 #endif // MAINWINDOW_H

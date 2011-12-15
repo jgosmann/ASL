@@ -3,14 +3,14 @@
 
 #include <iostream>
 
-#include <GL/gl.h>
+#include <qgl.h>
 
 #include "gltypeinfo.h"
 
 namespace asl
 {
 /**
- * Class able to hold different types which can passed to a shader program.
+ * Class able to hold different types which can be passed to a shader program.
  */
 class GLVariant
 {
@@ -60,7 +60,7 @@ public:
     template<class T> const T * as() const;
 
     template<class CastToT> CastToT ithValueCasted(GLsizei i) const;
-    const GLsizei count() const;
+    GLsizei count() const;
     inline const GLTypeInfo & type() const { return *m_type; }
 
     GLVariant & operator=(const GLVariant &rhs);
@@ -71,6 +71,8 @@ public:
     }
 
 private:
+    template<class T> static T * replicate(T value, unsigned int count);
+
     void allocateMemory();
     void freeMemory();
 

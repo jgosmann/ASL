@@ -115,7 +115,7 @@
          </widget>
         </item>
         <item row="3" column="2" rowspan="3" colspan="4">
-         <widget class="gui::GLImageViewer" name="glDisplay" native="true"/>
+         <widget class="gui::GLImageViewer" name="glDisplay"/>
         </item>
         <item row="5" column="0" colspan="2">
          <widget class="QGroupBox" name="groupBox_ShaderOptions">
@@ -130,22 +130,7 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
-            <widget class="gui::UniformOptionGenerator" name="scrollArea">
-             <property name="widgetResizable">
-              <bool>true</bool>
-             </property>
-             <widget class="QWidget" name="scrollAreaWidgetContents">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>264</width>
-                <height>295</height>
-               </rect>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_4"/>
-             </widget>
-            </widget>
+            <widget class="QStackedWidget" name="stackedWidget_ShaderOptions"/>
            </item>
           </layout>
          </widget>
@@ -295,7 +280,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMain">
@@ -390,12 +375,6 @@
    <class>ShaderListView</class>
    <extends>QListView</extends>
    <header>gui/shaderlistview.h</header>
-  </customwidget>
-  <customwidget>
-   <class>gui::UniformOptionGenerator</class>
-   <extends>QScrollArea</extends>
-   <header>gui/uniformoptiongenerator.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

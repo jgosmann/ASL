@@ -9,14 +9,14 @@ uniform sampler2D tex;
 uniform int texWidth;
 uniform int texHeight;
 
-/*
+/**
  * Name: Iterations
  * Description: Maximum number of iterations to calculate per pixel. High
  *     numbers may reduce the performance.
  * Default: 200
  * Range: 0, max
  */
-/* uniform */ const int iterations = 200;
+uniform int iterations;
 
 vec4 calcJuliaSetColor(vec2 z, vec2 c) {
     for (int i = 0; i < iterations; ++i) {
@@ -31,11 +31,11 @@ vec4 calcJuliaSetColor(vec2 z, vec2 c) {
 }
 
 #ifdef ASL_MAIN
-/*
+/**
  * Name: c
  * Description: Parameter to vary the Julia set.
  */
-/* uniform */ const vec2 c = vec2(0.2, 0.4);
+uniform vec2 c;
 
 void main() {
     gl_FragColor = calcJuliaSetColor(mapCoords(gl_FragCoord.xy), c);

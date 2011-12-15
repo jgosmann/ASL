@@ -19,6 +19,8 @@ struct ShaderParameterInfo
     asl::GLVariant minimum;
     asl::GLVariant maximum;
     QStringList preferredUIControls;
+
+    ShaderParameterInfo() { type = NULL; }
 };
 }
 

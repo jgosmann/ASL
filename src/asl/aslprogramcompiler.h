@@ -59,6 +59,8 @@ private:
     QSharedPointer<AnnotatedGLShader> compileMainShader(
             const QString &filename);
     QSharedPointer<AnnotatedGLShader> compileShader(const QString &filename);
+    void addShaderWithoutParameters(const QString &filename,
+            QSharedPointer<AnnotatedGLShader> &shader);
     void addShader(const QString &filename,
             QSharedPointer<AnnotatedGLShader> &shader);
     void compileAndAddDependencies(const QStringList &dependencies,

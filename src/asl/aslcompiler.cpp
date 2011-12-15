@@ -1,5 +1,6 @@
 #include "aslcompiler.h"
 #include "aslparser_internal.h"
+#include "aslpreprocessor_parserinternal.h"
 
 #include <QFile>
 #include <QRegExp>
@@ -11,7 +12,10 @@ AnnotatedGLShader * ASLCompiler::compile(QGLShader::ShaderType type,
 {
     reset();
 
-    ShaderInfo shaderInfo = parserinternal::parse(source, pathOfSource);
+    QString preprocessed;
+    QTextStream preprocessOut(&preprocessed, QIODevice::WriteOnly);
+    ppinternal::parse(source, &preprocessOut);
+    ShaderInfo shaderInfo = parserinternal::parse(preprocessed, pathOfSource);
     m_log += parserinternal::log;
 
     QString prefixedSource(source);

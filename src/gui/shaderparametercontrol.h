@@ -1,46 +1,57 @@
 #ifndef SHADERPARAMETERCONTROL_H
 #define SHADERPARAMETERCONTROL_H
 
-#include <QGLShaderProgram>
-#include <QWidget>
+#include <stdexcept>
 
+#include <QObject>
+#include <QSharedPointer>
+#include <QWidget>
+#include <QGridLayout>
+
+#include "../asl/annotatedglshaderprogram.h"
 #include "../asl/shaderparameterinfo.h"
+#include "../asl/gltypeinfo.h"
+
+#include "shaderparametercontrolhandle.h"
+
 
 namespace gui
 {
-template<class ControlT, class ParamT> class ShaderParameterControl
-        : public QWidget
-{
-    Q_OBJECT
+  typedef class asl::AnnotatedGLShaderProgram Shader;
 
-public:
-    // 1. m_controls als Array mit genug Elementen initialisieren
-    // 2. Zeilen/Spalten durchgehen, Controls erstellen, Min, Max und default
-    //    wert setzen und jeweils connectSingleControlSignal() aufrufen.
-    ShaderParameterControl(const ShaderParameterInfo &type,
-            QGLShaderProgram &prgm);
+  template<class ControlT, class ParamT>
+  class ShaderParameterControl : public ShaderParameterControlHandle
+  {
+  
+  public:
+    ShaderParameterControl(asl::ShaderParameterInfo &info, QObject *listener);
+    ~ShaderParameterControl();
 
-    // Speicher von m_controls freigeben
-    virtual ~ShaderParameterControl();
+    QWidget* widget();
 
-private slots:
-    // Array mit genug Elementen vom Typ ParamT anlegen (sicherstellen das
-    // dieses beim Verlassen der Funktion wieder freigegeben wird)
-    // m_controls durchgehen und mit getSingelValueFromControl() Wert auslesen
-    // und in das Array schreiben. Uniform von m_prgm setzen.
-    void setParameterFromControls();
+    void setParameterFromControls(QSharedPointer< Shader > shaderProgram);
 
-private:
-    // Liest den aktuellen Wert von control aus und gibt ihn zurück.
-    ParamT getSingleValueFromControl(const ControlT &control);
+  private:
+    ControlT **m_controls;
 
-    // "valueChanged" signal von control mit setParaemterFromControlsVerbinden()
-    void connectSingleControlSignal(const ControlT &control);
+    unsigned short int m_rows, m_cols;
 
-    ControlT *m_controls;
-    QGLShaderProgram m_prgm;
-};
-}
+    asl::ShaderParameterInfo m_info;
+  };
+
+  #define ifMatchesMatDimSetUniform(rows, cols) \
+  if (m_rows == (rows) && m_cols == (cols)) { \
+    qreal valuesAsFloat[(rows) * (cols)]; \
+    for (unsigned int i = 0; i < (rows) * (cols); ++i) { \
+      valuesAsFloat[i] = values[i]; \
+    } \
+    \
+    QMatrix##cols##x##rows mat(valuesAsFloat); \
+    shaderProgram->setUniformValue(qPrintable(m_info.identifier), mat); \
+  }
+
+  #include "shaderparametercontrol.cpp"
+
+} // namespace gui
 
 #endif /* SHADERPARAMETERCONTROL_H */
-

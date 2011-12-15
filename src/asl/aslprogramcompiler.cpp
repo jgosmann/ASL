@@ -16,7 +16,7 @@ asl::AnnotatedGLShaderProgram * ASLProgramCompiler::compileFile(
     m_programUnderConstruction = new AnnotatedGLShaderProgram(
             mainShader->shaderInfo());
 
-    addShader(filename, mainShader);
+    addShaderWithoutParameters(filename, mainShader);
     compileAndAddDependencies(mainShader->dependencies(), filename);
 
     m_success &= m_programUnderConstruction->link();
@@ -61,12 +61,19 @@ QSharedPointer<AnnotatedGLShader> ASLProgramCompiler::compileShader(
     return shader;
 }
 
-void ASLProgramCompiler::addShader(const QString &filename,
+void ASLProgramCompiler::addShaderWithoutParameters(const QString &filename,
         QSharedPointer<AnnotatedGLShader> &shader)
 {
     m_success &= m_programUnderConstruction->addSharedShader(
             qSharedPointerCast<QGLShader>(shader));
     m_addedShaders.insert(filename);
+}
+
+void ASLProgramCompiler::addShader(const QString &filename,
+        QSharedPointer<AnnotatedGLShader> &shader)
+{
+    addShaderWithoutParameters(filename, shader);
+    m_programUnderConstruction->addParameters(shader->parameters());
 }
 
 void ASLProgramCompiler::compileAndAddDependencies(

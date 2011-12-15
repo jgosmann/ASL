@@ -94,11 +94,14 @@ pp:
     | LINE INTEGER ENDPP {
             aslpreprocessorlineno = $2 + 1;
             $$ = new QStringList();
+            (*$$) << "#line " << QString::number($2) << "\n";
         }
     | LINE INTEGER INTEGER ENDPP {
             aslpreprocessorlineno = $2 + 1;
             sourceStringNo = $3;
             $$ = new QStringList();
+            (*$$) << "#line " << QString::number($2) << " "
+                << QString::number($3) << "\n";
         }
     | error ENDPP { $$ = new QStringList(); }
     ;

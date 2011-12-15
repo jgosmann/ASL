@@ -5,55 +5,60 @@
 
 using namespace gui;
 
-GLImageRenderer::GLImageRenderer(QObject* parent)
-    : QObject(parent),
-    m_useShaderProgram(true),
-    m_pixelBufferForContext(1, 1),
-    m_source(NULL),
-    m_target(NULL)
+//FIXME
+GLImageRenderer::GLImageRenderer(UniformSetter &uniformSetter, QWidget *parent)
+  : QObject( parent ),
+    m_uniformSetter( uniformSetter ),
+    m_useShaderProgram( true ),
+    m_pixelBufferForContext( 1, 1 ),
+    m_source( NULL ),
+    m_target( NULL )
 {
 }
 
 GLImageRenderer::~GLImageRenderer()
 {
-    if (m_source) {
-        delete m_source;
-    }
-    if (m_target) {
-        delete m_target;
-    }
+  if (m_source) {
+      delete m_source;
+  }
+  if (m_target) {
+      delete m_target;
+  }
 }
 
 //-- MEMBER-FUNCTIONS ---------------------------------------------------------
 
-void GLImageRenderer::render()
+void GLImageRenderer::renderImage()
 {
-    if(!m_source || !m_target) {
-        return;
-    }
+  if(!m_source || !m_target) {
+      return;
+  }
 
-    m_pixelBufferForContext.makeCurrent();
-    drawImageToTarget();
+  m_pixelBufferForContext.makeCurrent();
+  drawImageToTarget();
 
-    if (m_useShaderProgram) {
-        applyShaders();
-    }
+  if (m_useShaderProgram) {
+      applyShaders();
+  }
 
-    m_renderedImage = m_target->toImage();
-    m_pixelBufferForContext.doneCurrent();
-    emit updated(m_renderedImage);
+  m_renderedImage = m_target->toImage();
+  m_pixelBufferForContext.doneCurrent();
+  emit updated(m_renderedImage);
 }
 
 void GLImageRenderer::drawImageToTarget() {
-    m_target->bind();
-    const GLuint imgTex = m_pixelBufferForContext.bindTexture(m_sourceImage);
-    drawTexture(imgTex);
-    m_pixelBufferForContext.deleteTexture(imgTex);
-    m_target->release();
+
+  m_target->bind();
+  const GLuint imgTex = m_pixelBufferForContext.bindTexture(m_sourceImage);
+  drawTexture(imgTex);
+  m_pixelBufferForContext.deleteTexture(imgTex);
+  m_target->release();
 }
 
 void GLImageRenderer::applyShaders() {
+    unsigned int shaderIndex = 0;
     foreach (QSharedPointer<Shader> shaderProgram, m_shaderProgramList) {
+
         if(!shaderProgram->isLinked()) {
             continue;
         }
@@ -66,9 +71,13 @@ void GLImageRenderer::applyShaders() {
         shaderProgram->setUniformValue("tex", 0);
         shaderProgram->setUniformValue("texWidth", m_sourceImage.width());
         shaderProgram->setUniformValue("texHeight", m_sourceImage.height());
+        m_uniformSetter.setUniforms(shaderIndex);
+
         drawTexture(sourceTexId);
         shaderProgram->release();
         m_target->release();
+
+        ++shaderIndex;
     }
 }
 
@@ -98,26 +107,27 @@ void GLImageRenderer::drawTexture(GLuint tex){
 
 //-- SLOTS --------------------------------------------------------------------
 
-/** TODO: connect this one to your shaderList-Widget! */
-void GLImageRenderer::renderImage(QList<QSharedPointer<Shader> > shaderProgramList)
+
+void GLImageRenderer::setShaderProgramList(QList< QSharedPointer<Shader> > shaderProgramList)
 {
+  m_shaderProgramList = shaderProgramList;
 
-    m_shaderProgramList = shaderProgramList;
-
-    render();
+  renderImage();
 }
+
 
 void GLImageRenderer::enableShaders(const int state)
 {
-    if(((state == Qt::Checked) || (state == Qt::PartiallyChecked)))
-    {
-        m_useShaderProgram = true;
-    } else {
-        m_useShaderProgram = false;
-    }
+  if (state == Qt::Checked || state == Qt::PartiallyChecked)
+  {
+      m_useShaderProgram = true;
+  } else {
+      m_useShaderProgram = false;
+  }
 
-    render();
+  renderImage();
 }
+
 
 void GLImageRenderer::setSourceImage(const QImage &img)
 {
@@ -151,6 +161,6 @@ void GLImageRenderer::setSourceImage(const QImage &img)
 
     m_pixelBufferForContext.doneCurrent();
 
-    render();
+    renderImage();
 }
 
