@@ -4,7 +4,7 @@
  * Depends: convolveMat3.asl.frag
  */
 
-mat3 sharpenMat = mat3(-1, -1, -1, -1, 9, -1, -1, -1, -1);
+const mat3 sharpenMat = mat3(-1, -1, -1, -1, 9, -1, -1, -1, -1);
 
 void main() {
 	gl_FragColor = getConvoluteValue(sharpenMat);

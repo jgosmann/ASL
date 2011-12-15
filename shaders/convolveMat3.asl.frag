@@ -25,9 +25,9 @@ vec4 getConvoluteValue(mat3 convMat) {
 
 	vec4 retColor = vec4(0, 0, 0, 1);
 	if(sum != 0.0){
-	retColor.rgb = color.rgb / sum;
+        retColor.rgb = color.rgb / sum;
 	} else {
-	retColor.rgb = color.rgb;
+        retColor.rgb = color.rgb;
 	}
 
 	return retColor;

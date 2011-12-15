@@ -5,7 +5,7 @@
  * Depends: convolveMat3.asl.frag
  */
 
-mat3 laplaceMat = mat3(1, 1, 1, 1, -8, 1, 1, 1, 1);
+const mat3 laplaceMat = mat3(1, 1, 1, 1, -8, 1, 1, 1, 1);
 
 void main() {
 	gl_FragColor = getConvoluteValue(laplaceMat);
