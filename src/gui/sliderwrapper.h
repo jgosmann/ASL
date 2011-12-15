@@ -5,7 +5,6 @@
 
 #include <QSlider>
 
-
 namespace gui
 {
 
@@ -20,11 +19,6 @@ namespace gui
           this, SLOT( emitValueChanged(int) ));
     }
     ~SliderWrapper() {}
-
-    void setValue(GLint value)
-    {
-      setSliderPosition( value );
-    }
 
   public slots:
     void emitValueChanged(int value)
