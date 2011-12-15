@@ -27,7 +27,6 @@ public:
     ~ShaderListView();
     void init();
 
-
     /**
       * Clears the current shader List and replaces it with the given pShaderList
       */
@@ -50,6 +49,10 @@ public:
       * the order of the list matches with the view
       */
     QList<QSharedPointer<Shader> > getAllShaders();
+
+    inline bool isActive(int index) const {
+        return itemModel->item(index)->checkState();
+    }
 
 
 protected:
