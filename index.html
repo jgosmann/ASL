@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>ASL by jgosmann</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/jgosmann/ASL">Fork On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/jgosmann/ASL/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/jgosmann/ASL/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>ASL</h1>
+          <p>Annotated Shading Language</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/jgosmann">jgosmann</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/mattgraham">mattgraham</a></span>
+        </div>
+
+        <h1>Shader Based Image Manipulation with the Annotated Shading Language (ASL)</h1>
+
+<p>This project was done as part of the Computer Graphics module by Prof. Dr. Mario
+Botsch at the Bielefeld University in the summer term of 2011. It is an image
+manipulation program which implements its algorithms in shader programs running
+on the GPU.</p>
+
+<p>We aimed to make this image manipulation program flexible and extensible.<br>
+Therefore, we decided to save the source code of the shaders in their own files 
+which will be loaded and compiled at runtime. This makes it easy to add new 
+algorithms: just write a shader and you can load it from the program.</p>
+
+<p>However, it would be nice if one could control the various parameters of the 
+algorithms with GUI controls. But a normal shader program does not provide the 
+information what the purpose and valid range of a parameter is. This is the 
+point were the Annotated Shading Language (ASL) comes into play.</p>
+
+<p>The Annotated Shading Language allows to add information like description and
+parameter range of a parameter to the program. Because all ASL elements are
+written within comments, the shader program can still be compiled without using
+an ASL shader compiler.</p>
+
+<p>Because ASL was developed only as part of a rather small project, there is still 
+room for many enhancements. For example, at the moment it is only possible to 
+annotate uniforms and whole files, but not per vertex parameters. We had no need 
+for this function as we only used fragment shaders which do not have per vertex 
+parameters.</p>
+
+<p>If you want to try out ASL for yourself, take a look into the <code>doc</code> folder where
+you will find a documentation of ASL.</p>
+
+<h2>Requirements</h2>
+
+<ul>
+<li>
+<a href="http://qt.nokia.com/">Qt</a> 4.6 (or newer)</li>
+<li>
+<a href="http://www.opengl.org/">OpenGL</a> 2.0 (or newer)</li>
+<li><a href="http://flex.sourceforge.net/">flex</a></li>
+<li><a href="http://www.gnu.org/s/bison/">Bison</a></li>
+</ul><p>The program should be platform independent. However, the final version was only
+tested with Mac OS X 10.6 (Snow Leopard) at the time of writing this.</p>
+
+<h2>Known Problems</h2>
+
+<ul>
+<li>Not all shaders will work with Mac OS X 10.7 (Lion). It seems that Qt messes
+up the initialization of the OpenGL context on that platform. Presumably
+because Lion introduced OpenGL 3. The problem may be fixed with Qt versions
+&gt; 4.7. However, it still persisted in the beta version of Qt 4.8.</li>
+</ul><h2>Authors</h2>
+
+<ul>
+<li><a href="http://www.hyper-world.de">Jan Gosmann</a></li>
+<li>Denis John</li>
+<li>Markus Kastrop</li>
+</ul><p>The project has been supervised by Matthias Heinrich and Prof. Dr. Mario Botsch.</p>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+  </body>
+</html>
